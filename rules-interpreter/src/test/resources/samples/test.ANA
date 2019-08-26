@@ -1,0 +1,5 @@
+workflow 'create-order'
+ruleset 'test'
+user_id = '401912' return 'looks_bad'
+default return 'looks_ok'
+end

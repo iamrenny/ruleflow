@@ -1,0 +1,7 @@
+workflow 'create-order'
+ruleset 'test'
+    user_id = '401912': 'looks_bad'
+    paymentMethod.type = 'credit_card' AND paymentMethod.country = 'US' AND paymentMethod.vendor = 'visa'
+    AND orders.items.any { type = 'restaurant' } : 'needs_validation'
+    else: 'looks_ok'
+end

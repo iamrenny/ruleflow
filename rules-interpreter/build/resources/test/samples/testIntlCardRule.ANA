@@ -1,0 +1,7 @@
+workflow 'create-order'
+ruleset 'intl-cc-rule'
+payment_methods.any {
+    (payment_type = 'visa' AND card_bin STARTS WITH '4') OR ( payment_type = 'master' AND card_bin STARTS_WITH '5' AND card_bin STARTS_WITH '2')
+    } return 'needs_validation'
+default return 'looks_ok'
+end

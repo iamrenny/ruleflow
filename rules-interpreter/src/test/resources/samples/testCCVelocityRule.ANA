@@ -1,0 +1,5 @@
+workflow 'transactions'
+ruleset 'cc-velocity-rule'
+card_age >= 30L : 'looks_ok'
+default return 'looks_ok'
+end
