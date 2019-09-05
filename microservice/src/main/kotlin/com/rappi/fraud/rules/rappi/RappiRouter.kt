@@ -25,6 +25,7 @@ class RappiRouter @Inject constructor(private val vertx: Vertx) {
         router.post("/evaluate").handler(::evaluate)
         router.post("/create-workflow").handler(::createWorkflow)
 
+        router.get(":/workflow").handler(::getWorkflow)
         router.post("/:workflow").handler(::addRule)
         router.put("/:workflow/:rule_id").handler(::updateRule)
         router.delete("/:workflow/:rule_id").handler(::updateRule)
@@ -44,6 +45,15 @@ class RappiRouter @Inject constructor(private val vertx: Vertx) {
             })
     }
 
+    private fun createWorkflow(ctx: RoutingContext) {
+
+    }
+
+    private fun getWorkflow(ctx: RoutingContext) {
+
+    }
+
+
     private fun addRule(ctx: RoutingContext ){
 
     }
@@ -56,7 +66,5 @@ class RappiRouter @Inject constructor(private val vertx: Vertx) {
 
     }
 
-    private fun createWorkflow(ctx: RoutingContext) {
 
-    }
 }
