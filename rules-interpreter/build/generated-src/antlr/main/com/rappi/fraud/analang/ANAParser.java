@@ -1,7 +1,7 @@
 // Generated from com/rappi/fraud/analang/ANA.g4 by ANTLR 4.7.2
 
-package com.rappi.fraud.analang;
-
+ package com.rappi.fraud.analang;
+ 
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -19,40 +19,41 @@ public class ANAParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
-		DOT=10, COMMA=11, STAR=12, PLUS=13, MINUS=14, TILDE=15, LT=16, LT_EQ=17, 
-		GT=18, GT_EQ=19, EQ=20, NOT_EQ1=21, NOT_EQ2=22, K_WORKFLOW=23, K_END=24, 
-		K_ELSE=25, K_AND=26, K_OR=27, K_CONTAINS=28, K_NOT_CONTAINS=29, K_IS=30, 
-		K_NOT=31, K_IS_NOT=32, K_IN=33, K_ANY=34, K_ALL=35, LIST_OP=36, ANY_OP=37, 
-		ALL_OP=38, ID=39, NUMERIC_LITERAL=40, STRING_LITERAL=41, SINGLE_LINE_COMMENT=42, 
-		MULTILINE_COMMENT=43, SPACES=44, UNEXPECTED_CHAR=45;
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, DOT=8, COMMA=9, 
+		STAR=10, PLUS=11, MINUS=12, TILDE=13, LT=14, LT_EQ=15, GT=16, GT_EQ=17, 
+		EQ=18, NOT_EQ1=19, NOT_EQ2=20, R_BRACE=21, L_BRACE=22, K_WORKFLOW=23, 
+		K_END=24, K_ELSE=25, K_AND=26, K_OR=27, K_CONTAINS=28, K_NOT_CONTAINS=29, 
+		K_IS=30, K_NOT=31, K_IS_NOT=32, K_IN=33, K_ANY=34, K_ALL=35, K_COUNT=36, 
+		K_AVERAGE=37, ID=38, NUMERIC_LITERAL=39, STRING_LITERAL=40, SINGLE_LINE_COMMENT=41, 
+		MULTILINE_COMMENT=42, SPACES=43, UNEXPECTED_CHAR=44;
 	public static final int
 		RULE_parse = 0, RULE_error = 1, RULE_workflow = 2, RULE_stmt_list = 3, 
-		RULE_stmt = 4, RULE_default_stmt = 5, RULE_cond = 6, RULE_result_value = 7, 
-		RULE_any_name = 8, RULE_literal_value = 9;
+		RULE_stmt = 4, RULE_default_stmt = 5, RULE_cond = 6, RULE_id = 7, RULE_list_op = 8, 
+		RULE_count = 9, RULE_average = 10, RULE_result_value = 11, RULE_any_name = 12, 
+		RULE_literal_value = 13;
 	private static String[] makeRuleNames() {
 		return new String[] {
 			"parse", "error", "workflow", "stmt_list", "stmt", "default_stmt", "cond", 
-			"result_value", "any_name", "literal_value"
+			"id", "list_op", "count", "average", "result_value", "any_name", "literal_value"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'workflow'", "'ruleset'", "'end'", "'return'", "'default'", "'{'", 
-			"'}'", "'('", "')'", "'.'", "','", "'*'", "'+'", "'-'", "'~'", "'<'", 
-			"'<='", "'>'", "'>='", "'='", "'!='", "'<>'"
+			null, "'workflow'", "'ruleset'", "'end'", "'return'", "'default'", "'('", 
+			"')'", "'.'", "','", "'*'", "'+'", "'-'", "'~'", "'<'", "'<='", "'>'", 
+			"'>='", "'='", "'!='", "'<>'", "'{'", "'}'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, null, null, null, null, null, "DOT", "COMMA", 
-			"STAR", "PLUS", "MINUS", "TILDE", "LT", "LT_EQ", "GT", "GT_EQ", "EQ", 
-			"NOT_EQ1", "NOT_EQ2", "K_WORKFLOW", "K_END", "K_ELSE", "K_AND", "K_OR", 
-			"K_CONTAINS", "K_NOT_CONTAINS", "K_IS", "K_NOT", "K_IS_NOT", "K_IN", 
-			"K_ANY", "K_ALL", "LIST_OP", "ANY_OP", "ALL_OP", "ID", "NUMERIC_LITERAL", 
+			null, null, null, null, null, null, null, null, "DOT", "COMMA", "STAR", 
+			"PLUS", "MINUS", "TILDE", "LT", "LT_EQ", "GT", "GT_EQ", "EQ", "NOT_EQ1", 
+			"NOT_EQ2", "R_BRACE", "L_BRACE", "K_WORKFLOW", "K_END", "K_ELSE", "K_AND", 
+			"K_OR", "K_CONTAINS", "K_NOT_CONTAINS", "K_IS", "K_NOT", "K_IS_NOT", 
+			"K_IN", "K_ANY", "K_ALL", "K_COUNT", "K_AVERAGE", "ID", "NUMERIC_LITERAL", 
 			"STRING_LITERAL", "SINGLE_LINE_COMMENT", "MULTILINE_COMMENT", "SPACES", 
 			"UNEXPECTED_CHAR"
 		};
@@ -141,25 +142,25 @@ public class ANAParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(22);
+			setState(30);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case T__0:
 				{
-				setState(20);
+				setState(28);
 				workflow();
 				}
 				break;
 			case UNEXPECTED_CHAR:
 				{
-				setState(21);
+				setState(29);
 				error();
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
 			}
-			setState(24);
+			setState(32);
 			match(EOF);
 			}
 		}
@@ -202,11 +203,11 @@ public class ANAParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(26);
+			setState(34);
 			((ErrorContext)_localctx).UNEXPECTED_CHAR = match(UNEXPECTED_CHAR);
 
-			 throw new RuntimeException("UNEXPECTED_CHAR= (((ErrorContext)_localctx).UNEXPECTED_CHAR!=null?((ErrorContext)_localctx).UNEXPECTED_CHAR.getText():null)");
-
+			  throw new RuntimeException("UNEXPECTED_CHAR= (((ErrorContext)_localctx).UNEXPECTED_CHAR!=null?((ErrorContext)_localctx).UNEXPECTED_CHAR.getText():null)");
+			 
 			}
 		}
 		catch (RecognitionException re) {
@@ -253,17 +254,17 @@ public class ANAParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(29);
+			setState(37);
 			match(T__0);
-			setState(30);
+			setState(38);
 			match(STRING_LITERAL);
-			setState(31);
+			setState(39);
 			match(T__1);
-			setState(32);
+			setState(40);
 			match(STRING_LITERAL);
-			setState(33);
+			setState(41);
 			stmt_list();
-			setState(34);
+			setState(42);
 			match(T__2);
 			}
 		}
@@ -314,21 +315,21 @@ public class ANAParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(39);
+			setState(47);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (_la==LIST_OP || _la==ID) {
+			while (_la==ID) {
 				{
 				{
-				setState(36);
+				setState(44);
 				stmt();
 				}
 				}
-				setState(41);
+				setState(49);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
-			setState(42);
+			setState(50);
 			default_stmt();
 			}
 		}
@@ -375,11 +376,11 @@ public class ANAParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(44);
+			setState(52);
 			cond(0);
-			setState(45);
+			setState(53);
 			match(T__3);
-			setState(46);
+			setState(54);
 			result_value();
 			}
 		}
@@ -423,11 +424,11 @@ public class ANAParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(48);
+			setState(56);
 			match(T__4);
-			setState(49);
+			setState(57);
 			match(T__3);
-			setState(50);
+			setState(58);
 			result_value();
 			}
 		}
@@ -443,21 +444,31 @@ public class ANAParser extends Parser {
 	}
 
 	public static class CondContext extends ParserRuleContext {
-		public TerminalNode ID() { return getToken(ANAParser.ID, 0); }
-		public Literal_valueContext literal_value() {
-			return getRuleContext(Literal_valueContext.class,0);
+		public IdContext id() {
+			return getRuleContext(IdContext.class,0);
 		}
+		public TerminalNode NUMERIC_LITERAL() { return getToken(ANAParser.NUMERIC_LITERAL, 0); }
 		public TerminalNode LT() { return getToken(ANAParser.LT, 0); }
 		public TerminalNode LT_EQ() { return getToken(ANAParser.LT_EQ, 0); }
 		public TerminalNode GT() { return getToken(ANAParser.GT, 0); }
 		public TerminalNode GT_EQ() { return getToken(ANAParser.GT_EQ, 0); }
+		public TerminalNode STRING_LITERAL() { return getToken(ANAParser.STRING_LITERAL, 0); }
 		public TerminalNode EQ() { return getToken(ANAParser.EQ, 0); }
 		public TerminalNode NOT_EQ1() { return getToken(ANAParser.NOT_EQ1, 0); }
 		public TerminalNode NOT_EQ2() { return getToken(ANAParser.NOT_EQ2, 0); }
 		public TerminalNode K_IS() { return getToken(ANAParser.K_IS, 0); }
 		public TerminalNode K_NOT() { return getToken(ANAParser.K_NOT, 0); }
 		public TerminalNode K_IN() { return getToken(ANAParser.K_IN, 0); }
-		public TerminalNode LIST_OP() { return getToken(ANAParser.LIST_OP, 0); }
+		public TerminalNode ID() { return getToken(ANAParser.ID, 0); }
+		public List_opContext list_op() {
+			return getRuleContext(List_opContext.class,0);
+		}
+		public CountContext count() {
+			return getRuleContext(CountContext.class,0);
+		}
+		public AverageContext average() {
+			return getRuleContext(AverageContext.class,0);
+		}
 		public List<CondContext> cond() {
 			return getRuleContexts(CondContext.class);
 		}
@@ -501,14 +512,14 @@ public class ANAParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(72);
+			setState(94);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,4,_ctx) ) {
 			case 1:
 				{
-				setState(53);
-				match(ID);
-				setState(54);
+				setState(61);
+				id();
+				setState(62);
 				_la = _input.LA(1);
 				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LT) | (1L << LT_EQ) | (1L << GT) | (1L << GT_EQ))) != 0)) ) {
 				_errHandler.recoverInline(this);
@@ -518,115 +529,189 @@ public class ANAParser extends Parser {
 					_errHandler.reportMatch(this);
 					consume();
 				}
-				setState(55);
-				literal_value();
+				setState(63);
+				match(NUMERIC_LITERAL);
 				}
 				break;
 			case 2:
 				{
-				setState(56);
-				match(ID);
-				setState(64);
+				setState(65);
+				id();
+				setState(73);
 				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,2,_ctx) ) {
 				case 1:
 					{
-					setState(57);
+					setState(66);
 					match(EQ);
 					}
 					break;
 				case 2:
 					{
-					setState(58);
+					setState(67);
 					match(NOT_EQ1);
 					}
 					break;
 				case 3:
 					{
-					setState(59);
+					setState(68);
 					match(NOT_EQ2);
 					}
 					break;
 				case 4:
 					{
-					setState(60);
+					setState(69);
 					match(K_IS);
 					}
 					break;
 				case 5:
 					{
-					setState(61);
+					setState(70);
 					match(K_IS);
-					setState(62);
+					setState(71);
 					match(K_NOT);
 					}
 					break;
 				case 6:
 					{
-					setState(63);
+					setState(72);
 					match(K_IN);
 					}
 					break;
 				}
-				setState(66);
-				literal_value();
+				setState(75);
+				match(STRING_LITERAL);
 				}
 				break;
 			case 3:
 				{
-				setState(67);
-				match(LIST_OP);
-				setState(68);
-				match(T__5);
-				setState(69);
-				cond(0);
-				setState(70);
-				match(T__6);
+				setState(77);
+				match(ID);
+				setState(78);
+				_la = _input.LA(1);
+				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LT) | (1L << LT_EQ) | (1L << GT) | (1L << GT_EQ))) != 0)) ) {
+				_errHandler.recoverInline(this);
+				}
+				else {
+					if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+					_errHandler.reportMatch(this);
+					consume();
+				}
+				setState(79);
+				match(NUMERIC_LITERAL);
+				}
+				break;
+			case 4:
+				{
+				setState(80);
+				match(ID);
+				setState(88);
+				_errHandler.sync(this);
+				switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
+				case 1:
+					{
+					setState(81);
+					match(EQ);
+					}
+					break;
+				case 2:
+					{
+					setState(82);
+					match(NOT_EQ1);
+					}
+					break;
+				case 3:
+					{
+					setState(83);
+					match(NOT_EQ2);
+					}
+					break;
+				case 4:
+					{
+					setState(84);
+					match(K_IS);
+					}
+					break;
+				case 5:
+					{
+					setState(85);
+					match(K_IS);
+					setState(86);
+					match(K_NOT);
+					}
+					break;
+				case 6:
+					{
+					setState(87);
+					match(K_IN);
+					}
+					break;
+				}
+				setState(90);
+				match(STRING_LITERAL);
+				}
+				break;
+			case 5:
+				{
+				setState(91);
+				list_op();
+				}
+				break;
+			case 6:
+				{
+				setState(92);
+				count();
+				}
+				break;
+			case 7:
+				{
+				setState(93);
+				average();
 				}
 				break;
 			}
 			_ctx.stop = _input.LT(-1);
-			setState(82);
+			setState(104);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,5,_ctx);
+			_alt = getInterpreter().adaptivePredict(_input,6,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					if ( _parseListeners!=null ) triggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					setState(80);
+					setState(102);
 					_errHandler.sync(this);
-					switch ( getInterpreter().adaptivePredict(_input,4,_ctx) ) {
+					switch ( getInterpreter().adaptivePredict(_input,5,_ctx) ) {
 					case 1:
 						{
 						_localctx = new CondContext(_parentctx, _parentState);
 						pushNewRecursionContext(_localctx, _startState, RULE_cond);
-						setState(74);
-						if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
-						setState(75);
+						setState(96);
+						if (!(precpred(_ctx, 5))) throw new FailedPredicateException(this, "precpred(_ctx, 5)");
+						setState(97);
 						match(K_AND);
-						setState(76);
-						cond(3);
+						setState(98);
+						cond(6);
 						}
 						break;
 					case 2:
 						{
 						_localctx = new CondContext(_parentctx, _parentState);
 						pushNewRecursionContext(_localctx, _startState, RULE_cond);
-						setState(77);
-						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
-						setState(78);
+						setState(99);
+						if (!(precpred(_ctx, 4))) throw new FailedPredicateException(this, "precpred(_ctx, 4)");
+						setState(100);
 						match(K_OR);
-						setState(79);
-						cond(2);
+						setState(101);
+						cond(5);
 						}
 						break;
 					}
 					} 
 				}
-				setState(84);
+				setState(106);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,5,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,6,_ctx);
 			}
 			}
 		}
@@ -637,6 +722,352 @@ public class ANAParser extends Parser {
 		}
 		finally {
 			unrollRecursionContexts(_parentctx);
+		}
+		return _localctx;
+	}
+
+	public static class IdContext extends ParserRuleContext {
+		public List<TerminalNode> ID() { return getTokens(ANAParser.ID); }
+		public TerminalNode ID(int i) {
+			return getToken(ANAParser.ID, i);
+		}
+		public List<TerminalNode> DOT() { return getTokens(ANAParser.DOT); }
+		public TerminalNode DOT(int i) {
+			return getToken(ANAParser.DOT, i);
+		}
+		public IdContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_id; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ANAListener ) ((ANAListener)listener).enterId(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ANAListener ) ((ANAListener)listener).exitId(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof ANAVisitor ) return ((ANAVisitor<? extends T>)visitor).visitId(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final IdContext id() throws RecognitionException {
+		IdContext _localctx = new IdContext(_ctx, getState());
+		enterRule(_localctx, 14, RULE_id);
+		try {
+			int _alt;
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(107);
+			match(ID);
+			setState(110); 
+			_errHandler.sync(this);
+			_alt = 1;
+			do {
+				switch (_alt) {
+				case 1:
+					{
+					{
+					setState(108);
+					match(DOT);
+					setState(109);
+					match(ID);
+					}
+					}
+					break;
+				default:
+					throw new NoViableAltException(this);
+				}
+				setState(112); 
+				_errHandler.sync(this);
+				_alt = getInterpreter().adaptivePredict(_input,7,_ctx);
+			} while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class List_opContext extends ParserRuleContext {
+		public TerminalNode DOT() { return getToken(ANAParser.DOT, 0); }
+		public TerminalNode R_BRACE() { return getToken(ANAParser.R_BRACE, 0); }
+		public CondContext cond() {
+			return getRuleContext(CondContext.class,0);
+		}
+		public TerminalNode L_BRACE() { return getToken(ANAParser.L_BRACE, 0); }
+		public TerminalNode K_ANY() { return getToken(ANAParser.K_ANY, 0); }
+		public TerminalNode K_ALL() { return getToken(ANAParser.K_ALL, 0); }
+		public IdContext id() {
+			return getRuleContext(IdContext.class,0);
+		}
+		public TerminalNode ID() { return getToken(ANAParser.ID, 0); }
+		public List_opContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_list_op; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ANAListener ) ((ANAListener)listener).enterList_op(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ANAListener ) ((ANAListener)listener).exitList_op(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof ANAVisitor ) return ((ANAVisitor<? extends T>)visitor).visitList_op(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final List_opContext list_op() throws RecognitionException {
+		List_opContext _localctx = new List_opContext(_ctx, getState());
+		enterRule(_localctx, 16, RULE_list_op);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(116);
+			_errHandler.sync(this);
+			switch ( getInterpreter().adaptivePredict(_input,8,_ctx) ) {
+			case 1:
+				{
+				setState(114);
+				id();
+				}
+				break;
+			case 2:
+				{
+				setState(115);
+				match(ID);
+				}
+				break;
+			}
+			setState(118);
+			match(DOT);
+			setState(119);
+			_la = _input.LA(1);
+			if ( !(_la==K_ANY || _la==K_ALL) ) {
+			_errHandler.recoverInline(this);
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
+				consume();
+			}
+			setState(120);
+			match(R_BRACE);
+			setState(121);
+			cond(0);
+			setState(122);
+			match(L_BRACE);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class CountContext extends ParserRuleContext {
+		public TerminalNode DOT() { return getToken(ANAParser.DOT, 0); }
+		public TerminalNode K_COUNT() { return getToken(ANAParser.K_COUNT, 0); }
+		public TerminalNode R_BRACE() { return getToken(ANAParser.R_BRACE, 0); }
+		public CondContext cond() {
+			return getRuleContext(CondContext.class,0);
+		}
+		public TerminalNode L_BRACE() { return getToken(ANAParser.L_BRACE, 0); }
+		public TerminalNode NUMERIC_LITERAL() { return getToken(ANAParser.NUMERIC_LITERAL, 0); }
+		public TerminalNode LT() { return getToken(ANAParser.LT, 0); }
+		public TerminalNode LT_EQ() { return getToken(ANAParser.LT_EQ, 0); }
+		public TerminalNode GT() { return getToken(ANAParser.GT, 0); }
+		public TerminalNode GT_EQ() { return getToken(ANAParser.GT_EQ, 0); }
+		public IdContext id() {
+			return getRuleContext(IdContext.class,0);
+		}
+		public TerminalNode ID() { return getToken(ANAParser.ID, 0); }
+		public CountContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_count; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ANAListener ) ((ANAListener)listener).enterCount(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ANAListener ) ((ANAListener)listener).exitCount(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof ANAVisitor ) return ((ANAVisitor<? extends T>)visitor).visitCount(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final CountContext count() throws RecognitionException {
+		CountContext _localctx = new CountContext(_ctx, getState());
+		enterRule(_localctx, 18, RULE_count);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(126);
+			_errHandler.sync(this);
+			switch ( getInterpreter().adaptivePredict(_input,9,_ctx) ) {
+			case 1:
+				{
+				setState(124);
+				id();
+				}
+				break;
+			case 2:
+				{
+				setState(125);
+				match(ID);
+				}
+				break;
+			}
+			setState(128);
+			match(DOT);
+			setState(129);
+			match(K_COUNT);
+			setState(130);
+			match(R_BRACE);
+			setState(131);
+			cond(0);
+			setState(132);
+			match(L_BRACE);
+			setState(133);
+			_la = _input.LA(1);
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LT) | (1L << LT_EQ) | (1L << GT) | (1L << GT_EQ))) != 0)) ) {
+			_errHandler.recoverInline(this);
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
+				consume();
+			}
+			setState(134);
+			match(NUMERIC_LITERAL);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class AverageContext extends ParserRuleContext {
+		public TerminalNode DOT() { return getToken(ANAParser.DOT, 0); }
+		public TerminalNode K_AVERAGE() { return getToken(ANAParser.K_AVERAGE, 0); }
+		public TerminalNode R_BRACE() { return getToken(ANAParser.R_BRACE, 0); }
+		public CondContext cond() {
+			return getRuleContext(CondContext.class,0);
+		}
+		public TerminalNode L_BRACE() { return getToken(ANAParser.L_BRACE, 0); }
+		public TerminalNode NUMERIC_LITERAL() { return getToken(ANAParser.NUMERIC_LITERAL, 0); }
+		public TerminalNode LT() { return getToken(ANAParser.LT, 0); }
+		public TerminalNode LT_EQ() { return getToken(ANAParser.LT_EQ, 0); }
+		public TerminalNode GT() { return getToken(ANAParser.GT, 0); }
+		public TerminalNode GT_EQ() { return getToken(ANAParser.GT_EQ, 0); }
+		public IdContext id() {
+			return getRuleContext(IdContext.class,0);
+		}
+		public TerminalNode ID() { return getToken(ANAParser.ID, 0); }
+		public AverageContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_average; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ANAListener ) ((ANAListener)listener).enterAverage(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ANAListener ) ((ANAListener)listener).exitAverage(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof ANAVisitor ) return ((ANAVisitor<? extends T>)visitor).visitAverage(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final AverageContext average() throws RecognitionException {
+		AverageContext _localctx = new AverageContext(_ctx, getState());
+		enterRule(_localctx, 20, RULE_average);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(138);
+			_errHandler.sync(this);
+			switch ( getInterpreter().adaptivePredict(_input,10,_ctx) ) {
+			case 1:
+				{
+				setState(136);
+				id();
+				}
+				break;
+			case 2:
+				{
+				setState(137);
+				match(ID);
+				}
+				break;
+			}
+			setState(140);
+			match(DOT);
+			setState(141);
+			match(K_AVERAGE);
+			setState(142);
+			match(R_BRACE);
+			setState(143);
+			cond(0);
+			setState(144);
+			match(L_BRACE);
+			setState(145);
+			_la = _input.LA(1);
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LT) | (1L << LT_EQ) | (1L << GT) | (1L << GT_EQ))) != 0)) ) {
+			_errHandler.recoverInline(this);
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
+				consume();
+			}
+			setState(146);
+			match(NUMERIC_LITERAL);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
 		}
 		return _localctx;
 	}
@@ -664,11 +1095,11 @@ public class ANAParser extends Parser {
 
 	public final Result_valueContext result_value() throws RecognitionException {
 		Result_valueContext _localctx = new Result_valueContext(_ctx, getState());
-		enterRule(_localctx, 14, RULE_result_value);
+		enterRule(_localctx, 22, RULE_result_value);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(85);
+			setState(148);
 			match(STRING_LITERAL);
 			}
 		}
@@ -710,34 +1141,34 @@ public class ANAParser extends Parser {
 
 	public final Any_nameContext any_name() throws RecognitionException {
 		Any_nameContext _localctx = new Any_nameContext(_ctx, getState());
-		enterRule(_localctx, 16, RULE_any_name);
+		enterRule(_localctx, 24, RULE_any_name);
 		try {
-			setState(93);
+			setState(156);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case ID:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(87);
+				setState(150);
 				match(ID);
 				}
 				break;
 			case STRING_LITERAL:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(88);
+				setState(151);
 				match(STRING_LITERAL);
 				}
 				break;
-			case T__7:
+			case T__5:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(89);
-				match(T__7);
-				setState(90);
+				setState(152);
+				match(T__5);
+				setState(153);
 				any_name();
-				setState(91);
-				match(T__8);
+				setState(154);
+				match(T__6);
 				}
 				break;
 			default:
@@ -779,12 +1210,12 @@ public class ANAParser extends Parser {
 
 	public final Literal_valueContext literal_value() throws RecognitionException {
 		Literal_valueContext _localctx = new Literal_valueContext(_ctx, getState());
-		enterRule(_localctx, 18, RULE_literal_value);
+		enterRule(_localctx, 26, RULE_literal_value);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(95);
+			setState(158);
 			_la = _input.LA(1);
 			if ( !(_la==NUMERIC_LITERAL || _la==STRING_LITERAL) ) {
 			_errHandler.recoverInline(this);
@@ -817,38 +1248,59 @@ public class ANAParser extends Parser {
 	private boolean cond_sempred(CondContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 0:
-			return precpred(_ctx, 2);
+			return precpred(_ctx, 5);
 		case 1:
-			return precpred(_ctx, 1);
+			return precpred(_ctx, 4);
 		}
 		return true;
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3/d\4\2\t\2\4\3\t\3"+
-		"\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\3\2"+
-		"\3\2\5\2\31\n\2\3\2\3\2\3\3\3\3\3\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\5\7"+
-		"\5(\n\5\f\5\16\5+\13\5\3\5\3\5\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3\b\3\b"+
-		"\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\5\bC\n\b\3\b\3\b\3\b\3\b\3\b"+
-		"\3\b\5\bK\n\b\3\b\3\b\3\b\3\b\3\b\3\b\7\bS\n\b\f\b\16\bV\13\b\3\t\3\t"+
-		"\3\n\3\n\3\n\3\n\3\n\3\n\5\n`\n\n\3\13\3\13\3\13\2\3\16\f\2\4\6\b\n\f"+
-		"\16\20\22\24\2\4\3\2\22\25\3\2*+\2f\2\30\3\2\2\2\4\34\3\2\2\2\6\37\3\2"+
-		"\2\2\b)\3\2\2\2\n.\3\2\2\2\f\62\3\2\2\2\16J\3\2\2\2\20W\3\2\2\2\22_\3"+
-		"\2\2\2\24a\3\2\2\2\26\31\5\6\4\2\27\31\5\4\3\2\30\26\3\2\2\2\30\27\3\2"+
-		"\2\2\31\32\3\2\2\2\32\33\7\2\2\3\33\3\3\2\2\2\34\35\7/\2\2\35\36\b\3\1"+
-		"\2\36\5\3\2\2\2\37 \7\3\2\2 !\7+\2\2!\"\7\4\2\2\"#\7+\2\2#$\5\b\5\2$%"+
-		"\7\5\2\2%\7\3\2\2\2&(\5\n\6\2\'&\3\2\2\2(+\3\2\2\2)\'\3\2\2\2)*\3\2\2"+
-		"\2*,\3\2\2\2+)\3\2\2\2,-\5\f\7\2-\t\3\2\2\2./\5\16\b\2/\60\7\6\2\2\60"+
-		"\61\5\20\t\2\61\13\3\2\2\2\62\63\7\7\2\2\63\64\7\6\2\2\64\65\5\20\t\2"+
-		"\65\r\3\2\2\2\66\67\b\b\1\2\678\7)\2\289\t\2\2\29K\5\24\13\2:B\7)\2\2"+
-		";C\7\26\2\2<C\7\27\2\2=C\7\30\2\2>C\7 \2\2?@\7 \2\2@C\7!\2\2AC\7#\2\2"+
-		"B;\3\2\2\2B<\3\2\2\2B=\3\2\2\2B>\3\2\2\2B?\3\2\2\2BA\3\2\2\2CD\3\2\2\2"+
-		"DK\5\24\13\2EF\7&\2\2FG\7\b\2\2GH\5\16\b\2HI\7\t\2\2IK\3\2\2\2J\66\3\2"+
-		"\2\2J:\3\2\2\2JE\3\2\2\2KT\3\2\2\2LM\f\4\2\2MN\7\34\2\2NS\5\16\b\5OP\f"+
-		"\3\2\2PQ\7\35\2\2QS\5\16\b\4RL\3\2\2\2RO\3\2\2\2SV\3\2\2\2TR\3\2\2\2T"+
-		"U\3\2\2\2U\17\3\2\2\2VT\3\2\2\2WX\7+\2\2X\21\3\2\2\2Y`\7)\2\2Z`\7+\2\2"+
-		"[\\\7\n\2\2\\]\5\22\n\2]^\7\13\2\2^`\3\2\2\2_Y\3\2\2\2_Z\3\2\2\2_[\3\2"+
-		"\2\2`\23\3\2\2\2ab\t\3\2\2b\25\3\2\2\2\t\30)BJRT_";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3.\u00a3\4\2\t\2\4"+
+		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
+		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\3\2\3\2\5\2!\n\2\3\2\3\2\3\3\3"+
+		"\3\3\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\5\7\5\60\n\5\f\5\16\5\63\13\5\3\5"+
+		"\3\5\3\6\3\6\3\6\3\6\3\7\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3"+
+		"\b\3\b\3\b\3\b\3\b\5\bL\n\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3"+
+		"\b\3\b\3\b\5\b[\n\b\3\b\3\b\3\b\3\b\5\ba\n\b\3\b\3\b\3\b\3\b\3\b\3\b\7"+
+		"\bi\n\b\f\b\16\bl\13\b\3\t\3\t\3\t\6\tq\n\t\r\t\16\tr\3\n\3\n\5\nw\n\n"+
+		"\3\n\3\n\3\n\3\n\3\n\3\n\3\13\3\13\5\13\u0081\n\13\3\13\3\13\3\13\3\13"+
+		"\3\13\3\13\3\13\3\13\3\f\3\f\5\f\u008d\n\f\3\f\3\f\3\f\3\f\3\f\3\f\3\f"+
+		"\3\f\3\r\3\r\3\16\3\16\3\16\3\16\3\16\3\16\5\16\u009f\n\16\3\17\3\17\3"+
+		"\17\2\3\16\20\2\4\6\b\n\f\16\20\22\24\26\30\32\34\2\5\3\2\20\23\3\2$%"+
+		"\3\2)*\2\u00ae\2 \3\2\2\2\4$\3\2\2\2\6\'\3\2\2\2\b\61\3\2\2\2\n\66\3\2"+
+		"\2\2\f:\3\2\2\2\16`\3\2\2\2\20m\3\2\2\2\22v\3\2\2\2\24\u0080\3\2\2\2\26"+
+		"\u008c\3\2\2\2\30\u0096\3\2\2\2\32\u009e\3\2\2\2\34\u00a0\3\2\2\2\36!"+
+		"\5\6\4\2\37!\5\4\3\2 \36\3\2\2\2 \37\3\2\2\2!\"\3\2\2\2\"#\7\2\2\3#\3"+
+		"\3\2\2\2$%\7.\2\2%&\b\3\1\2&\5\3\2\2\2\'(\7\3\2\2()\7*\2\2)*\7\4\2\2*"+
+		"+\7*\2\2+,\5\b\5\2,-\7\5\2\2-\7\3\2\2\2.\60\5\n\6\2/.\3\2\2\2\60\63\3"+
+		"\2\2\2\61/\3\2\2\2\61\62\3\2\2\2\62\64\3\2\2\2\63\61\3\2\2\2\64\65\5\f"+
+		"\7\2\65\t\3\2\2\2\66\67\5\16\b\2\678\7\6\2\289\5\30\r\29\13\3\2\2\2:;"+
+		"\7\7\2\2;<\7\6\2\2<=\5\30\r\2=\r\3\2\2\2>?\b\b\1\2?@\5\20\t\2@A\t\2\2"+
+		"\2AB\7)\2\2Ba\3\2\2\2CK\5\20\t\2DL\7\24\2\2EL\7\25\2\2FL\7\26\2\2GL\7"+
+		" \2\2HI\7 \2\2IL\7!\2\2JL\7#\2\2KD\3\2\2\2KE\3\2\2\2KF\3\2\2\2KG\3\2\2"+
+		"\2KH\3\2\2\2KJ\3\2\2\2LM\3\2\2\2MN\7*\2\2Na\3\2\2\2OP\7(\2\2PQ\t\2\2\2"+
+		"Qa\7)\2\2RZ\7(\2\2S[\7\24\2\2T[\7\25\2\2U[\7\26\2\2V[\7 \2\2WX\7 \2\2"+
+		"X[\7!\2\2Y[\7#\2\2ZS\3\2\2\2ZT\3\2\2\2ZU\3\2\2\2ZV\3\2\2\2ZW\3\2\2\2Z"+
+		"Y\3\2\2\2[\\\3\2\2\2\\a\7*\2\2]a\5\22\n\2^a\5\24\13\2_a\5\26\f\2`>\3\2"+
+		"\2\2`C\3\2\2\2`O\3\2\2\2`R\3\2\2\2`]\3\2\2\2`^\3\2\2\2`_\3\2\2\2aj\3\2"+
+		"\2\2bc\f\7\2\2cd\7\34\2\2di\5\16\b\bef\f\6\2\2fg\7\35\2\2gi\5\16\b\7h"+
+		"b\3\2\2\2he\3\2\2\2il\3\2\2\2jh\3\2\2\2jk\3\2\2\2k\17\3\2\2\2lj\3\2\2"+
+		"\2mp\7(\2\2no\7\n\2\2oq\7(\2\2pn\3\2\2\2qr\3\2\2\2rp\3\2\2\2rs\3\2\2\2"+
+		"s\21\3\2\2\2tw\5\20\t\2uw\7(\2\2vt\3\2\2\2vu\3\2\2\2wx\3\2\2\2xy\7\n\2"+
+		"\2yz\t\3\2\2z{\7\27\2\2{|\5\16\b\2|}\7\30\2\2}\23\3\2\2\2~\u0081\5\20"+
+		"\t\2\177\u0081\7(\2\2\u0080~\3\2\2\2\u0080\177\3\2\2\2\u0081\u0082\3\2"+
+		"\2\2\u0082\u0083\7\n\2\2\u0083\u0084\7&\2\2\u0084\u0085\7\27\2\2\u0085"+
+		"\u0086\5\16\b\2\u0086\u0087\7\30\2\2\u0087\u0088\t\2\2\2\u0088\u0089\7"+
+		")\2\2\u0089\25\3\2\2\2\u008a\u008d\5\20\t\2\u008b\u008d\7(\2\2\u008c\u008a"+
+		"\3\2\2\2\u008c\u008b\3\2\2\2\u008d\u008e\3\2\2\2\u008e\u008f\7\n\2\2\u008f"+
+		"\u0090\7\'\2\2\u0090\u0091\7\27\2\2\u0091\u0092\5\16\b\2\u0092\u0093\7"+
+		"\30\2\2\u0093\u0094\t\2\2\2\u0094\u0095\7)\2\2\u0095\27\3\2\2\2\u0096"+
+		"\u0097\7*\2\2\u0097\31\3\2\2\2\u0098\u009f\7(\2\2\u0099\u009f\7*\2\2\u009a"+
+		"\u009b\7\b\2\2\u009b\u009c\5\32\16\2\u009c\u009d\7\t\2\2\u009d\u009f\3"+
+		"\2\2\2\u009e\u0098\3\2\2\2\u009e\u0099\3\2\2\2\u009e\u009a\3\2\2\2\u009f"+
+		"\33\3\2\2\2\u00a0\u00a1\t\4\2\2\u00a1\35\3\2\2\2\16 \61KZ`hjrv\u0080\u008c"+
+		"\u009e";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

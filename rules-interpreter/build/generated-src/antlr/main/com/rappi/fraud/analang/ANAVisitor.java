@@ -1,7 +1,7 @@
 // Generated from com/rappi/fraud/analang/ANA.g4 by ANTLR 4.7.2
 
-package com.rappi.fraud.analang;
-
+ package com.rappi.fraud.analang;
+ 
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -54,6 +54,30 @@ public interface ANAVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitCond(ANAParser.CondContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ANAParser#id}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitId(ANAParser.IdContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ANAParser#list_op}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitList_op(ANAParser.List_opContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ANAParser#count}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCount(ANAParser.CountContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ANAParser#average}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAverage(ANAParser.AverageContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ANAParser#result_value}.
 	 * @param ctx the parse tree

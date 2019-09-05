@@ -1,7 +1,7 @@
 // Generated from com/rappi/fraud/analang/ANA.g4 by ANTLR 4.7.2
 
-package com.rappi.fraud.analang;
-
+ package com.rappi.fraud.analang;
+ 
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -62,6 +62,34 @@ public class ANABaseVisitor<T> extends AbstractParseTreeVisitor<T> implements AN
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitCond(ANAParser.CondContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitId(ANAParser.IdContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitList_op(ANAParser.List_opContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitCount(ANAParser.CountContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitAverage(ANAParser.AverageContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

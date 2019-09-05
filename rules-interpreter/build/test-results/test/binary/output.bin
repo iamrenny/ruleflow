@@ -1,0 +1,20 @@
+a<1orb<2andb<3
+a<1
+
+b<2andb<3
+b<2
+user_3<3andpepe='2'
+	user_3<3
+(user_3<3andorder.items.any{type='caca'}
+	user_3<3
+item>3
+pepe.tets>2
+order.items.any{type='3'}
+entron en lista
+	type='3'
+order.items.count{type='3'}>3
++order.items.average{type.count{r='3'}<3}<3
+payments.any{merchant='amex'}
+entron en lista
+merchant='amex'
+'else'

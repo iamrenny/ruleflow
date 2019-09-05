@@ -1,0 +1,4 @@
+workflow 'rappi-pay-prepaid-transaction'
+ruleset 'test'
+    default return 'looks_ok'
+end

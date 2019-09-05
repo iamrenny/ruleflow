@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="ParseTest" tests="1" skipped="1" failures="0" errors="0" timestamp="2019-08-21T20:14:05" hostname="MBP.fibertel.com.ar" time="57.844">
+<testsuite name="ParseTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2019-09-05T14:34:23" hostname="MBP-de-ivan.utopia.net" time="16.724">
   <properties/>
-  <testcase name="testParse2()" classname="ParseTest" time="57.844">
-    <skipped/>
-  </testcase>
-  <system-out><![CDATA[]]></system-out>
+  <testcase name="testParse3()" classname="ParseTest" time="16.724"/>
+  <system-out><![CDATA[a<1orb<2andb<3
+a<1
+b<2andb<3
+b<2
+user_3<3andpepe='2'
+user_3<3
+user_3<3andorder.items.any{type='caca'}
+user_3<3
+item>3
+pepe.tets>2
+order.items.any{type='3'}
+entron en lista
+type='3'
+order.items.count{type='3'}>3
+order.items.average{type.count{r='3'}<3}<3
+payments.any{merchant='amex'}
+entron en lista
+merchant='amex'
+'else']]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

@@ -1,7 +1,7 @@
 // Generated from com/rappi/fraud/analang/ANA.g4 by ANTLR 4.7.2
 
-package com.rappi.fraud.analang;
-
+ package com.rappi.fraud.analang;
+ 
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -79,6 +79,46 @@ public interface ANAListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCond(ANAParser.CondContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ANAParser#id}.
+	 * @param ctx the parse tree
+	 */
+	void enterId(ANAParser.IdContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ANAParser#id}.
+	 * @param ctx the parse tree
+	 */
+	void exitId(ANAParser.IdContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ANAParser#list_op}.
+	 * @param ctx the parse tree
+	 */
+	void enterList_op(ANAParser.List_opContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ANAParser#list_op}.
+	 * @param ctx the parse tree
+	 */
+	void exitList_op(ANAParser.List_opContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ANAParser#count}.
+	 * @param ctx the parse tree
+	 */
+	void enterCount(ANAParser.CountContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ANAParser#count}.
+	 * @param ctx the parse tree
+	 */
+	void exitCount(ANAParser.CountContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ANAParser#average}.
+	 * @param ctx the parse tree
+	 */
+	void enterAverage(ANAParser.AverageContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ANAParser#average}.
+	 * @param ctx the parse tree
+	 */
+	void exitAverage(ANAParser.AverageContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ANAParser#result_value}.
 	 * @param ctx the parse tree

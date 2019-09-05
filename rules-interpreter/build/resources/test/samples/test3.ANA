@@ -1,7 +1,15 @@
-workflow 'create-order'
-ruleset 'test'
-    user_id = '401912': 'looks_bad'
-    paymentMethod.type = 'credit_card' AND paymentMethod.country = 'US' AND paymentMethod.vendor = 'visa'
-    AND orders.items.any { type = 'restaurant' } : 'needs_validation'
-    else: 'looks_ok'
+workflow 'test'
+   ruleset 'test'
+    a<1 or b<2 and b < 3 return 'looks_ok'
+    user_3 < 3 and pepe = '2' return 'bad'
+    user_3 < 3 and order.items.any { type = 'caca' } return 'looks_ok'
+    item > 3 return 'looks_bad'
+    pepe.tets > 2 return 'looks_ok'
+    order.items.any { type = '3' } return 'looks_ok'
+    order.items.count { type = '3' } > 3 return 'looks_ok'
+    order.items.average {
+        type.count { r = '3' } < 3
+    } < 3 return 'looks_ok'
+    payments.any { merchant = 'amex' } return 'looks_bad'
+    default return 'else'
 end
