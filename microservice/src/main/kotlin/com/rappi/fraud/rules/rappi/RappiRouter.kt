@@ -22,8 +22,13 @@ class RappiRouter @Inject constructor(private val vertx: Vertx) {
         router.route().handler(BodyHandler.create())
 
         router.get("/health-check").handler { it.response().end("OK") }
-        router.post("/fraud-rules-engine/rappi/evaluate").handler(::evaluate)
+        router.post("/evaluate").handler(::evaluate)
+        router.post("/create-workflow").handler(::createWorkflow)
 
+        router.post("/:workflow").handler(::addRule)
+        router.put("/:workflow/:rule_id").handler(::updateRule)
+        router.delete("/:workflow/:rule_id").handler(::updateRule)
+        router.get("/:workflow/:rule_id").handler(::getRule)
         return router
     }
 
@@ -37,5 +42,21 @@ class RappiRouter @Inject constructor(private val vertx: Vertx) {
             }, {
                 ctx.fail(500, RuntimeException())
             })
+    }
+
+    private fun addRule(ctx: RoutingContext ){
+
+    }
+
+    private fun updateRule(ctx: RoutingContext) {
+
+    }
+
+    private fun getRule(ctx: RoutingContext) {
+
+    }
+
+    private fun createWorkflow(ctx: RoutingContext) {
+
     }
 }
