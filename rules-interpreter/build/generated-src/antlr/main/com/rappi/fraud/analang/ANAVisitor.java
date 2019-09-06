@@ -55,11 +55,11 @@ public interface ANAVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCond(ANAParser.CondContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link ANAParser#id}.
+	 * Visit a parse tree produced by {@link ANAParser#deep_id}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitId(ANAParser.IdContext ctx);
+	T visitDeep_id(ANAParser.Deep_idContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ANAParser#list_op}.
 	 * @param ctx the parse tree

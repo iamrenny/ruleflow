@@ -68,6 +68,13 @@ public class ANABaseVisitor<T> extends AbstractParseTreeVisitor<T> implements AN
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitId(ANAParser.IdContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitList_op(ANAParser.List_opContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -76,6 +83,13 @@ public class ANABaseVisitor<T> extends AbstractParseTreeVisitor<T> implements AN
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitCount(ANAParser.CountContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitAverage(ANAParser.AverageContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

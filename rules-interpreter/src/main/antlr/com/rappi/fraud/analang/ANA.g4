@@ -36,10 +36,8 @@
 
 
  cond
- : id ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL
- | id ( EQ | NOT_EQ1 | NOT_EQ2 | K_IS | K_IS K_NOT | K_IN ) STRING_LITERAL
- | ID ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL
- | ID ( EQ | NOT_EQ1 | NOT_EQ2 | K_IS | K_IS K_NOT | K_IN ) STRING_LITERAL
+ : deep_id ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL
+ | deep_id ( EQ | NOT_EQ1 | NOT_EQ2 | K_IS | K_IS K_NOT | K_IN ) STRING_LITERAL
  | cond K_AND cond
  | cond K_OR cond
  | list_op
@@ -47,13 +45,14 @@
  | average
  ;
 
- id: ID (DOT ID)+;
 
- list_op: (id|ID) DOT (K_ANY | K_ALL ) '{' cond '}';
+ deep_id: ID | ID (DOT deep_id)+;
 
- count: (id|ID) DOT K_COUNT '{' cond '}' ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL;
+ list_op: deep_id DOT (K_ANY | K_ALL ) '{' cond '}';
 
- average: (id|ID) DOT K_AVERAGE '{' cond '}' ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL;
+ count: deep_id DOT K_COUNT '{' cond '}' ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL;
+
+ average: deep_id DOT K_AVERAGE '{' cond '}' ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL;
 
  result_value
  : STRING_LITERAL

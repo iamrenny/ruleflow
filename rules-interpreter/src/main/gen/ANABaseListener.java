@@ -102,6 +102,18 @@ public class ANABaseListener implements ANAListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterId(ANAParser.IdContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitId(ANAParser.IdContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterList_op(ANAParser.List_opContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -121,6 +133,18 @@ public class ANABaseListener implements ANAListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCount(ANAParser.CountContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAverage(ANAParser.AverageContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAverage(ANAParser.AverageContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

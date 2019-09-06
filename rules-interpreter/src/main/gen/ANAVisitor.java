@@ -55,6 +55,12 @@ public interface ANAVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCond(ANAParser.CondContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ANAParser#id}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitId(ANAParser.IdContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ANAParser#list_op}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -66,6 +72,12 @@ public interface ANAVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitCount(ANAParser.CountContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ANAParser#average}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAverage(ANAParser.AverageContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ANAParser#result_value}.
 	 * @param ctx the parse tree

@@ -26,7 +26,7 @@ import java.util.regex.Pattern
  *
  * <p> While not mandatory, it is suggested that you consider this structure for your config files: </p>
  * <pre>
- *     storage:       // group for all the data sources
+ *     storage:       // group for all the com.rappi.fraud.rules.parser.getData sources
  *       database:
  *         url: xx
  *         user: xx
