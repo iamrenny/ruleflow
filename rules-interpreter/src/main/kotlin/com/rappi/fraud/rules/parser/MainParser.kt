@@ -94,8 +94,6 @@ class EvaluateRulesetVisitor(val data: Map<String, Any>) : ANABaseVisitor<String
                 }
             }
 
-
-
             if (ctx.cond() != null) {
                 when {
                     ctx.K_AND() != null -> return visitCond(ctx.cond(0)) && visitCond(ctx.cond(1))
