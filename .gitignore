@@ -1,8 +1,8 @@
 .gradle
 
-build/
+build
 !gradle/wrapper/gradle-wrapper.jar
-out/
+out
 *.log
 .vertx
 
@@ -14,3 +14,4 @@ out/
 
 .vertx/*
 conf/
+
