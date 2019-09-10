@@ -4,14 +4,10 @@ import com.rappi.fraud.analang.ANABaseListener
 import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
-import com.sun.xml.internal.bind.v2.model.core.ID
 import javafx.util.converter.BigIntegerStringConverter
-import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
-import java.lang.RuntimeException
-import java.util.*
 
 
 class RuleEngine(private val workflow: String)  {

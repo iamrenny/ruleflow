@@ -1,7 +1,6 @@
 package com.rappi.fraud.rules.rappi
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.parser.EvaluateRulesetVisitor
 import com.rappi.fraud.rules.parser.RuleEngine
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.vertx.reactivex.core.Vertx
@@ -10,9 +9,7 @@ import io.vertx.reactivex.ext.web.RoutingContext
 import io.vertx.reactivex.ext.web.handler.BodyHandler
 import io.vertx.reactivex.ext.web.handler.ErrorHandler
 import io.vertx.reactivex.ext.web.handler.LoggerHandler
-import org.jetbrains.kotlin.utils.keysToMap
 import java.lang.RuntimeException
-import javax.json.JsonObject
 
 class RappiRouter @Inject constructor(private val vertx: Vertx) {
 

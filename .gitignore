@@ -1,27 +1,13 @@
-
-!gradle/wrapper/gradle-wrapper.jar
-*.env
-*.pyc
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-
-### IntelliJ IDEA ###
 .idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
-nbproject/private/
-build/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
-
-out/
+.gradle/
+/build/
+/out/
+/microservice/build
+/microservice/out
+/rules-interpreter/build
+/rules-interpreter/out
+/microservice/build/**/.
+/microservice/out/**/.
+/rules-interpreter/build/**/.
+/rules-interpreter/out/**/.
+**/*
