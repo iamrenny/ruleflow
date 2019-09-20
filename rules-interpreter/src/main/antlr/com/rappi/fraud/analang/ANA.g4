@@ -26,14 +26,14 @@
  ;
 
  stmt
- : cond 'return' result_value
+ : name cond 'return' result_value
  ;
 
  default_stmt
  : 'default' 'return' result_value
  ;
 
-
+ name : ID ;
 
  cond
  : deep_id ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL

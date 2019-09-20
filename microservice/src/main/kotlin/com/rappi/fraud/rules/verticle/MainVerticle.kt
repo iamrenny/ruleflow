@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.bd.DatabaseConfig
 import com.rappi.fraud.rules.rappi.RappiRouter
 import io.reactivex.Completable
 import io.vertx.core.Future
@@ -22,7 +23,7 @@ class MainVerticle @Inject constructor(private val router: RappiRouter, private 
             .subscribe({
                 CompletableHelper.toObserver(startFuture)
             }, {
-                    ex -> logger.error("Error migrating database", ex)
+                    ex -> logger.error("Error migrating repositories", ex)
             })
     }
 
@@ -48,18 +49,16 @@ class MainVerticle @Inject constructor(private val router: RappiRouter, private 
     }
 }
 
-class FlywayMigration @Inject constructor(private val vertx: Vertx, private val database: Config) {
+class FlywayMigration @Inject constructor(private val vertx: Vertx, private val database: DatabaseConfig) {
     fun migrateDB(): Completable {
         return vertx.rxExecuteBlocking<Unit> {
             val flyway = Flyway.configure()
                 .dataSource(database.url, database.user, database.pass)
                 .load()
-
             flyway.migrate()
             it.complete()
         }.ignoreElement()
     }
-    class Config(val url: String, val user: String, val pass: String)
 }
 
 class LoggerDelegate {

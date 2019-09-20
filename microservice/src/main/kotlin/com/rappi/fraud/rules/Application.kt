@@ -1,5 +1,6 @@
 package com.rappi.fraud.rules
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -31,21 +32,23 @@ fun main() {
 
     val main = injector.getInstance(MainVerticle::class.java)
 
-    vertx.deployVerticle(main) { ar ->
-        if (ar.succeeded()) {
-            log.info("Application started")
-        } else {
-            log.error("Could not start application", ar.cause())
-            exitProcess(1)
-        }
-    }
+    vertx.rxDeployVerticle(main).subscribe({ ar ->
+        log.info("Application started")
+    }, {
+        log.error("Could not start application", it.message)
+        exitProcess(1)
+    })
+
 }
 
 private fun jsonConfig() {
     Json.mapper.apply {
+        propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
         registerModule(KotlinModule())
         registerModule(JavaTimeModule())
-        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
+        this.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+
     }
 }

@@ -70,6 +70,16 @@ public interface ANAListener extends ParseTreeListener {
 	 */
 	void exitDefault_stmt(ANAParser.Default_stmtContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ANAParser#name}.
+	 * @param ctx the parse tree
+	 */
+	void enterName(ANAParser.NameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ANAParser#name}.
+	 * @param ctx the parse tree
+	 */
+	void exitName(ANAParser.NameContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ANAParser#cond}.
 	 * @param ctx the parse tree
 	 */
@@ -80,15 +90,15 @@ public interface ANAListener extends ParseTreeListener {
 	 */
 	void exitCond(ANAParser.CondContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ANAParser#id}.
+	 * Enter a parse tree produced by {@link ANAParser#deep_id}.
 	 * @param ctx the parse tree
 	 */
-	void enterId(ANAParser.IdContext ctx);
+	void enterDeep_id(ANAParser.Deep_idContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ANAParser#id}.
+	 * Exit a parse tree produced by {@link ANAParser#deep_id}.
 	 * @param ctx the parse tree
 	 */
-	void exitId(ANAParser.IdContext ctx);
+	void exitDeep_id(ANAParser.Deep_idContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ANAParser#list_op}.
 	 * @param ctx the parse tree

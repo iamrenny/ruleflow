@@ -27,14 +27,14 @@ import java.util.regex.Pattern
  * <p> While not mandatory, it is suggested that you consider this structure for your config files: </p>
  * <pre>
  *     storage:       // group for all the com.rappi.fraud.rules.parser.getData sources
- *       database:
+ *       repositories:
  *         url: xx
  *         user: xx
  *         pass: xx
  *       redis:
  *         host: xx
  *         port: xx
- *         database: xx
+ *         repositories: xx
  *     services:     // group for all the external apis
  *       external-service-1:
  *         url: xxx
