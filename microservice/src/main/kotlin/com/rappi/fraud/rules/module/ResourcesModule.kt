@@ -35,7 +35,6 @@ class ResourcesModule(
             pass = db.getString("pass"),
             driver = db.getString("driver")
         )
-
     }
 
     @Provides

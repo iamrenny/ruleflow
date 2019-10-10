@@ -49,17 +49,16 @@ class RappiRouter @Inject constructor(
         }.subscribe({
             ctx.response().setStatusCode(200)
                 .end(it)
-        },{
+        }, {
             logger.error(it.message)
-            ctx.fail(500,it)
+            ctx.fail(500, it)
         })
-
     }
 
     private fun createWorkflow(ctx: RoutingContext) {
         Single.just(ctx.bodyAsJson).map {
             val rules = it.getJsonArray("rules")
-            .map {rule->
+            .map { rule ->
                 CreateWorkflowRuleRequest(
                     name = (rule as JsonObject).getString("name"),
                     condition = rule.getString("condition")
@@ -74,13 +73,12 @@ class RappiRouter @Inject constructor(
             workflowsService.save(it)
         }.subscribe({
             ctx.response().setStatusCode(200)
-                .putHeader("Content-Type","application/json")
+                .putHeader("Content-Type", "application/json")
                 .end(it.toJson().toString())
-        },{
+        }, {
             logger.error(it.message)
-            ctx.fail(500,it)
+            ctx.fail(500, it)
         })
-
     }
 
     private fun getWorkflow(ctx: RoutingContext) {
@@ -93,11 +91,11 @@ class RappiRouter @Inject constructor(
             workflowsService.get(it)
         }.subscribe({
             ctx.response().setStatusCode(200)
-                .putHeader("Content-Type","application/json")
+                .putHeader("Content-Type", "application/json")
                 .end(it.toJson().toString())
-        },{
+        }, {
             logger.error(it.message)
-            ctx.fail(500,it)
+            ctx.fail(500, it)
         })
     }
 
@@ -110,11 +108,11 @@ class RappiRouter @Inject constructor(
             workflowsService.getAll(it).toList()
         }.subscribe({
             ctx.response().setStatusCode(200)
-                .putHeader("Content-Type","application/json")
-                .end(it.map {  it.toJson() }.toString())
-        },{
+                .putHeader("Content-Type", "application/json")
+                .end(it.map { it.toJson() }.toString())
+        }, {
             logger.error(it.message)
-            ctx.fail(500,it)
+            ctx.fail(500, it)
         })
     }
     private fun updateStatus(ctx: RoutingContext) {

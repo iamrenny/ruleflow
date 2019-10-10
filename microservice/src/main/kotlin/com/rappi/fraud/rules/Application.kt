@@ -32,13 +32,12 @@ fun main() {
 
     val main = injector.getInstance(MainVerticle::class.java)
 
-    vertx.rxDeployVerticle(main).subscribe({ ar ->
+    vertx.rxDeployVerticle(main).subscribe({
         log.info("Application started")
     }, {
         log.error("Could not start application", it.message)
         exitProcess(1)
     })
-
 }
 
 private fun jsonConfig() {
@@ -49,6 +48,5 @@ private fun jsonConfig() {
         this.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-
     }
 }

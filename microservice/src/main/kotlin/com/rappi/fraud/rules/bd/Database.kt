@@ -1,17 +1,13 @@
 package com.rappi.fraud.rules.bd
 
-import com.google.inject.Inject
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactiverse.pgclient.PgPoolOptions
 import io.reactiverse.reactivex.pgclient.PgPool
-import io.reactiverse.reactivex.pgclient.PgRowSet
 import io.reactiverse.reactivex.pgclient.Row
 import io.reactiverse.reactivex.pgclient.Tuple
-import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.reactivex.core.Vertx
-
 
 private const val MAX_CONNECTIONS_PER_INSTANCE = 5
 
@@ -35,7 +31,7 @@ class Database(vertx: Vertx, dbConfig: DatabaseConfig) {
         val p = Tuple.tuple()
         params.forEach { p.addValue(it) }
 
-        return jdbc.rxPreparedQuery(query, p).map { it.iterator().next()}
+        return jdbc.rxPreparedQuery(query, p).map { it.iterator().next() }
     }
 
     fun get(query: String, params: List<Any> = listOf()): Observable<Row> {
@@ -46,7 +42,6 @@ class Database(vertx: Vertx, dbConfig: DatabaseConfig) {
             .flatMapObservable { Observable.fromIterable(it.delegate) }
             .map(::Row)
     }
-
 }
 
 data class DatabaseConfig(
@@ -55,5 +50,3 @@ data class DatabaseConfig(
     val pass: String,
     val driver: String
 )
-
-

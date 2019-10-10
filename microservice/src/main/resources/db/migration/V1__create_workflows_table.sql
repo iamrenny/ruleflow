@@ -1,12 +1,12 @@
-create table public.workflows
+create table if not exists workflows
 (
-  id serial
+  id bigserial
      constraint workflows_pk
      primary key,
   name varchar(100) not null,
-  version int not null,
+  version bigint not null,
   workflow text not null
 );
 
 create unique index workflows_name_version_uindex
-  on public.workflows (name, version);
+  on workflows (name, version);

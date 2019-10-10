@@ -2,10 +2,9 @@ package com.rappi.fraud.rules.rappi.repositories
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.bd.Database
-import com.rappi.fraud.rules.rappi.entities.Workflow
-import com.rappi.fraud.rules.rappi.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.rappi.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.rappi.entities.GetWorkflowRequest
+import com.rappi.fraud.rules.rappi.entities.Workflow
 import io.reactivex.Observable
 import io.reactivex.Single
 
@@ -32,9 +31,6 @@ class WorkflowRepository @Inject constructor(
         LIMIT 10
     """.trimIndent()
 
-
-
-
     fun save(name: String, workflow: String): Single<Workflow> {
         val params = listOf(
             name,
@@ -49,7 +45,7 @@ class WorkflowRepository @Inject constructor(
             workflow.name,
             workflow.version
         )
-        return database.get(GET_WORKFLOW, params).map {Workflow(it)}.firstOrError()
+        return database.get(GET_WORKFLOW, params).map { Workflow(it) }.firstOrError()
     }
 
     fun getAll(workflowRequest: GetAllWorkflowRequest): Observable<Workflow> {

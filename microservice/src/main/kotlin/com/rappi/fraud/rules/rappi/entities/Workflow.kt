@@ -9,7 +9,7 @@ data class CreateWorkflowRequest(
     val ruleset: String,
     val rules: List<CreateWorkflowRuleRequest>
 ) {
-    fun toJson() : JsonObject {
+    fun toJson(): JsonObject {
         return JsonObject().apply {
             put("workflow", workflow)
             put("ruleset", ruleset)

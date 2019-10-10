@@ -13,7 +13,7 @@ class WorkflowsService @Inject constructor(
 
 ) {
 
-    fun save(workflow: CreateWorkflowRequest) : Single<WorkflowResponse> {
+    fun save(workflow: CreateWorkflowRequest): Single<WorkflowResponse> {
         val workflowBuilder = StringBuilder()
         workflowBuilder.append("workflow '")
         workflowBuilder.append(workflow.workflow)
@@ -62,13 +62,13 @@ class WorkflowsService @Inject constructor(
 
     fun parseWorkflow(ws: String): CreateWorkflowRequest {
         val parts = ws.split("\n")
-        val wflow = parts[0].split(" ")[1].replace("'","")
-        val rset = parts[1].split(" ")[1].replace("'","")
-        val rules = IntRange(2, parts.size-2).map{
+        val wflow = parts[0].split(" ")[1].replace("'", "")
+        val rset = parts[1].split(" ")[1].replace("'", "")
+        val rules = IntRange(2, parts.size - 2).map {
             val ruleParts = parts[it].split(" ")
             CreateWorkflowRuleRequest(
                 name = ruleParts[0],
-                condition = ruleParts.subList(1,ruleParts.size).joinToString(" ")
+                condition = ruleParts.subList(1, ruleParts.size).joinToString(" ")
             )
         }
         return CreateWorkflowRequest(
@@ -77,5 +77,4 @@ class WorkflowsService @Inject constructor(
             rules = rules
         )
     }
-
 }
