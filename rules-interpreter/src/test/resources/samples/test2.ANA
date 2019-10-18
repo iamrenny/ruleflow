@@ -1,6 +1,6 @@
 workflow 'create-order'
 ruleset 'test2'
-    'is_Bad_USER' user_id = '401912' return 'looks_bad'
-    'restaurants needs to validate cc' store_type = 'restaurant' AND payment_type = 'credit_card' return 'needs_validation'
+    bad_user user_id = '401912' return 'looks_bad'
+    cc_validation store_type = 'restaurant' AND payment_type = 'credit_card' return 'needs_validation'
     default return 'looks_ok'
 end

@@ -1,5 +1,5 @@
 workflow 'create-order'
 ruleset 'test'
-'user is pepe' user.test.pepe = '2' return 'looks_bad'
-default return 'looks_ok'
+    pepe user.test.pepe = '2' return 'looks_bad'
+    default return 'looks_ok'
 end

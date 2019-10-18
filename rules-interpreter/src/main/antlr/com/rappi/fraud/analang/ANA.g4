@@ -36,23 +36,16 @@
  name : ID ;
 
  cond
- : deep_id ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL
- | deep_id ( EQ | NOT_EQ1 | NOT_EQ2 | K_IS | K_IS K_NOT | K_IN ) STRING_LITERAL
- | cond K_AND cond
- | cond K_OR cond
- | list_op
- | count
- | average
+ : field (EQ | NOT_EQ1 | NOT_EQ2) STRING_LITERAL                                #string
+ | field (LT | LT_EQ | GT | GT_EQ) NUMERIC_LITERAL                              #number
+ | cond (K_AND | K_OR) cond                                                     #logical
+ | field DOT (K_ANY | K_ALL) '{' cond '}'                                       #list
+ | field DOT K_COUNT '{' cond '}' (LT | LT_EQ | GT | GT_EQ) NUMERIC_LITERAL     #count
+ | field DOT K_AVERAGE '{' cond '}' (LT | LT_EQ | GT | GT_EQ) NUMERIC_LITERAL   #average
+ | '(' cond ')'                                                                 #parens
  ;
 
-
- deep_id: ID | ID (DOT deep_id)+;
-
- list_op: deep_id DOT (K_ANY | K_ALL ) '{' cond '}';
-
- count: deep_id DOT K_COUNT '{' cond '}' ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL;
-
- average: deep_id DOT K_AVERAGE '{' cond '}' ( LT | LT_EQ | GT | GT_EQ ) NUMERIC_LITERAL;
+ field: ID | ID (DOT field)+;
 
  result_value
  : STRING_LITERAL
@@ -62,11 +55,6 @@
  : ID
  | STRING_LITERAL
  | '(' any_name ')'
- ;
-
- literal_value
-  : NUMERIC_LITERAL
-  | STRING_LITERAL
  ;
 
  DOT : '.';

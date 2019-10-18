@@ -1,7 +1,11 @@
 package com.rappi.fraud.rules.rappi
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.rappi.entities.*
+import com.rappi.fraud.rules.rappi.entities.CreateWorkflowRequest
+import com.rappi.fraud.rules.rappi.entities.CreateWorkflowRuleRequest
+import com.rappi.fraud.rules.rappi.entities.EvaluateWorkflowRequest
+import com.rappi.fraud.rules.rappi.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.rappi.entities.GetWorkflowRequest
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
