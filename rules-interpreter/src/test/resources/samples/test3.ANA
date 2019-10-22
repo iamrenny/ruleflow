@@ -1,5 +1,0 @@
-workflow 'test'
-    ruleset 'test'
-        payment_type (payment_type = 'debit_card' or payment_type = 'credit_card') and store_type = 'restaurant' return 'looks_ok'
-        default return 'looks_bad'
-end

@@ -59,7 +59,7 @@ class WorkflowsService @Inject constructor(private val workflowRepository: Workf
     fun evaluate(a: JsonObject, workflow: EvaluateWorkflowRequest): Single<String> {
         return workflowRepository.get(GetWorkflowRequest(name = workflow.name, version = workflow.version))
                 .map {
-                    RuleEngine(it.workflow).evaluate(a.map)
+                    RuleEngine(it.workflow).evaluate(a.map).risk
                 }
     }
 

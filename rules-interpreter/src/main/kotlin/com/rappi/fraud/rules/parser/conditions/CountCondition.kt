@@ -1,8 +1,10 @@
 package com.rappi.fraud.rules.parser.conditions
 
+import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.evaluators.ConditionEvaluator
 import com.rappi.fraud.rules.parser.evaluators.FieldEvaluator
+import org.antlr.v4.runtime.Token
 
 class CountCondition : Condition<ANAParser.CountContext> {
 
@@ -11,12 +13,12 @@ class CountCondition : Condition<ANAParser.CountContext> {
         val list = FieldEvaluator(data).visitField(ctx.field())
         return if (list is Collection<*>) {
             val count = list.count { ConditionEvaluator(it as Map<String, *>).visit(ctx.cond()) }.toLong()
-            val value = ctx.NUMERIC_LITERAL().text.toLong()
-            when {
-                ctx.GT() != null -> count > value
-                ctx.GT_EQ() != null -> count >= value
-                ctx.LT() != null -> count < value
-                ctx.LT_EQ() != null -> count <= value
+            val value = ctx.value.text.toLong()
+            when (ctx.op.type) {
+                ANALexer.GT -> count > value
+                ANALexer.GT_EQ -> count >= value
+                ANALexer.LT -> count < value
+                ANALexer.LT_EQ -> count <= value
                 else -> throw RuntimeException("Invalid Operation ${ctx.text}")
             }
         } else {

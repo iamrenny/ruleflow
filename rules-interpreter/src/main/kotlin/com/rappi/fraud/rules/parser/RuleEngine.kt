@@ -5,11 +5,12 @@ import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.evaluators.RuleSetEvaluator
 import com.rappi.fraud.rules.parser.listeners.ErrorListener
 import com.rappi.fraud.rules.parser.listeners.WorkflowListener
+import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 
-class RuleEngine(private val workflow: String) {
+class RuleEngine(workflow: String) {
 
     private val tree: ANAParser.ParseContext
 
@@ -25,7 +26,7 @@ class RuleEngine(private val workflow: String) {
         walker.walk(listener, tree)
     }
 
-    fun evaluate(data: Map<String, Any>): String {
+    fun evaluate(data: Map<String, Any>): WorkflowResult {
         return RuleSetEvaluator(data).visit(tree)
     }
 }

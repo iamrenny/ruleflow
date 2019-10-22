@@ -1,5 +1,6 @@
 package com.rappi.fraud.rules.parser.conditions
 
+import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser.NumberContext
 import com.rappi.fraud.rules.parser.evaluators.FieldEvaluator
 import javafx.util.converter.BigIntegerStringConverter
@@ -9,12 +10,12 @@ class NumericCondition : Condition<NumberContext> {
         val ruleCtx = FieldEvaluator(data).visitFieldRecursive(ctx.field())
                 ?: throw RuntimeException("Invalid Operation ${ctx.field().text}")
         val ctxValue = BigIntegerStringConverter().fromString(ruleCtx.toString()).toLong()
-        val literalValue = ctx.NUMERIC_LITERAL().text.toLong()
-        return when {
-            ctx.LT() != null -> ctxValue < literalValue
-            ctx.LT_EQ() != null -> ctxValue <= literalValue
-            ctx.GT() != null -> ctxValue > literalValue
-            ctx.GT_EQ() != null -> ctxValue >= literalValue
+        val literalValue = ctx.value.text.toLong()
+        return when (ctx.op.type) {
+            ANALexer.LT -> ctxValue < literalValue
+            ANALexer.LT_EQ -> ctxValue <= literalValue
+            ANALexer.GT -> ctxValue > literalValue
+            ANALexer.GT_EQ -> ctxValue >= literalValue
             else -> throw RuntimeException("Invalid condition ${ctx.text}")
         }
     }

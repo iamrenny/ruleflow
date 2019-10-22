@@ -1,5 +1,6 @@
 package com.rappi.fraud.rules.parser.conditions
 
+import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.evaluators.ConditionEvaluator
 import com.rappi.fraud.rules.parser.evaluators.FieldEvaluator
@@ -13,12 +14,12 @@ class AverageCondition : Condition<ANAParser.AverageContext> {
         return if (list is Collection<*>) {
             val count = list.count { ConditionEvaluator(it as Map<String, *>).visit(ctx.cond()) }.toBigDecimal()
             val average = count.divide(list.size.toBigDecimal(), 3, RoundingMode.DOWN)
-            val value = ctx.NUMERIC_LITERAL().text.toBigDecimal()
-            when {
-                ctx.GT() != null -> average > value
-                ctx.GT_EQ() != null -> average >= value
-                ctx.LT() != null -> average < value
-                ctx.LT_EQ() != null -> average <= value
+            val value = ctx.value.text.toBigDecimal()
+            when (ctx.op.type) {
+                ANALexer.GT -> average > value
+                ANALexer.GT_EQ -> average >= value
+                ANALexer.LT -> average < value
+                ANALexer.LT_EQ -> average <= value
                 else -> throw RuntimeException("Invalid Operation ${ctx.text}")
             }
         } else {

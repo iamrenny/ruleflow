@@ -8,7 +8,7 @@
  }
 
  parse
- : ( workflow | error) EOF
+ : (workflow | error) EOF
  ;
 
  error: UNEXPECTED_CHAR
@@ -18,38 +18,38 @@
  ;
 
  workflow
- : 'workflow' STRING_LITERAL 'ruleset' STRING_LITERAL stmt_list 'end'
+ : 'workflow' workflowName = STRING_LITERAL rulesets* defaultResult = default_result 'end'
  ;
 
- stmt_list
- : stmt* default_stmt
+ rulesets
+ : 'ruleset' ruleSetName = STRING_LITERAL rules*
  ;
 
- stmt
- : name cond 'return' result_value
+ rules
+ : name cond 'return' result = state
  ;
 
- default_stmt
- : 'default' 'return' result_value
+ default_result
+ : 'default' result = state
  ;
 
- name : ID ;
+ state
+ : ('allow'|'block'|'prevent')
+ ;
+
+ name : ID;
 
  cond
- : field (EQ | NOT_EQ1 | NOT_EQ2) STRING_LITERAL                                #string
- | field (LT | LT_EQ | GT | GT_EQ) NUMERIC_LITERAL                              #number
- | cond (K_AND | K_OR) cond                                                     #logical
- | field DOT (K_ANY | K_ALL) '{' cond '}'                                       #list
- | field DOT K_COUNT '{' cond '}' (LT | LT_EQ | GT | GT_EQ) NUMERIC_LITERAL     #count
- | field DOT K_AVERAGE '{' cond '}' (LT | LT_EQ | GT | GT_EQ) NUMERIC_LITERAL   #average
- | '(' cond ')'                                                                 #parens
+ : field op = (EQ | NOT_EQ1 | NOT_EQ2) value = STRING_LITERAL                               #string
+ | field op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL                             #number
+ | left = cond op = (K_AND | K_OR) right = cond                                             #logical
+ | field DOT op = (K_ANY | K_ALL) '{' cond '}'                                              #list
+ | field DOT K_COUNT '{' cond '}' op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL    #count
+ | field DOT K_AVERAGE '{' cond '}' op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL  #average
+ | '(' cond ')'                                                                             #parens
  ;
 
  field: ID | ID (DOT field)+;
-
- result_value
- : STRING_LITERAL
- ;
 
  any_name
  : ID
