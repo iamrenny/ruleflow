@@ -1,0 +1,24 @@
+image: java:8
+
+options:
+  size: 2x
+
+pipelines:
+  default:
+    - step:
+        name: Test
+        caches:
+        - gradle
+        script:
+        - GRADLE_OPTS="-Xmx1g" bash ./gradlew --no-daemon check
+        services:
+        - postgres
+definitions:
+  services:
+    postgres:
+      image: postgres
+      memory: 256
+      environment:
+        POSTGRES_DB: 'fraud-rules-engine'
+        POSTGRES_USER: 'fraud-rules-engine'
+        POSTGRES_PASSWORD: 'fraud-rules-engine'
