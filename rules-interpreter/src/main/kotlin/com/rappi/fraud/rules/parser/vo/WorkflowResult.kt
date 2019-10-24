@@ -4,5 +4,6 @@ data class WorkflowResult(
     val workflow: String,
     val ruleSet: String? = null,
     val rule: String? = null,
-    val risk: String
+    val risk: String,
+    val actions: Set<String> = emptySet()
 )

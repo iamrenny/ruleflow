@@ -6,6 +6,10 @@ import com.rappi.fraud.rules.parser.vo.WorkflowResult
 
 class RuleSetEvaluator(private val data: Map<String, *>) : ANABaseVisitor<WorkflowResult>() {
 
+    companion object {
+        val EMPTY_SET = emptySet<String>()
+    }
+
     override fun visitParse(ctx: ANAParser.ParseContext): WorkflowResult {
         return visitWorkflow(ctx.workflow())
     }
@@ -20,7 +24,8 @@ class RuleSetEvaluator(private val data: Map<String, *>) : ANABaseVisitor<Workfl
                                 workflow = ctx.workflowName.text.removeSingleQuote(),
                                 ruleSet = ruleSet.ruleSetName.text.removeSingleQuote(),
                                 rule = rule.name().text,
-                                risk = rule.result.text
+                                risk = rule.result.text,
+                                actions = rule.actions()?.action()?.map { it.text }?.toSet() ?: EMPTY_SET
                             )
                         }
                     }

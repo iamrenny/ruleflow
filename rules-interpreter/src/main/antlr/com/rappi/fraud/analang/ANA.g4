@@ -18,44 +18,46 @@
  ;
 
  workflow
- : 'workflow' workflowName = STRING_LITERAL rulesets* defaultResult = default_result 'end'
+ : K_WORKFLOW workflowName = STRING_LITERAL rulesets* defaultResult = default_result K_END
  ;
 
  rulesets
- : 'ruleset' ruleSetName = STRING_LITERAL rules*
+ : K_RULESET ruleSetName = STRING_LITERAL rules*
  ;
 
  rules
- : name cond 'return' result = state
+ : name cond K_RETURN result = state actions?
  ;
 
  default_result
- : 'default' result = state
+ : K_DEFAULT result = state
  ;
 
  state
  : ('allow'|'block'|'prevent')
  ;
 
+ actions
+ : K_WITH action (K_AND action)*?
+ ;
+
+ action
+ : ('manual_review')
+ ;
+
  name : ID;
 
  cond
- : field op = (EQ | NOT_EQ1 | NOT_EQ2) value = STRING_LITERAL                               #string
- | field op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL                             #number
- | left = cond op = (K_AND | K_OR) right = cond                                             #logical
- | field DOT op = (K_ANY | K_ALL) '{' cond '}'                                              #list
- | field DOT K_COUNT '{' cond '}' op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL    #count
- | field DOT K_AVERAGE '{' cond '}' op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL  #average
- | '(' cond ')'                                                                             #parens
+ : field op = (EQ | NOT_EQ1 | NOT_EQ2) value = STRING_LITERAL                                       #string
+ | field op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL                                     #number
+ | left = cond op = (K_AND | K_OR) right = cond                                                     #logical
+ | field DOT op = (K_ANY | K_ALL) L_BRACE cond R_BRACE                                              #list
+ | field DOT K_COUNT L_BRACE cond R_BRACE op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL    #count
+ | field DOT K_AVERAGE L_BRACE cond R_BRACE op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL  #average
+ | L_PAREN cond R_PAREN                                                                             #parens
  ;
 
  field: ID | ID (DOT field)+;
-
- any_name
- : ID
- | STRING_LITERAL
- | '(' any_name ')'
- ;
 
  DOT : '.';
  COMMA : ',';
@@ -70,10 +72,16 @@
  EQ : '=';
  NOT_EQ1 : '!=';
  NOT_EQ2 : '<>';
- R_BRACE : '{';
- L_BRACE : '}';
+ L_BRACE : '{';
+ R_BRACE : '}';
+ L_PAREN: '(';
+ R_PAREN: ')';
 
  K_WORKFLOW: W O R K F L O W;
+ K_RULESET: R U L E S E T;
+ K_RETURN: R E T U R N;
+ K_DEFAULT: D E F A U L T;
+ K_WITH: W I T H;
  K_END: E N D;
  K_ELSE: E L S E;
  K_AND: A N D;

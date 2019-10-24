@@ -249,7 +249,8 @@ class RuleEngineTest {
     fun testLogical() {
         val file = javaClass.classLoader.getResourceAsStream("samples/test_logical.ANA")!!.reader().readText()
         val ruleEngine = RuleEngine(file)
-        Assertions.assertEquals("block", ruleEngine.evaluate(data).risk)
+        val expected = WorkflowResult("test", "test", "payment_type", "block", setOf("manual_review"))
+        Assertions.assertEquals(expected, ruleEngine.evaluate(data))
     }
 
     @ParameterizedTest
