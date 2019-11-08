@@ -4,11 +4,9 @@ import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.evaluators.RuleSetEvaluator
 import com.rappi.fraud.rules.parser.listeners.ErrorListener
-import com.rappi.fraud.rules.parser.listeners.WorkflowListener
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.tree.ParseTreeWalker
 
 class RuleEngine(workflow: String) {
 
@@ -21,9 +19,6 @@ class RuleEngine(workflow: String) {
         val parser = ANAParser(tokens)
         parser.addErrorListener(ErrorListener())
         tree = parser.parse()
-        val walker = ParseTreeWalker()
-        val listener = WorkflowListener()
-        walker.walk(listener, tree)
     }
 
     fun evaluate(data: Map<String, Any>): WorkflowResult {

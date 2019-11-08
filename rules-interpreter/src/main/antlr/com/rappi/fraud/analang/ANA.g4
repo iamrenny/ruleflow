@@ -4,29 +4,32 @@
  grammar ANA;
 
  @header {
- package com.rappi.fraud.analang;
+    package com.rappi.fraud.analang;
  }
 
  parse
  : (workflow | error) EOF
  ;
 
- error: UNEXPECTED_CHAR
- {
-  throw new RuntimeException("UNEXPECTED_CHAR= $UNEXPECTED_CHAR.text");
+ error: UNEXPECTED_CHAR {
+    throw new RuntimeException("UNEXPECTED_CHAR= $UNEXPECTED_CHAR.text");
  }
  ;
 
  workflow
- : K_WORKFLOW workflowName = STRING_LITERAL rulesets* defaultResult = default_result K_END
+ : K_WORKFLOW name rulesets* defaultResult = default_result K_END
  ;
 
  rulesets
- : K_RULESET ruleSetName = STRING_LITERAL rules*
+ : K_RULESET name rules*
  ;
 
  rules
  : name cond K_RETURN result = state actions?
+ ;
+
+ name
+ : STRING_LITERAL
  ;
 
  default_result
@@ -45,33 +48,44 @@
  : ('manual_review')
  ;
 
- name : ID;
-
  cond
- : field op = (EQ | NOT_EQ1 | NOT_EQ2) value = STRING_LITERAL                                       #string
- | field op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL                                     #number
- | left = cond op = (K_AND | K_OR) right = cond                                                     #logical
- | field DOT op = (K_ANY | K_ALL) L_BRACE cond R_BRACE                                              #list
- | field DOT K_COUNT L_BRACE cond R_BRACE op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL    #count
- | field DOT K_AVERAGE L_BRACE cond R_BRACE op = (LT | LT_EQ | GT | GT_EQ) value = NUMERIC_LITERAL  #average
- | L_PAREN cond R_PAREN                                                                             #parens
+ : L_PAREN cond R_PAREN                                                         #parenthesis
+ | left = cond op = comparators right = cond                                    #comparator
+ | left = cond op = (K_AND | K_OR) right = cond                                 #binary
+ | value = cond DOT op = (K_ANY | K_ALL) L_BRACE predicate = cond R_BRACE       #list
+ | value = cond DOT K_COUNT L_BRACE predicate = cond R_BRACE                    #count
+ | value = cond DOT K_AVERAGE L_BRACE predicate = cond R_BRACE                  #average
+ | left = cond op = (ADD | SUBTRACT | MULTIPLY | DIVIDE) right = cond           #math
+ | validValue                                                                   #value
  ;
 
- field: ID | ID (DOT field)+;
+ validValue
+ : property = ID
+ | nestedProperty = ID (DOT validValue)+
+ | string = STRING_LITERAL
+ | number = NUMERIC_LITERAL
+ | nullable = K_NULL
+ ;
+
+ comparators:
+ | (LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ)
+ ;
 
  DOT : '.';
  COMMA : ',';
- STAR : '*';
- PLUS : '+';
- MINUS : '-';
+ ADD : '+';
+ SUBTRACT : '-';
+ MULTIPLY: '*';
+ DIVIDE: '/';
  TILDE : '~';
  LT : '<';
  LT_EQ : '<=';
  GT : '>';
  GT_EQ : '>=';
- EQ : '=';
- NOT_EQ1 : '!=';
- NOT_EQ2 : '<>';
+ EQ_IC : '=';
+ EQ : '==';
+
+ NOT_EQ : '<>';
  L_BRACE : '{';
  R_BRACE : '}';
  L_PAREN: '(';
@@ -96,6 +110,7 @@
  K_ALL: A L L;
  K_COUNT: C O U N T;
  K_AVERAGE: A V E R A G E;
+ K_NULL: N U L L;
 
  ID
  : [a-zA-Z_] [a-zA-Z_0-9]*

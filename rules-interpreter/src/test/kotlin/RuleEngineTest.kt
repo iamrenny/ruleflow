@@ -64,14 +64,41 @@ class RuleEngineTest {
                 )
             )
         }
+
+        @JvmStatic
+        @Suppress("UNUSED")
+        fun testNullable(): Array<Arguments> {
+            return arrayOf(
+                Arguments.of(
+                    """
+                        workflow 'test'
+                            ruleset 'dummy'
+                                'has_user' user <> NULL return allow
+                            default prevent
+                        end
+                    """,
+                    WorkflowResult("test", "dummy", "has_user", "allow")
+                ),
+                Arguments.of(
+                    """
+                        workflow 'test'
+                            ruleset 'dummy'
+                                'has_user' user.type = NULL return block
+                            default allow
+                        end
+                    """,
+                    WorkflowResult("test", "dummy", "has_user", "block")
+                )
+            )
+        }
     }
 
     @Test
-    fun testDeepId() {
+    fun testNestedProperty() {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    rappi_user user.type.name.pepe.another = 'RAPPI_USER' return block
+                    'rappi_user' user.type.name.pepe.another = 'RAPPI_USER' return block
                 default allow
             end
         """.trimIndent()
@@ -98,7 +125,7 @@ class RuleEngineTest {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    item_a order.items.any { type = 'a' } return block
+                    'item_a' order.items.any { type = 'a' } return block
                 default allow
             end
         """.trimIndent()
@@ -125,7 +152,7 @@ class RuleEngineTest {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    item_a order.items.any { type = 'a' } return block
+                    'item_a' order.items.any { type = 'a' } return block
                 default allow
             end
         """.trimIndent()
@@ -147,11 +174,26 @@ class RuleEngineTest {
     }
 
     @Test
+    fun testListAnyNotCollection() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' order.items.any { type = 'a' } return block
+                default allow
+            end
+        """.trimIndent()
+
+        Assertions.assertThrows(RuntimeException::class.java) {
+            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
+        }
+    }
+
+    @Test
     fun testListAll() {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    item_a items.all { type = 'a' } return block
+                    'item_a' items.all { type = 'a' } return block
                 default allow
             end
         """.trimIndent()
@@ -176,7 +218,7 @@ class RuleEngineTest {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    item_a items.all { type = 'a' } return allow
+                    'item_a' items.all { type = 'a' } return allow
                 default allow
             end
         """.trimIndent()
@@ -196,11 +238,26 @@ class RuleEngineTest {
     }
 
     @Test
+    fun testListAllNotCollection() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' order.items.all { type = 'a' } return block
+                default allow
+            end
+        """.trimIndent()
+
+        Assertions.assertThrows(RuntimeException::class.java) {
+            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
+        }
+    }
+
+    @Test
     fun testCount() {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    rappi_user_has_more_than_1 items.count { type = 'a' } >= 1 return block
+                    'rappi_user_has_more_than_1' items.count { type = 'a' } >= 1 return block
                 default allow
             end
         """.trimIndent()
@@ -221,11 +278,26 @@ class RuleEngineTest {
     }
 
     @Test
+    fun testCountNotCollection() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_has_more_than_1' order.items.count { type = 'a' } return block
+                default allow
+            end
+        """.trimIndent()
+
+        Assertions.assertThrows(RuntimeException::class.java) {
+            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
+        }
+    }
+
+    @Test
     fun testAverage() {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    rappi_user_avg_gte_0_5 items.average { type = 'a' } > 0.5 return block
+                    'rappi_user_avg_gte_0_5' items.average { type = 'a' } > 0.5 return block
                 default allow
             end
         """.trimIndent()
@@ -246,6 +318,35 @@ class RuleEngineTest {
     }
 
     @Test
+    fun testAverageNotCollection() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_avg_gte_0_5' order.items.average { type = 'a' } > 0.5 return block
+                default allow
+            end
+        """.trimIndent()
+
+        Assertions.assertThrows(RuntimeException::class.java) {
+            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
+        }
+    }
+
+    @Test
+    fun testMath() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi' (((((subtotal + discount) / discount) * subtotal) - subtotal) + 30) = 80 return allow
+                default prevent
+            end
+        """.trimIndent()
+
+        val actualRisk = RuleEngine(workflow).evaluate(mapOf("subtotal" to 50, "discount" to 50)).risk
+        Assertions.assertEquals("allow", actualRisk)
+    }
+
+    @Test
     fun testLogical() {
         val file = javaClass.classLoader.getResourceAsStream("samples/test_logical.ANA")!!.reader().readText()
         val ruleEngine = RuleEngine(file)
@@ -259,5 +360,12 @@ class RuleEngineTest {
         val workflow = javaClass.classLoader.getResourceAsStream(workflowPath)!!.reader().readText()
         val actual = RuleEngine(workflow).evaluate(data)
         Assertions.assertEquals(expected, actual)
+    }
+
+    @ParameterizedTest
+    @MethodSource("testNullable")
+    fun testNullable(workflow: String, expectedRisk: WorkflowResult) {
+        val actualRisk = RuleEngine(workflow).evaluate(data)
+        Assertions.assertEquals(expectedRisk, actualRisk)
     }
 }

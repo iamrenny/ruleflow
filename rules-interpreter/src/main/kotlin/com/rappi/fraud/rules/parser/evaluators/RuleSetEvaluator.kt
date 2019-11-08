@@ -2,6 +2,7 @@ package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANAParser
+import com.rappi.fraud.rules.parser.removeSingleQuote
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 
 class RuleSetEvaluator(private val data: Map<String, *>) : ANABaseVisitor<WorkflowResult>() {
@@ -15,15 +16,16 @@ class RuleSetEvaluator(private val data: Map<String, *>) : ANABaseVisitor<Workfl
     }
 
     override fun visitWorkflow(ctx: ANAParser.WorkflowContext): WorkflowResult {
+        val ruleEvaluator = ConditionEvaluator(data)
         ctx.rulesets()
             .forEach { ruleSet ->
                 ruleSet.rules()
                     .forEach { rule ->
-                        if (ConditionEvaluator(data).visit(rule.cond())) {
+                        if (ruleEvaluator.visit(rule.cond()) as Boolean) {
                             return WorkflowResult(
-                                workflow = ctx.workflowName.text.removeSingleQuote(),
-                                ruleSet = ruleSet.ruleSetName.text.removeSingleQuote(),
-                                rule = rule.name().text,
+                                workflow = ctx.name().text.removeSingleQuote(),
+                                ruleSet = ruleSet.name().text.removeSingleQuote(),
+                                rule = rule.name().text.removeSingleQuote(),
                                 risk = rule.result.text,
                                 actions = rule.actions()?.action()?.map { it.text }?.toSet() ?: EMPTY_SET
                             )
@@ -31,10 +33,8 @@ class RuleSetEvaluator(private val data: Map<String, *>) : ANABaseVisitor<Workfl
                     }
             }
         return WorkflowResult(
-            workflow = ctx.workflowName.text.removeSingleQuote(),
+            workflow = ctx.name().text.removeSingleQuote(),
             risk = ctx.defaultResult.result.text
         )
     }
 }
-
-fun String.removeSingleQuote() = this.replace("'", "")

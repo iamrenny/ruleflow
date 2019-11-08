@@ -1,9 +1,9 @@
 workflow 'create-order'
     ruleset 'bad1'
-        bad_user1 user_id = '401912' return block
+        'bad_user1' user_id = '401912' return block
     ruleset 'bad2'
-        bad_user2 user_id = '401912' return block
+        'bad_user2' user_id = '401912' return block
     ruleset 'remedy'
-        warning_user user_id = '401912' return prevent
+        'warning_user' user_id = '401912' return prevent
     default allow
 end

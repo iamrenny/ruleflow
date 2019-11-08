@@ -44,6 +44,7 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-params:$junit_version"
     testCompile "org.mockito:mockito-junit-jupiter:$mockito_version"
     testCompile "org.mockito:mockito-core:$mockito_version"
+    testCompile "com.google.code.gson:gson:$gson_version"
     testCompile "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
 }
 

@@ -1,5 +1,5 @@
 workflow 'test'
     ruleset 'test'
-        payment_type (payment_type = 'debit_card' or payment_type = 'credit_card') and store_type = 'restaurant' return block with manual_review and manual_review
+        'payment_type' (payment_type = 'debit_card' or payment_type = 'credit_card') and store_type = 'restaurant' return block with manual_review and manual_review
     default allow
 end

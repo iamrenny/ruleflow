@@ -1,26 +1,27 @@
 package com.rappi.fraud.rules.parser.conditions
 
 import com.rappi.fraud.analang.ANALexer
+import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.analang.ANAParser.ListContext
+import com.rappi.fraud.rules.parser.asValue
 import com.rappi.fraud.rules.parser.evaluators.ConditionEvaluator
-import com.rappi.fraud.rules.parser.evaluators.FieldEvaluator
 
 class ListCondition : Condition<ListContext> {
 
-    override fun eval(ctx: ListContext, data: Map<String, *>): Boolean {
-        val list = FieldEvaluator(data).visitField(ctx.field())
-        return if (list is Collection<*>) {
+    override fun eval(ctx: ListContext, evaluator: ConditionEvaluator): Boolean {
+        val value = evaluator.visit(ctx.value).asValue()
+        return if (value.isList()) {
             when (ctx.op.type) {
-                ANALexer.K_ALL -> list.all { condition(it, ctx) }
-                ANALexer.K_ANY -> list.any { condition(it, ctx) }
-                else -> throw RuntimeException("Unexpected token near ${ctx.field().text}")
+                ANALexer.K_ALL -> value.toList().all { predicate(it, ctx.predicate) }
+                ANALexer.K_ANY -> value.toList().any { predicate(it, ctx.predicate) }
+                else -> throw RuntimeException("Unexpected token near ${ctx.value.text}")
             }
         } else {
-            throw RuntimeException("${ctx.field().text} is not a Collection")
+            throw RuntimeException("${ctx.value.text} is not a Collection")
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun condition(it: Any?, ctx: ListContext) =
-            ConditionEvaluator(it as Map<String, *>).visit(ctx.cond())
+    private fun predicate(it: Any?, ctx: ANAParser.CondContext) =
+        ConditionEvaluator(it as Map<String, *>).visit(ctx) as Boolean
 }

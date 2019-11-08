@@ -1,0 +1,28 @@
+{
+  "rappiPayPrepaidTransaction": {
+    "type": "REFUND",
+    "amount": 30000,
+    "entryMode": {
+      "pan": {
+        "name": "MANUAL"
+      }
+    },
+    "location": {
+      "country": "co"
+    }
+  },
+  "rappiPayPrepaidTransactionsHistory": {
+    "RpPrepaidPayerMinsSinceLastApprovedTransaction": 4,
+    "RpPrepaidPayerApprovedQty_1h": 3,
+    "RpPrepaidPayerApprovedQty_6h": 10,
+    "RpPrepaidPayerApprovedQty_1d": 20,
+    "RpPrepaidPayerApprovedAmount_1h": 6000,
+    "RpPrepaidPayerApprovedAmount_1d": 30000,
+    "RpPrepaidPayerApprovedAmount_7d": 100000
+  },
+  "rappiPayTransactionsHistory": {
+    "RpPayerCcDepositFailureQty_1d": 1,
+    "RpPayerCcDepositApprovedQty_1d": 1,
+    "RpPayerMinsSinceLastApprovedDeposit": 31
+  }
+}
