@@ -1,3 +1,12 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 plugins {
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.0.0'
@@ -26,26 +35,32 @@ compileTestKotlin {
 group 'com.rappi'
 version '1.0'
 
-mainClassName = 'com.rappi.fraud.rules.Application'
-
+mainClassName = 'com.rappi.fraud.rules.ApplicationKt'
 
 configurations {
     ktlint
 }
 
-ext {
-    vertx_version = '3.8.0'
+sourceSets {
+    integrationTest {
+        kotlin {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/kotlin')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
 }
 
 dependencies {
     compile group: 'io.gitlab.arturbosch.detekt', name: 'detekt-gradle-plugin', version: '1.0.0.M11'
 
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8'
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
 
     compile group: 'io.vertx', name: 'vertx-jdbc-client', version: vertx_version
     compile group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.0.0'
     compile group: 'com.zaxxer', name: 'HikariCP', version: '2.3.2'
-
 
     compile group: "io.vertx", name: "vertx-core", version: vertx_version
     compile group: "io.vertx", name: "vertx-web", version: vertx_version
@@ -89,20 +104,43 @@ dependencies {
     
     ktlint "com.pinterest:ktlint:0.34.2"
 
-
+    integrationTestCompile configurations.testCompile
+    integrationTestRuntime configurations.testRuntime
+    integrationTestImplementation configurations.implementation
 }
 
 test {
+    environment "ENV", "test"
+
     useJUnitPlatform()
 
     testLogging {
-        events "passed", "skipped", "failed"
+        showStandardStreams = true
+        events = ["passed", "skipped", "failed"]
     }
 }
 
+task integrationTest(type: Test) {
+    environment "ENV", "test"
+
+    useJUnitPlatform()
+
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = 'Runs integration tests'
+    setTestClassesDirs sourceSets.integrationTest.output
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    testLogging {
+        events = ["passed", "failed", "skipped"]
+    }
+    failFast = true
+    outputs.upToDateWhen { false }
+}
+
+test.dependsOn(integrationTest)
+
 shadowJar {
-    baseName = 'fraud-rules-engine'
-    classifier = 'shadow'
+    setArchiveBaseName('fraud-rules-engine')
+    setArchiveClassifier('shadow')
     zip64 = true
 }
 

@@ -12,6 +12,6 @@ class ErrorListener : BaseErrorListener() {
                              charPositionInLine: Int,
                              msg: String?,
                              e: RecognitionException?) {
-        throw RuntimeException("Error at line $line:$charPositionInLine - $msg")
+        throw IllegalArgumentException("Error at line $line:$charPositionInLine - $msg")
     }
 }

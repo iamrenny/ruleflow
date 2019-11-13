@@ -8,11 +8,11 @@ pipelines:
     - step:
         name: Test
         caches:
-        - gradle
+          - gradle
         script:
-        - GRADLE_OPTS="-Xmx1g" bash ./gradlew --no-daemon check
+          - GRADLE_OPTS="-Xmx1g" bash ./gradlew --no-daemon check
         services:
-        - postgres
+          - postgres
 definitions:
   services:
     postgres:

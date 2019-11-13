@@ -2,6 +2,7 @@ package com.rappi.fraud.rules.parser
 
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
+import com.rappi.fraud.rules.parser.evaluators.GrammarEvaluator
 import com.rappi.fraud.rules.parser.evaluators.RuleSetEvaluator
 import com.rappi.fraud.rules.parser.listeners.ErrorListener
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
@@ -23,5 +24,9 @@ class RuleEngine(workflow: String) {
 
     fun evaluate(data: Map<String, Any>): WorkflowResult {
         return RuleSetEvaluator(data).visit(tree)
+    }
+
+    fun validateAndGetWorkflowName(): String {
+        return GrammarEvaluator().visit(tree)
     }
 }

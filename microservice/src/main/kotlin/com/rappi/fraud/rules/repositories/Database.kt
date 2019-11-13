@@ -1,6 +1,5 @@
-package com.rappi.fraud.rules.bd
+package com.rappi.fraud.rules.repositories
 
-import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactiverse.pgclient.PgPoolOptions
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Row
@@ -13,9 +12,7 @@ private const val MAX_CONNECTIONS_PER_INSTANCE = 5
 
 class Database(vertx: Vertx, dbConfig: DatabaseConfig) {
 
-    private val logger by LoggerDelegate()
-
-    private val jdbc = createClient(vertx, dbConfig)
+    val jdbc = createClient(vertx, dbConfig)
 
     private fun createClient(vertx: Vertx, cfg: DatabaseConfig): PgPool {
         val url = cfg.url.removePrefix("jdbc:")

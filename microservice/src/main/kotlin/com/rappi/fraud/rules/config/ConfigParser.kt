@@ -67,25 +67,19 @@ import java.util.regex.Pattern
  */
 class ConfigParser(
     private val vertx: Vertx,
-    base: String = "microservice/src/main/resources/conf/",
+    private val base: String = "conf",
     private val envReader: EnvReader = DefaultEnvReader()
 ) {
     private val envPattern = Pattern.compile("\\$\\{(.*?)}")
     private val basePath = base
 
     fun read(): Single<JsonObject> {
-        val baseConfig = configStore("default.yaml")
-
         val loc = resolveLocation()
-        val locOverride = configStore("$loc.yaml").setOptional(true)
-
-        val env = resolveEnvironment()
-        val envOverride = configStore("$loc-$env.yaml").setOptional(true)
 
         val options = ConfigRetrieverOptions()
-            .addStore(baseConfig)
-            .addStore(locOverride)
-            .addStore(envOverride)
+            .addStore(configStore("default.yaml"))
+            .addStore(configStore("$loc.yaml").setOptional(true))
+            .addStore(configStore("$loc-${resolveEnvironment()}.yaml").setOptional(true))
 
         val retriever = ConfigRetriever.create(vertx, options)
 
@@ -97,7 +91,7 @@ class ConfigParser(
         return ConfigStoreOptions().apply {
             type = "file"
             format = "yaml"
-            config = JsonObject().put("path", "$basePath/$fileName")
+            config = JsonObject().put("path", "$base/$fileName")
         }
     }
 

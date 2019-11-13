@@ -1,10 +1,9 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.bd.DatabaseConfig
-import com.rappi.fraud.rules.rappi.RappiRouter
+import com.rappi.fraud.rules.repositories.DatabaseConfig
 import io.reactivex.Completable
-import io.vertx.core.Future
+import io.vertx.core.Promise
 import io.vertx.reactivex.CompletableHelper
 import io.vertx.reactivex.core.AbstractVerticle
 import io.vertx.reactivex.core.Vertx
@@ -14,17 +13,15 @@ import org.flywaydb.core.Flyway
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MainVerticle @Inject constructor(private val router: RappiRouter, private val migration: FlywayMigration) : AbstractVerticle() {
+class MainVerticle @Inject constructor(private val router: MainRouter, private val migration: FlywayMigration) :
+    AbstractVerticle() {
+
     private val logger by LoggerDelegate()
 
-    override fun start(startFuture: Future<Void>) {
+    override fun start(promise: Promise<Void>) {
         migration.migrateDB()
             .andThen(startServer())
-            .subscribe({
-                CompletableHelper.toObserver(startFuture)
-            }, {
-                    ex -> logger.error("Error migrating repositories", ex)
-            })
+            .subscribe(CompletableHelper.toObserver(promise))
     }
 
     private fun startServer(): Completable {
@@ -39,7 +36,8 @@ class MainVerticle @Inject constructor(private val router: RappiRouter, private 
 
         val port = config().getInteger("http.port", 8080)
 
-        return server.rxListen(port)
+        return server
+            .rxListen(port)
             .doOnSuccess { logger.info("server is running at port $port...") }
             .ignoreElement()
     }

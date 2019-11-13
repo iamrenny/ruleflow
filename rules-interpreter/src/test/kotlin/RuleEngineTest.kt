@@ -101,7 +101,7 @@ class RuleEngineTest {
                     'rappi_user' user.type.name.pepe.another = 'RAPPI_USER' return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
@@ -128,7 +128,7 @@ class RuleEngineTest {
                     'item_a' order.items.any { type = 'a' } return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
@@ -155,7 +155,7 @@ class RuleEngineTest {
                     'item_a' order.items.any { type = 'a' } return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
@@ -181,7 +181,7 @@ class RuleEngineTest {
                     'item_a' order.items.any { type = 'a' } return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         Assertions.assertThrows(RuntimeException::class.java) {
             RuleEngine(workflow).evaluate(mapOf("items" to "1"))
@@ -196,7 +196,7 @@ class RuleEngineTest {
                     'item_a' items.all { type = 'a' } return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
@@ -221,7 +221,7 @@ class RuleEngineTest {
                     'item_a' items.all { type = 'a' } return allow
                 default allow
             end
-        """.trimIndent()
+        """
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
@@ -245,7 +245,7 @@ class RuleEngineTest {
                     'item_a' order.items.all { type = 'a' } return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         Assertions.assertThrows(RuntimeException::class.java) {
             RuleEngine(workflow).evaluate(mapOf("items" to "1"))
@@ -260,7 +260,7 @@ class RuleEngineTest {
                     'rappi_user_has_more_than_1' items.count { type = 'a' } >= 1 return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
@@ -285,7 +285,7 @@ class RuleEngineTest {
                     'rappi_user_has_more_than_1' order.items.count { type = 'a' } return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         Assertions.assertThrows(RuntimeException::class.java) {
             RuleEngine(workflow).evaluate(mapOf("items" to "1"))
@@ -300,7 +300,7 @@ class RuleEngineTest {
                     'rappi_user_avg_gte_0_5' items.average { type = 'a' } > 0.5 return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
@@ -325,7 +325,7 @@ class RuleEngineTest {
                     'rappi_user_avg_gte_0_5' order.items.average { type = 'a' } > 0.5 return block
                 default allow
             end
-        """.trimIndent()
+        """
 
         Assertions.assertThrows(RuntimeException::class.java) {
             RuleEngine(workflow).evaluate(mapOf("items" to "1"))
@@ -340,7 +340,7 @@ class RuleEngineTest {
                     'rappi' (((((subtotal + discount) / discount) * subtotal) - subtotal) + 30) = 80 return allow
                 default prevent
             end
-        """.trimIndent()
+        """
 
         val actualRisk = RuleEngine(workflow).evaluate(mapOf("subtotal" to 50, "discount" to 50)).risk
         Assertions.assertEquals("allow", actualRisk)
@@ -360,6 +360,26 @@ class RuleEngineTest {
         val workflow = javaClass.classLoader.getResourceAsStream(workflowPath)!!.reader().readText()
         val actual = RuleEngine(workflow).evaluate(data)
         Assertions.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testValidateAndGetWorkflowName() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_avg_gte_0_5' items.average { type = 'a' } > 0.5 return block
+                default allow
+            end
+        """
+        val actualName = RuleEngine(workflow).validateAndGetWorkflowName()
+        Assertions.assertEquals("test", actualName)
+    }
+
+    @Test
+    fun testValidateAndGetWorkflowNameWhenInvalid() {
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            RuleEngine("workflow").validateAndGetWorkflowName()
+        }
     }
 
     @ParameterizedTest

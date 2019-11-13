@@ -1,6 +1,0 @@
-storage:
-  database:
-    url: "jdbc:postgresql://localhost:5432/fraud-rules-engine"
-    user: "fraud-rules-engine"
-    pass: "fraud-rules-engine"
-    driver: "org.postgresql.Driver"
