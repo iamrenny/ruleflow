@@ -49,14 +49,14 @@
  ;
 
  cond
- : L_PAREN cond R_PAREN                                                         #parenthesis
- | left = cond op = comparators right = cond                                    #comparator
- | left = cond op = (K_AND | K_OR) right = cond                                 #binary
- | value = cond DOT op = (K_ANY | K_ALL) L_BRACE predicate = cond R_BRACE       #list
- | value = cond DOT K_COUNT L_BRACE predicate = cond R_BRACE                    #count
- | value = cond DOT K_AVERAGE L_BRACE predicate = cond R_BRACE                  #average
- | left = cond op = (ADD | SUBTRACT | MULTIPLY | DIVIDE) right = cond           #math
- | validValue                                                                   #value
+ : L_PAREN cond R_PAREN                                                                                     #parenthesis
+ | left = cond op = comparators right = cond                                                                #comparator
+ | left = cond op = (K_AND | K_OR) right = cond                                                             #binary
+ | value = cond DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
+        (L_BRACE predicate = cond R_BRACE | L_PAREN R_PAREN)                                                #list
+ | left = cond op = (ADD | SUBTRACT | MULTIPLY | DIVIDE) right = cond                                       #math
+ | DATE_DIFF L_PAREN interval = intervalDateComparator COMMA left = cond COMMA right = cond R_PAREN         #dateDiff
+ | validValue                                                                                               #value
  ;
 
  validValue
@@ -65,6 +65,11 @@
  | string = STRING_LITERAL
  | number = NUMERIC_LITERAL
  | nullable = K_NULL
+ | currentDate = CURRENT_DATE
+ ;
+
+ intervalDateComparator:
+ | (HOUR | DAY)
  ;
 
  comparators:
@@ -84,8 +89,11 @@
  GT_EQ : '>=';
  EQ_IC : '=';
  EQ : '==';
-
  NOT_EQ : '<>';
+ HOUR : 'hour';
+ DAY : 'day';
+ CURRENT_DATE : 'currentDate' L_PAREN R_PAREN;
+ DATE_DIFF: 'dateDiff';
  L_BRACE : '{';
  R_BRACE : '}';
  L_PAREN: '(';
@@ -110,6 +118,7 @@
  K_ALL: A L L;
  K_COUNT: C O U N T;
  K_AVERAGE: A V E R A G E;
+ K_DISTINCT: D I S T I N C T;
  K_NULL: N U L L;
 
  ID

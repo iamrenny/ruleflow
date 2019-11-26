@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.time.LocalDateTime
 
 class RuleEngineTest {
 
@@ -278,6 +279,31 @@ class RuleEngineTest {
     }
 
     @Test
+    fun testCountWithoutPredicate() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_has_3' items.count() = 3 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+                WorkflowResult("test", "dummy", "rappi_user_has_3", "block"),
+                ruleEngine.evaluate(
+                        mapOf(
+                                "items" to listOf(
+                                        mapOf("type" to "b"),
+                                        mapOf("type" to "a"),
+                                        mapOf("type" to "a")
+                                )
+                        )
+                )
+        )
+    }
+
+    @Test
     fun testCountNotCollection() {
         val workflow = """
             workflow 'test'
@@ -323,6 +349,71 @@ class RuleEngineTest {
             workflow 'test'
                 ruleset 'dummy'
                     'rappi_user_avg_gte_0_5' order.items.average { type = 'a' } > 0.5 return block
+                default allow
+            end
+        """
+
+        Assertions.assertThrows(RuntimeException::class.java) {
+            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
+        }
+    }
+
+    @Test
+    fun testDistinctWithPredicate() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_has_2' items.distinct { type = 'a' }.count() = 2 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+                WorkflowResult("test", "dummy", "rappi_user_has_2", "block"),
+                ruleEngine.evaluate(
+                        mapOf(
+                                "items" to listOf(
+                                        mapOf("type" to "b"),
+                                        mapOf("type" to "a"),
+                                        mapOf("type" to "a")
+                                )
+                        )
+                )
+        )
+    }
+
+    @Test
+    fun testDistinctWithSelector() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_has_3' items.distinct { type }.count() = 3 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+                WorkflowResult("test", "dummy", "rappi_user_has_3", "block"),
+                ruleEngine.evaluate(
+                        mapOf(
+                                "items" to listOf(
+                                        mapOf("type" to "b"),
+                                        mapOf("type" to "a"),
+                                        mapOf("type" to "c")
+                                )
+                        )
+                )
+        )
+    }
+
+    @Test
+    fun testDistinctNotCollection() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_has_more_than_1' order.items.distinct() return block
                 default allow
             end
         """
@@ -387,5 +478,30 @@ class RuleEngineTest {
     fun testNullable(workflow: String, expectedRisk: WorkflowResult) {
         val actualRisk = RuleEngine(workflow).evaluate(data)
         Assertions.assertEquals(expectedRisk, actualRisk)
+    }
+
+    @Test
+    fun testDateDiff() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' paymentMethods.count { dateDiff(hour, currentDate(), createdAt) = 1 } > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult("test", "dummy", "registration_attempts", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "paymentMethods" to listOf(
+                        mapOf("createdAt" to LocalDateTime.now().minusSeconds(60 * 60).toString()),
+                        mapOf("createdAt" to LocalDateTime.now().toString()),
+                        mapOf("createdAt" to LocalDateTime.now().toString())
+                    )
+                )
+            )
+        )
     }
 }

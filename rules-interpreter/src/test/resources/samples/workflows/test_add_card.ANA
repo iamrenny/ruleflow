@@ -1,0 +1,16 @@
+workflow 'Add card'
+    ruleset 'Registration velocity'
+        'Has more than allowed per day'
+            (payment_methods.count { payment_type = 'credit_card' AND dateDiff(day, currentDate(), created_at) = 0 } > 0)
+                AND (payment_methods.count { payment_type = 'credit_card' AND dateDiff(day, currentDate(), created_at) = 0 } >= 15)
+            return block
+        'Has more than allowed per week'
+            (payment_methods.count { payment_type = 'credit_card' AND dateDiff(day, currentDate(), created_at) = 0 } > 0)
+                AND (payment_methods.count { payment_type = 'credit_card' AND dateDiff(day, currentDate(), created_at) <= 7 } >= 20)
+            return block
+        'Has more than allowed per month'
+            (payment_methods.count { payment_type = 'credit_card' AND dateDiff(day, currentDate(), created_at) = 0 } > 0)
+                AND (payment_methods.count { payment_type = 'credit_card' AND dateDiff(day, currentDate(), created_at) <= 30 } >= 20)
+            return block
+    default allow
+end
