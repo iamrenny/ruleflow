@@ -1,6 +1,11 @@
 package com.rappi.fraud.rules.entities
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.rappi.fraud.rules.entities.serializers.LocalDateTimeDeserializer
+import com.rappi.fraud.rules.entities.serializers.LocalDateTimeSerializer
 import io.reactiverse.reactivex.pgclient.Row
+import java.time.LocalDateTime
 
 data class GetAllWorkflowRequest(
     val countryCode: String,
@@ -10,6 +15,11 @@ data class GetAllWorkflowRequest(
 data class CreateWorkflowRequest(
     val countryCode: String,
     val workflow: String,
+    val userId: String
+)
+
+data class ActivateRequest(
+    val key: WorkflowKey,
     val userId: String
 )
 
@@ -25,7 +35,10 @@ data class Workflow(
     val name: String,
     val version: Long? = null,
     val workflow: String,
-    val userId: String
+    val userId: String,
+    @JsonDeserialize(using = LocalDateTimeDeserializer::class)
+    @JsonSerialize(using = LocalDateTimeSerializer::class)
+    val createdAt: LocalDateTime? = null
 ) {
 
     constructor(row: Row) : this(
@@ -34,6 +47,7 @@ data class Workflow(
         version = row.getLong("version")!!,
         countryCode = row.getString("country_code")!!,
         workflow = row.getString("workflow")!!,
-        userId = row.getString("user_id")!!
+        userId = row.getString("user_id")!!,
+        createdAt = row.getValue("created_at") as? LocalDateTime
     )
 }

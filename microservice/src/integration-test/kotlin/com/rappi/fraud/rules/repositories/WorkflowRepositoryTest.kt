@@ -30,6 +30,7 @@ class WorkflowRepositoryTest : BaseTest() {
             .assertValue { it.name == expected.name }
             .assertValue { it.workflow == expected.workflow }
             .assertValue { it.version!! > 0L }
+            .assertValue { it.createdAt != null }
             .dispose()
     }
 

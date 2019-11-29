@@ -2,6 +2,7 @@ package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
 import com.newrelic.api.agent.NewRelic
+import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.WorkflowKey
@@ -43,7 +44,7 @@ class MainRouter @Inject constructor(
         router.get("/workflow/:countryCode/:name").handler(::getAllWorkflows)
         router.post("/workflow/:countryCode/:name/evaluate").handler(::evaluate)
         router.post("/workflow/:countryCode/:name/:version/evaluate").handler(::evaluate)
-        router.post("/workflow/:countryCode/:name/:version/status").handler(::updateStatus)
+        router.post("/workflow/:countryCode/:name/:version/activate").handler(::activateWorkflow)
 
         return router
     }
@@ -66,7 +67,7 @@ class MainRouter @Inject constructor(
     private fun createWorkflow(ctx: RoutingContext) {
         Single.just(ctx.bodyAsJson).map {
             CreateWorkflowRequest(
-                countryCode = it.getString("countryCode"),
+                countryCode = it.getString("country_code"),
                 workflow = it.getString("workflow"),
                 userId = ctx.getUserId()
             )
@@ -110,13 +111,28 @@ class MainRouter @Inject constructor(
         })
     }
 
-    private fun updateStatus(ctx: RoutingContext) {
-        ctx.fail(HttpResponseStatus.NOT_IMPLEMENTED.code())
+    private fun activateWorkflow(ctx: RoutingContext) {
+        Single.just(ctx.pathParams()).map {
+            ActivateRequest(
+                key = WorkflowKey(
+                    countryCode = it["countryCode"]!!,
+                    name = URLDecoder.decode(it["name"]!!, "UTF-8")!!,
+                    version = it["version"]!!.toLong()
+                ),
+                userId = ctx.getUserId()
+            )
+        }.flatMap {
+            workflowService.activate(it)
+        }.subscribe({
+            ctx.ok(JsonObject.mapFrom(it).toString())
+        }, {
+            ctx.serverError(it)
+        })
     }
 
     private fun RoutingContext.getUserId(): String {
         return request().getHeader(HEADER_AUTH_USER)
-                ?: throw RuntimeException("$HEADER_AUTH_USER is missing")
+            ?: throw RuntimeException("$HEADER_AUTH_USER is missing")
     }
 
     private fun RoutingContext.ok(chunk: String) =

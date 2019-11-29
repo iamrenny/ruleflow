@@ -7,6 +7,9 @@ import com.google.inject.Singleton
 import com.nhaarman.mockito_kotlin.mock
 import com.rappi.fraud.rules.config.ConfigParser
 import com.rappi.fraud.rules.module.AbstractModule
+import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
+import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
+import com.rappi.fraud.rules.repositories.Database
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.services.WorkflowService
 import com.rappi.fraud.rules.verticle.MainVerticle
@@ -17,6 +20,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
 import io.vertx.reactivex.core.http.HttpClient
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -49,6 +53,26 @@ abstract class BaseTest {
 
             httpClient = rxVertx.createHttpClient()
         }
+
+        @AfterAll
+        @JvmStatic
+        fun tearDown() {
+            injector.getInstance(Database::class.java)
+                    .connectionPool
+                    .rxQuery(""""
+                        TRUNCATE active_workflows;
+                        TRUNCATE active_workflows_history;
+                    """)
+        }
+
+        @Suppress("all")
+        fun getSeedAsJsonObject(dataFile: String) = JsonObject(readFile(dataFile))
+
+        @Suppress("all")
+        fun getSeedAsJsonArray(dataFile: String) = JsonArray(readFile(dataFile))
+
+        private fun readFile(file: String) =
+                BaseTest::class.java.classLoader.getResourceAsStream("data/$file")!!.reader().readText()
     }
 
     class TestResourcesModule(vertx: io.vertx.reactivex.core.Vertx, config: JsonObject) :
@@ -56,16 +80,10 @@ abstract class BaseTest {
 
         override fun configure() {
             super.configure()
+            bind(ActiveWorkflowRepository::class.java).`in`(Singleton::class.java)
+            bind(ActiveWorkflowHistoryRepository::class.java).`in`(Singleton::class.java)
             bind(WorkflowRepository::class.java).`in`(Singleton::class.java)
             bind(WorkflowService::class.java).toInstance(mock())
         }
     }
-
-    @Suppress("all")
-    fun getSeedAsJsonObject(dataFile: String) =
-        JsonObject(javaClass.classLoader.getResourceAsStream("data/$dataFile")!!.reader().readText())
-
-    @Suppress("all")
-    fun getSeedAsJsonArray(dataFile: String) =
-        JsonArray(javaClass.classLoader.getResourceAsStream("data/$dataFile")!!.reader().readText())
 }

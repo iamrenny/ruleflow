@@ -12,7 +12,7 @@ private const val MAX_CONNECTIONS_PER_INSTANCE = 5
 
 class Database(vertx: Vertx, dbConfig: DatabaseConfig) {
 
-    val jdbc = createClient(vertx, dbConfig)
+    val connectionPool = createClient(vertx, dbConfig)
 
     private fun createClient(vertx: Vertx, cfg: DatabaseConfig): PgPool {
         val url = cfg.url.removePrefix("jdbc:")
@@ -24,20 +24,20 @@ class Database(vertx: Vertx, dbConfig: DatabaseConfig) {
         return PgPool.pool(vertx, config)
     }
 
-    fun save(query: String, params: List<Any>): Single<Row> {
+    fun executeWithParams(query: String, params: List<Any>): Single<Row> {
         val p = Tuple.tuple()
         params.forEach { p.addValue(it) }
-
-        return jdbc.rxPreparedQuery(query, p).map { it.iterator().next() }
+        return connectionPool
+                .rxPreparedQuery(query, p).map { it.iterator().next() }
     }
 
     fun get(query: String, params: List<Any> = listOf()): Observable<Row> {
         val p = Tuple.tuple()
         params.forEach { p.addValue(it) }
-
-        return jdbc.rxPreparedQuery(query, p)
-            .flatMapObservable { Observable.fromIterable(it.delegate) }
-            .map(::Row)
+        return connectionPool
+                .rxPreparedQuery(query, p)
+                .flatMapObservable { Observable.fromIterable(it.delegate) }
+                .map(::Row)
     }
 }
 

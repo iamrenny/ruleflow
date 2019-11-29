@@ -34,7 +34,7 @@ curl -X POST \
     http://localhost:8080/api/fraud-rules-engine/workflow \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache' \
-    -H 'X-User-Id: 191450503' \
+    -H 'X-Auth-User: 191450503' \
     -d '{
         "countryCode": "CO",
         "workflow": "workflow 'Sample' ruleset 'Sample' 'sample rule' d = 100 return allow default block end" 
@@ -44,13 +44,13 @@ curl -X POST \
 ```json
 {
     "id": 1,
-    "countryCode": "co",
+    "country_code": "co",
     "name": "Sample",
     "version": 1,
     "workflow": "workflow 'Sample' ruleset 'Sample' 'sample rule' d = 100 return allow default block end",
-    "userId": "191450503"
+    "userId": "191450503",
+    "created_at": "2019-10-31T08:31:58.129"
 }
-
 ```
 
 #### Obtener flujo de trabajo (por código de país, nombre y versión)
@@ -66,11 +66,12 @@ curl -X GET \
 ```json
 {
     "id": 1,
-    "countryCode": "CO",
+    "country_code": "CO",
     "name": "Sample",
     "version": 1,
     "workflow": "workflow 'Sample' ruleset 'Sample' 'sample rule' d = 100 return allow default block end",
-    "userId": "191450503"
+    "userId": "191450503",
+    "created_at": "2019-10-31T08:31:58.129"
 }
 ```
 
@@ -83,17 +84,43 @@ curl -X GET \
     http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/1 \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache'
-   ```
+```
 ##### Response
 ```json
 [
     {
         "id": 1,
-        "countryCode": "CO",
+        "country_code": "CO",
         "name": "Sample",
         "version": 1,
         "workflow": "workflow 'Sample' ruleset 'Sample' 'sample rule' d = 100 return allow default block end",
-        "userId": "191450503"
+        "userId": "191450503",
+        "created_at": "2019-10-31T08:31:58.129"
     }
 ]
+```
+
+#### Activar flujo de trabajo
+`POST api/fraud-rules-engine/workflow/:countryCode/:name/activate`: Ejecuta la activación de un flujo de trabajo, retornando el flujo de trabajo activado.
+
+`Nota: El parametro 'name' debe ser escapado.` 
+##### Request
+```
+curl -X POST \
+    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample \
+    -H 'Content-Type: application/json' \
+    -H 'cache-control: no-cache' \
+    -H 'X-Auth-User: 191450502' 
+```
+##### Response
+```json
+{
+    "id": 1,
+    "countryCode": "co",
+    "name": "Sample",
+    "version": 1,
+    "workflow": "workflow 'Sample' ruleset 'Sample' 'sample rule' d = 100 return allow default block end",
+    "userId": "191450503",
+    "created_at": "2019-10-31T08:31:58.129"
+}
 ```
