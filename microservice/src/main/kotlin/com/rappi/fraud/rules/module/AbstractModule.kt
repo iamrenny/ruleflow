@@ -9,6 +9,7 @@ import com.rappi.fraud.rules.verticle.MainRouter
 import com.rappi.fraud.rules.verticle.MainVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
+import io.vertx.reactivex.redis.RedisClient
 
 abstract class AbstractModule(private val vertx: Vertx, private val config: JsonObject) : AbstractModule() {
 
@@ -22,15 +23,23 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
     fun dbConfig(): DatabaseConfig {
         val db = config.getJsonObject("database")
         return DatabaseConfig(
-                url = db.getString("DB_URL"),
-                user = db.getString("DB_USER"),
-                pass = db.getString("DB_PASSWORD"),
-                driver = db.getString("DRIVER_CLASS")
+            url = db.getString("DB_URL"),
+            user = db.getString("DB_USER"),
+            pass = db.getString("DB_PASSWORD"),
+            driver = db.getString("DRIVER_CLASS")
         )
     }
 
     @Provides
     fun database(db: DatabaseConfig): Database {
         return Database(vertx, db)
+    }
+
+    @Provides
+    fun redisClient(): RedisClient {
+        val redisConfig = JsonObject()
+            .put("host", config.getJsonObject("redis").getString("REDIS_HOST"))
+            .put("port", config.getJsonObject("redis").getString("REDIS_PORT").toInt())
+        return RedisClient.create(vertx, redisConfig)
     }
 }

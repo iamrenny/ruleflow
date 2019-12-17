@@ -69,6 +69,7 @@ dependencies {
     compile group: "io.vertx", name: "vertx-config", version: vertx_version
     compile group: "io.vertx", name: "vertx-config-yaml", version: vertx_version
     compile group: "io.vertx", name: "vertx-rx-java2", version: vertx_version
+    compile group: "io.vertx", name: "vertx-redis-client", version: vertx_version
 
     compile 'org.kie:kie-spring:7.24.0.Final'
 

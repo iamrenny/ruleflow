@@ -9,7 +9,7 @@ import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 
-class RuleEngine(workflow: String) {
+class RuleEngine(val workflow: String) {
 
     private val tree: ANAParser.ParseContext
 

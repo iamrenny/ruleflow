@@ -50,7 +50,7 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
         val params = listOf(
                 workflowKey.countryCode,
                 workflowKey.name,
-                workflowKey.version
+                workflowKey.version!!
         )
         return database.get(GET_BY_KEY, params)
                 .map { Workflow(it) }

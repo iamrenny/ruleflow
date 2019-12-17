@@ -103,11 +103,12 @@ curl -X GET \
 #### Activar flujo de trabajo
 `POST api/fraud-rules-engine/workflow/:countryCode/:name/activate`: Ejecuta la activación de un flujo de trabajo, retornando el flujo de trabajo activado.
 
-`Nota: El parametro 'name' debe ser escapado.` 
+`Notas:`
+* El parámetro `name` debe ser escapado.
 ##### Request
 ```
 curl -X POST \
-    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample \
+    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/activate \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache' \
     -H 'X-Auth-User: 191450502' 
@@ -122,5 +123,40 @@ curl -X POST \
     "workflow": "workflow 'Sample' ruleset 'Sample' 'sample rule' d = 100 return allow default block end",
     "userId": "191450503",
     "created_at": "2019-10-31T08:31:58.129"
+}
+```
+
+#### Evaluar flujo de trabajo
+`POST api/fraud-rules-engine/workflow/:countryCode/:name/(:version)/evaluate`: Ejecuta la evaluación de un flujo de trabajo, retornando el resultado de la evaluación.
+
+`Notas:`
+* El parámetro `name` debe ser escapado.
+* El parámetro `version` es opcional. En caso de no proveerlo la versión a evaluar sera la que se encuentra activa para el nombre del workflow especificado.
+##### Request
+######Without version
+```
+curl -X POST \
+    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/evaluate \
+    -H 'Content-Type: application/json' \
+    -H 'cache-control: no-cache'
+```
+######With version
+```
+curl -X POST \
+    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/1/evaluate \
+    -H 'Content-Type: application/json' \
+    -H 'cache-control: no-cache'
+```
+
+##### Response
+```json
+{
+    "workflow": "Sample",
+    "ruleSet": "Test",
+    "rule": "Test",
+    "risk": "block",
+    "actions": [
+      "manual_review"
+    ]
 }
 ```

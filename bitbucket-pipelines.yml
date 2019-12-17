@@ -13,6 +13,7 @@ pipelines:
           - GRADLE_OPTS="-Xmx1g" bash ./gradlew --no-daemon check
         services:
           - postgres
+          - redis
 definitions:
   services:
     postgres:
@@ -22,3 +23,7 @@ definitions:
         POSTGRES_DB: 'fraud-rules-engine'
         POSTGRES_USER: 'fraud-rules-engine'
         POSTGRES_PASSWORD: 'fraud-rules-engine'
+    redis:
+      image: "redis:alpine"
+      ports:
+        - "6379:6379"

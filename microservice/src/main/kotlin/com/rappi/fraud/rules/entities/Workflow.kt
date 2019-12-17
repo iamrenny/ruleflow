@@ -26,7 +26,7 @@ data class ActivateRequest(
 data class WorkflowKey(
     val countryCode: String,
     val name: String,
-    val version: Long
+    val version: Long? = null
 )
 
 data class Workflow(

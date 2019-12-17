@@ -13,7 +13,7 @@ out
 *.ipr
 
 .vertx/*
-conf/
+/conf/
 
 rules-interpreter/**/gen/*
 rules-interpreter/**/*.class

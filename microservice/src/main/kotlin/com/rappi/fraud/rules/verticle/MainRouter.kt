@@ -42,23 +42,37 @@ class MainRouter @Inject constructor(
         router.post("/workflow").handler(::createWorkflow)
         router.get("/workflow/:countryCode/:name/:version").handler(::getWorkflow)
         router.get("/workflow/:countryCode/:name").handler(::getAllWorkflows)
-        router.post("/workflow/:countryCode/:name/evaluate").handler(::evaluate)
+        router.post("/workflow/:countryCode/:name/evaluate").handler(::evaluateActive)
         router.post("/workflow/:countryCode/:name/:version/evaluate").handler(::evaluate)
         router.post("/workflow/:countryCode/:name/:version/activate").handler(::activateWorkflow)
 
         return router
     }
 
+    private fun evaluateActive(ctx: RoutingContext) {
+        Single.just(ctx.bodyAsJson).flatMap {
+            val workflow = WorkflowKey(
+                countryCode = ctx.pathParam("countryCode"),
+                name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8")
+            )
+            workflowService.evaluate(workflow, it)
+        }.subscribe({
+            ctx.ok(JsonObject.mapFrom(it).toString())
+        }, {
+            ctx.serverError(it)
+        })
+    }
+
     private fun evaluate(ctx: RoutingContext) {
         Single.just(ctx.bodyAsJson).flatMap {
             val workflow = WorkflowKey(
                 countryCode = ctx.pathParam("countryCode"),
-                name = ctx.pathParam("name"),
+                name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
                 version = ctx.pathParam("version").toLong()
             )
-            workflowService.evaluate(it, workflow)
+            workflowService.evaluate(workflow, it)
         }.subscribe({
-            ctx.ok(it)
+            ctx.ok(JsonObject.mapFrom(it).toString())
         }, {
             ctx.serverError(it)
         })

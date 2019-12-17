@@ -8,6 +8,7 @@ import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.entities.WorkflowKey
+import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.reactivex.Observable
@@ -58,7 +59,7 @@ class MainRouterTest : BaseTest() {
         request
                 .toObservable()
                 .subscribe {
-                    Assertions.assertTrue(it.statusCode() == HttpResponseStatus.OK.code())
+                    Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
                     it.bodyHandler { body ->
                         val response = body.toJsonObject().mapTo(Workflow::class.java)
                         try {
@@ -95,7 +96,7 @@ class MainRouterTest : BaseTest() {
                 .toObservable()
                 .subscribe {
                     try {
-                        Assertions.assertTrue(it.statusCode() == HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
+                        Assertions.assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), it.statusCode())
                         testContext.completeNow()
                     } catch (ex: AssertionError) {
                         testContext.failNow(ex)
@@ -126,7 +127,7 @@ class MainRouterTest : BaseTest() {
         request
                 .toObservable()
                 .subscribe {
-                    Assertions.assertTrue(it.statusCode() == HttpResponseStatus.OK.code())
+                    Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
                     it.bodyHandler { body ->
                         val response = body.toJsonObject().mapTo(Workflow::class.java)
                         try {
@@ -164,7 +165,7 @@ class MainRouterTest : BaseTest() {
         request
                 .toObservable()
                 .subscribe {
-                    Assertions.assertTrue(it.statusCode() == HttpResponseStatus.OK.code())
+                    Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
                     it.bodyHandler { body ->
                         val response = body.toJsonArray()
                                 .mapTo(mutableListOf(), { x -> (x as JsonObject).mapTo(Workflow::class.java) })
@@ -203,7 +204,7 @@ class MainRouterTest : BaseTest() {
         request
                 .toObservable()
                 .subscribe {
-                    Assertions.assertTrue(it.statusCode() == HttpResponseStatus.OK.code())
+                    Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
                     it.bodyHandler { body ->
                         val response = body.toJsonObject().mapTo(Workflow::class.java)
                         try {
@@ -215,6 +216,90 @@ class MainRouterTest : BaseTest() {
                     }
                 }
         request.end()
+    }
+
+    @Test
+    fun testEvaluateWithVersion(vertx: Vertx, testContext: VertxTestContext) {
+        val workflow = getSeedAsJsonObject("get_workflow.json").mapTo(Workflow::class.java)
+
+        val key = WorkflowKey(countryCode = workflow.countryCode, name = workflow.name, version = workflow.version!!)
+
+        val data = JsonObject()
+
+        val expected = WorkflowResult(
+                workflow = "Workflow 1",
+                ruleSet = "test",
+                rule = "test",
+                risk = "block")
+
+        whenever(workflowService
+                .evaluate(key, data))
+                .thenReturn(Single.just(expected))
+
+        val request = httpClient
+                .postAbs(
+                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${URLEncoder.encode(
+                                workflow.name,
+                                "UTF-8"
+                        )}/${workflow.version}/evaluate"
+                )
+        request
+                .toObservable()
+                .subscribe {
+                    Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
+                    it.bodyHandler { body ->
+                        val response = body.toJsonObject().mapTo(WorkflowResult::class.java)
+                        try {
+                            Assertions.assertEquals(expected, response)
+                            testContext.completeNow()
+                        } catch (ex: AssertionError) {
+                            testContext.failNow(ex)
+                        }
+                    }
+                }
+        request.end(data.toString())
+    }
+
+    @Test
+    fun testEvaluateWithoutVersion(vertx: Vertx, testContext: VertxTestContext) {
+        val workflow = getSeedAsJsonObject("get_workflow.json").mapTo(Workflow::class.java)
+
+        val key = WorkflowKey(countryCode = workflow.countryCode, name = workflow.name)
+
+        val data = JsonObject()
+
+        val expected = WorkflowResult(
+                workflow = "Workflow 1",
+                ruleSet = "test",
+                rule = "test",
+                risk = "allow")
+
+        whenever(workflowService
+                .evaluate(key, data))
+                .thenReturn(Single.just(expected))
+
+        val request = httpClient
+                .postAbs(
+                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${URLEncoder.encode(
+                                workflow.name,
+                                "UTF-8"
+                        )}/evaluate"
+                )
+        request
+                .toObservable()
+                .subscribe {
+                    Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
+                    it.bodyHandler { body ->
+                        val response = body.toJsonObject().mapTo(WorkflowResult::class.java)
+                        try {
+                            Assertions.assertEquals(expected, response)
+                            testContext.completeNow()
+                        } catch (ex: AssertionError) {
+                            testContext.failNow(ex)
+                        }
+                    }
+                }
+        request.end(data.toString())
     }
 
     private fun HttpClientRequest.putAuthUserHeader(userId: String) =

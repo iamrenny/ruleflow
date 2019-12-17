@@ -9,3 +9,10 @@ services:
       POSTGRES_PASSWORD: fraud-rules-engine
     ports:
       - "5432:5432"
+  redis:
+    restart: always
+    image: "redis:3-alpine3.8"
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../data/redis:/data
