@@ -6,6 +6,7 @@ import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.WorkflowKey
+import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.reactivex.Single
@@ -17,6 +18,7 @@ import io.vertx.reactivex.ext.web.handler.BodyHandler
 import io.vertx.reactivex.ext.web.handler.ErrorHandler
 import io.vertx.reactivex.ext.web.handler.LoggerHandler
 import java.net.URLDecoder
+import java.util.concurrent.TimeoutException
 
 class MainRouter @Inject constructor(
     private val vertx: Vertx,
@@ -58,8 +60,11 @@ class MainRouter @Inject constructor(
             workflowService.evaluate(workflow, it)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {
-            ctx.serverError(it)
+        }, {cause ->
+            when (cause) {
+                is NotFoundException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
+                else -> ctx.fail(cause)
+            }
         })
     }
 
@@ -73,8 +78,11 @@ class MainRouter @Inject constructor(
             workflowService.evaluate(workflow, it)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {
-            ctx.serverError(it)
+        }, {cause ->
+            when (cause) {
+                is NotFoundException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
+                else -> ctx.fail(cause)
+            }
         })
     }
 

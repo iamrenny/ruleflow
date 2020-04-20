@@ -11,6 +11,7 @@ import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.entities.WorkflowKey
 import com.rappi.fraud.rules.parser.RuleEngine
+import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
@@ -93,7 +94,10 @@ class WorkflowService @Inject constructor(
                             cacheService.set(key, this)
                         }
                     }, {
-                        subscriber.onComplete()
+                        subscriber.onError(when (it) {
+                            is NoSuchElementException -> NotFoundException("Workflow not active for key: ${key.name}", "Workflow not active.")
+                            else -> it
+                        })
                     }, {
                         subscriber.onComplete()
                     })
@@ -109,7 +113,10 @@ class WorkflowService @Inject constructor(
                             cacheService.set(key, this)
                         }
                     }, {
-                        subscriber.onComplete()
+                        subscriber.onError(when (it) {
+                            is NoSuchElementException -> NotFoundException("Workflow not active for key: ${key.name}", "Workflow not active.")
+                            else -> it
+                        })
                     })
         }
     }
