@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 class RuleEngineTest {
 
@@ -499,6 +500,53 @@ class RuleEngineTest {
                         mapOf("createdAt" to LocalDateTime.now().minusSeconds(60 * 60).toString()),
                         mapOf("createdAt" to LocalDateTime.now().toString()),
                         mapOf("createdAt" to LocalDateTime.now().toString())
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun testDateDiffDaysBlock() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' paymentMethods.count { dateDiff(day, currentDate(), createdAt) = 0 } > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult("test", "dummy", "registration_attempts", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "paymentMethods" to listOf(
+                        mapOf("createdAt" to LocalDateTime.now())
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun testDateDiffDaysAllow() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' paymentMethods.count { dateDiff(day, currentDate(), createdAt) = 0 } > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", risk = "allow"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "paymentMethods" to listOf(
+                        mapOf("createdAt" to LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).minusDays(1).plusHours(23)
+                            .plusMinutes(59).plusSeconds(59))
                     )
                 )
             )
