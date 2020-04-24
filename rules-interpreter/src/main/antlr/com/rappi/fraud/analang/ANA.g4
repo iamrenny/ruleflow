@@ -56,7 +56,12 @@
         (L_BRACE predicate = cond R_BRACE | L_PAREN R_PAREN)                                                #list
  | left = cond op = (ADD | SUBTRACT | MULTIPLY | DIVIDE) right = cond                                       #math
  | DATE_DIFF L_PAREN interval = intervalDateComparator COMMA left = cond COMMA right = cond R_PAREN         #dateDiff
+ | value = cond op = K_CONTAINS values = stringValues                                                       #string
  | validValue                                                                                               #value
+ ;
+
+ stringValues
+ : string = STRING_LITERAL (COMMA STRING_LITERAL)*
  ;
 
  validValue

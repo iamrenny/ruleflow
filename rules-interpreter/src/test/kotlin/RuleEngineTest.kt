@@ -552,4 +552,42 @@ class RuleEngineTest {
             )
         )
     }
+
+    @Test
+    fun testStringNotContains() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'String contains' test contains 'test1', 'test2', 'test3', 'test4' return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", risk = "allow"),
+            ruleEngine.evaluate(
+                mapOf("test" to "not contains")
+            )
+        )
+    }
+
+    @Test
+    fun testStringContains() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'String contains' test contains 'test1', 'test2', 'test3', 'test4' return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "String contains", risk = "block"),
+            ruleEngine.evaluate(
+                mapOf("test" to "contains test3")
+            )
+        )
+    }
 }

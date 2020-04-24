@@ -12,6 +12,7 @@ class ConditionFactory {
         private val PARENTHESIS_CONDITION = ParenthesisCondition()
         private val VALUE_CONDITION = ValueCondition()
         private val DATE_DIFF_CONDITION = DateDiffCondition()
+        private val STRING_CONDITION = StringCondition()
 
         @Suppress("UNCHECKED_CAST")
         fun <T : ANAParser.CondContext> get(ctx: T): Condition<T> {
@@ -23,6 +24,7 @@ class ConditionFactory {
                 is ANAParser.ParenthesisContext -> PARENTHESIS_CONDITION
                 is ANAParser.ValueContext -> VALUE_CONDITION
                 is ANAParser.DateDiffContext -> DATE_DIFF_CONDITION
+                is ANAParser.StringContext -> STRING_CONDITION
                 else -> throw IllegalArgumentException("Context not supported: ${ctx.javaClass}")
             } as Condition<T>
         }
