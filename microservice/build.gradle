@@ -89,7 +89,10 @@ dependencies {
 
     compile group: "com.hubrick.vertx", name: "vertx-s3-client", version: "3.3.3"
 
-    compile group: 'com.newrelic.agent.java', name: 'newrelic-api', version: '4.9.0'
+    implementation group: 'com.signalfx.public', name: 'signalfx-trace-api', version: '0.36.0-sfx6'
+    compile group: 'com.signalfx.public', name: 'signalfx-java-agent', version: '0.36.0-sfx0'
+    compile group: 'com.signalfx.public', name: 'signalfx-trace-ot', version: '0.36.0-sfx6'
+
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.4'
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.2.3-1'
     compile group: 'javax.activation', name: 'activation', version: '1.1.1'
@@ -100,9 +103,9 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-junit-jupiter', version: '2.27.0'
     testCompile group: "org.mockito", name: "mockito-core", version: "2.27.0"
     testCompile group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.6.0'
-    
+
     implementation project(':rules-interpreter')
-    
+
     ktlint "com.pinterest:ktlint:0.34.2"
 
     integrationTestCompile configurations.testCompile

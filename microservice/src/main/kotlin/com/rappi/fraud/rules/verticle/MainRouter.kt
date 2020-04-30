@@ -1,7 +1,7 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
-import com.newrelic.api.agent.NewRelic
+import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
@@ -18,7 +18,6 @@ import io.vertx.reactivex.ext.web.handler.BodyHandler
 import io.vertx.reactivex.ext.web.handler.ErrorHandler
 import io.vertx.reactivex.ext.web.handler.LoggerHandler
 import java.net.URLDecoder
-import java.util.concurrent.TimeoutException
 
 class MainRouter @Inject constructor(
     private val vertx: Vertx,
@@ -165,7 +164,7 @@ class MainRouter @Inject constructor(
 
     private fun RoutingContext.serverError(throwable: Throwable) {
         logger.error(throwable.message)
-        NewRelic.noticeError(throwable)
+        SignalFx.noticeError(throwable)
         fail(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), throwable)
     }
 }

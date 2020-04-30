@@ -1,7 +1,7 @@
 package com.rappi.fraud.rules.services
 
 import com.google.inject.Inject
-import com.newrelic.api.agent.NewRelic
+import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveKey
 import com.rappi.fraud.rules.entities.ActiveWorkflow
@@ -58,7 +58,7 @@ class WorkflowService @Inject constructor(
                 .doOnError {
                     "Workflow not active for key: $key".let {
                         logger.error(it)
-                        NewRelic.noticeError(it)
+                        SignalFx.noticeError(it)
                     }
                 }
     }
@@ -143,7 +143,7 @@ class WorkflowService @Inject constructor(
                 }
                 .doOnError {
                     logger.error("Activate of workflow ${request.key} could not be completed", it)
-                    NewRelic.noticeError(it)
+                    SignalFx.noticeError(it)
                 }
     }
 
@@ -157,7 +157,7 @@ class WorkflowService @Inject constructor(
                         RuleEngine(workflow.workflow))
                 .doOnError {
                     logger.error("Workflow ${workflow.id} could not be saved in cache", it)
-                    NewRelic.noticeError(it)
+                    SignalFx.noticeError(it)
                 }
     }
 
@@ -171,7 +171,7 @@ class WorkflowService @Inject constructor(
                 )
                 .doOnError {
                     logger.error("Activate of workflow ${workflow.id} could not be saved in the history", it)
-                    NewRelic.noticeError(it)
+                    SignalFx.noticeError(it)
                 }
     }
 }
