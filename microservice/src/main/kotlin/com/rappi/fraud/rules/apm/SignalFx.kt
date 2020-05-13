@@ -3,7 +3,6 @@ package com.rappi.fraud.rules.apm
 import com.signalfx.tracing.context.TraceScope
 import io.opentracing.Span
 import io.opentracing.Tracer
-import io.opentracing.log.Fields
 import io.opentracing.util.GlobalTracer
 
 
@@ -12,23 +11,24 @@ class SignalFx {
         private val MESSAGE = "message"
         private val ERROR = "error"
         private val ERROR_EXPECTED = "error.expected"
-        private val ERROR_STACK = "error.stack"
+        private val ERROR_STACK = "sfx.error.stack"
         private val ERROR_KIND = "error.kind"
-        private val ERROR_TYPE = "error.type"
+        private val ERROR_TYPE = "sfx.error.type"
+        private val ERROR_OBJECT = "sfx.error.object"
         private val SFX_ERROR_KIND = "sfx.error.kind"
 
 
 
 
-        @Deprecated("This is a noop. Use graphana + prometheus instead.")
+        @Deprecated("This is a noop. Use grafana + prometheus instead.")
         fun recordMetric(name: String, value: Double) {
         }
 
-        @Deprecated("This is a noop. Use graphana + prometheus instead.")
+        @Deprecated("This is a noop. Use grafana + prometheus instead.")
         fun recordResponseTimeMetric(name: String, millis: Long) {
         }
 
-        @Deprecated("This is a noop. Use graphana + prometheus instead.")
+        @Deprecated("This is a noop. Use grafana + prometheus instead.")
         fun incrementCounter(name: String, count: Int = 1) {
         }
 
@@ -42,7 +42,7 @@ class SignalFx {
                 span.setTag(ERROR_KIND, throwable.javaClass.simpleName)
                 span.setTag(ERROR_TYPE, throwable.javaClass.simpleName)
                 span.setTag(MESSAGE, throwable.message ?: "N/A")
-                span.setTag(Fields.ERROR_OBJECT, throwable.toString())
+                span.setTag(ERROR_OBJECT, throwable.toString())
 
                 span.setTag(ERROR_STACK, throwable.stackTrace.joinToString())
                 span.setTag(ERROR_EXPECTED, expected)
@@ -56,7 +56,10 @@ class SignalFx {
 
         fun noticeError(message: String?, params: Map<String, Any> = mapOf(), expected: Boolean = false) {
             applyCurrentSpan { span ->
-                span.setTag(MESSAGE, !expected)
+                span.setTag(MESSAGE, message)
+                span.setTag(ERROR, !expected)
+                span.setTag(ERROR_EXPECTED, expected)
+
                 val log = mutableMapOf<String, Any?>()
                 log.putAll(params)
                 span.setTag(SFX_ERROR_KIND, message)

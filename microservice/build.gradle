@@ -89,9 +89,9 @@ dependencies {
 
     compile group: "com.hubrick.vertx", name: "vertx-s3-client", version: "3.3.3"
 
-    implementation group: 'com.signalfx.public', name: 'signalfx-trace-api', version: '0.36.0-sfx6'
-    compile group: 'com.signalfx.public', name: 'signalfx-java-agent', version: '0.36.0-sfx0'
-    compile group: 'com.signalfx.public', name: 'signalfx-trace-ot', version: '0.36.0-sfx6'
+    implementation group: 'com.signalfx.public', name: 'signalfx-trace-api', version: '0.36.0-sfx8'
+    compile group: 'com.signalfx.public', name: 'signalfx-java-agent', version: '0.36.0-sfx8'
+    compile group: 'com.signalfx.public', name: 'signalfx-trace-ot', version: '0.36.0-sfx8'
 
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.4'
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.2.3-1'
