@@ -26,10 +26,12 @@ class CacheService @Inject constructor(private val redisClient: RedisClient) {
                 }
     }
 
-    fun set(key: WorkflowKey, entity: RuleEngine): Completable {
+    fun set(key: WorkflowKey, entity: RuleEngine): Single<RuleEngine> {
         return redisClient
                 .rxSetex(buildKey(key), Duration.ofMinutes(5).seconds, JsonObject.mapFrom(entity).toString())
-                .ignoreElement()
+            .map {
+                entity
+            }
     }
 
     fun exists(key: WorkflowKey): Single<Boolean> {

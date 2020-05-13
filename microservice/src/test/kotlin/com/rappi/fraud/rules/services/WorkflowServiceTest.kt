@@ -7,6 +7,8 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.reset
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
+import com.nhaarman.mockito_kotlin.times
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveKey
 import com.rappi.fraud.rules.entities.ActiveWorkflow
@@ -22,7 +24,6 @@ import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
-import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -45,6 +46,8 @@ class WorkflowServiceTest {
     @BeforeEach
     fun cleanUp() {
         reset(activeWorkflowRepository, activeWorkflowHistoryRepository, ruleEngineCacheService, workflowRepository)
+        whenever(ruleEngineCacheService.set(any(), any()))
+            .thenReturn(Single.just(RuleEngine(baseWorkflow().workflow)))
     }
 
     @Test
@@ -190,10 +193,6 @@ class WorkflowServiceTest {
                 createdAt = LocalDateTime.now()
             )))
 
-        whenever(ruleEngineCacheService
-            .set(any(), any()))
-            .thenReturn(Completable.complete())
-
         service
                 .activate(request)
                 .test()
@@ -244,6 +243,9 @@ class WorkflowServiceTest {
                 .assertComplete()
                 .assertValue(evaluationResult)
                 .dispose()
+
+        verifyZeroInteractions(activeWorkflowRepository)
+        verifyZeroInteractions(workflowRepository)
     }
 
     @Test
@@ -256,7 +258,7 @@ class WorkflowServiceTest {
                 .thenReturn(Maybe.empty())
 
         whenever(activeWorkflowRepository.get(ActiveKey(countryCode = key.countryCode, name = key.name)))
-                .thenReturn(Maybe.just(
+                .thenReturn(Single.just(
                         ActiveWorkflow(
                                 countryCode = workflow.countryCode,
                                 name = workflow.name,
@@ -278,9 +280,11 @@ class WorkflowServiceTest {
                 .test()
                 .assertSubscribed()
                 .await()
-                .assertComplete()
                 .assertValue(evaluationResult)
                 .dispose()
+
+        verify(ruleEngineCacheService, times(1)).get(any())
+        verifyZeroInteractions(workflowRepository)
     }
 
     @Test
@@ -290,9 +294,6 @@ class WorkflowServiceTest {
         val key = WorkflowKey(countryCode = workflow.countryCode, name = workflow.name, version = workflow.version)
 
         whenever(ruleEngineCacheService.get(key))
-                .thenReturn(Maybe.empty())
-
-        whenever(activeWorkflowRepository.get(ActiveKey(countryCode = key.countryCode, name = key.name)))
                 .thenReturn(Maybe.empty())
 
         whenever(workflowRepository.get(key))
@@ -315,6 +316,9 @@ class WorkflowServiceTest {
                 .assertComplete()
                 .assertValue(evaluationResult)
                 .dispose()
+
+        verify(ruleEngineCacheService, times(1)).get(any())
+        verifyZeroInteractions(activeWorkflowRepository)
     }
 
     private fun baseWorkflow(): Workflow {

@@ -80,7 +80,7 @@ class MainRouter @Inject constructor(
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, {cause ->
             when (cause) {
-                is NotFoundException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
+                is NoSuchElementException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
                 else -> ctx.fail(cause)
             }
         })

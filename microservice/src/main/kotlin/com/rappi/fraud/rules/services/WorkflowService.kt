@@ -56,8 +56,8 @@ class WorkflowService @Inject constructor(
     }
 
     fun evaluate(key: WorkflowKey, data: JsonObject): Single<WorkflowResult> {
-        return Maybe.concat(fromCache(key), fromDb(key))
-                .firstOrError()
+        return cacheService.get(key)
+            .switchIfEmpty(Single.defer {  fromDb(key) })
                 .map {
                     it.evaluate(data.map)
                 }
@@ -69,20 +69,8 @@ class WorkflowService @Inject constructor(
                 }
     }
 
-    private fun fromCache(key: WorkflowKey): Maybe<RuleEngine> {
-        return Maybe.create { subscriber ->
-            cacheService.get(key)
-                    .subscribe({
-                        subscriber.onSuccess(it)
-                    }, {
-                        subscriber.onComplete()
-                    }, {
-                        subscriber.onComplete()
-                    })
-        }
-    }
-
-    private fun fromDb(key: WorkflowKey): Maybe<RuleEngine> {
+    private fun fromDb(key: WorkflowKey): Single<RuleEngine> {
+        logger.info("Getting value in db for $key")
         return if (key.version == null) {
             fromDbWithoutVersion(key)
         } else {
@@ -90,42 +78,18 @@ class WorkflowService @Inject constructor(
         }
     }
 
-    private fun fromDbWithoutVersion(key: WorkflowKey): Maybe<RuleEngine> {
-        return Maybe.create { subscriber ->
+    private fun fromDbWithoutVersion(key: WorkflowKey) =
             activeWorkflowRepository
                     .get(ActiveKey(countryCode = key.countryCode, name = key.name))
-                    .subscribe({
-                        RuleEngine(it.workflow!!).apply {
-                            subscriber.onSuccess(this)
-                            cacheService.set(key, this)
-                        }
-                    }, {
-                        subscriber.onError(when (it) {
-                            is NoSuchElementException -> NotFoundException("Workflow not active for key: ${key.name}", "Workflow not active.")
-                            else -> it
-                        })
-                    }, {
-                        subscriber.onComplete()
-                    })
-        }
-    }
+                .flatMap {
+                    cacheService.set(key, RuleEngine(it.workflow!!))
+                }
 
-    private fun fromDbWithVersion(key: WorkflowKey): Maybe<RuleEngine> {
-        return Maybe.create { subscriber ->
+    private fun fromDbWithVersion(key: WorkflowKey) =
             workflowRepository.get(key)
-                    .subscribe({
-                        RuleEngine(it.workflow).apply {
-                            subscriber.onSuccess(this)
-                            cacheService.set(key, this)
-                        }
-                    }, {
-                        subscriber.onError(when (it) {
-                            is NoSuchElementException -> NotFoundException("Workflow not active for key: ${key.name}", "Workflow not active.")
-                            else -> it
-                        })
-                    })
-        }
-    }
+                .flatMap {
+                    cacheService.set(key, RuleEngine(it.workflow))
+                }
 
     fun activate(request: ActivateRequest): Single<Workflow> {
         return workflowRepository

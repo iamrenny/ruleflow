@@ -35,7 +35,7 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
         return database.executeWithParams(INSERT, params).map { ActiveWorkflow(it) }
     }
 
-    fun get(key: ActiveKey): Maybe<ActiveWorkflow> {
+    fun get(key: ActiveKey): Single<ActiveWorkflow> {
         val params = listOf(
             key.countryCode,
             key.name
@@ -43,6 +43,5 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
         return database.get(GET_BY_KEY, params)
             .map { ActiveWorkflow(it) }
             .firstOrError()
-            .toMaybe()
     }
 }
