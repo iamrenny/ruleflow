@@ -5,11 +5,13 @@ import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.WorkflowKey
 import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.reactivex.Single
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.web.Router
@@ -43,11 +45,28 @@ class MainRouter @Inject constructor(
         router.post("/workflow").handler(::createWorkflow)
         router.get("/workflow/:countryCode/:name/:version").handler(::getWorkflow)
         router.get("/workflow/:countryCode/:name").handler(::getAllWorkflows)
+        router.get("/workflow/:countryCode").handler(::getListOfAllWorkflowsByCountry)
         router.post("/workflow/:countryCode/:name/evaluate").handler(::evaluateActive)
         router.post("/workflow/:countryCode/:name/:version/evaluate").handler(::evaluate)
         router.post("/workflow/:countryCode/:name/:version/activate").handler(::activateWorkflow)
 
         return router
+    }
+
+    private fun getListOfAllWorkflowsByCountry(ctx: RoutingContext) {
+        Single.just(ctx.pathParams()).map {
+            GetListOfAllWorkflowsRequest(
+                countryCode = it["countryCode"]!!
+            )
+        }.flatMap {
+            workflowService.getListOfAllWorkflows(it).toList()
+        }.subscribe({
+            ctx.ok(it.map { w ->
+                JsonObject.mapFrom(w).toString()
+            }.toString())
+        }, {
+            ctx.serverError(it)
+        })
     }
 
     private fun evaluateActive(ctx: RoutingContext) {

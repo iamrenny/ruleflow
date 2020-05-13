@@ -13,7 +13,9 @@ import com.rappi.fraud.rules.entities.ActiveWorkflow
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.entities.WorkflowKey
 import com.rappi.fraud.rules.parser.RuleEngine
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
@@ -117,6 +119,35 @@ class WorkflowServiceTest {
                 .assertValueSet(expected)
                 .dispose()
     }
+
+    @Test
+    fun testGetListOfAllWorkflowsByCountry() {
+        val base = WorkflowInfo(
+            name = "Sample",
+            version = 1
+        )
+
+        val expected = listOf(base,
+            base.copy(version = 2, name = "Sample2"),
+            base.copy(version = 1, name = "Sample3"))
+
+        val request = GetListOfAllWorkflowsRequest(
+            countryCode = "MX"
+        )
+
+        whenever(workflowRepository.getListOfAllWorkflows(request))
+            .thenReturn(Observable.merge(expected.map { Observable.just(it) }))
+
+        service
+            .getListOfAllWorkflows(request)
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValueSet(expected)
+            .dispose()
+    }
+
 
     @Test
     fun testActivate() {

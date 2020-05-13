@@ -8,8 +8,10 @@ import com.rappi.fraud.rules.entities.ActiveWorkflow
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.entities.WorkflowKey
+import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.parser.RuleEngine
 import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
@@ -47,6 +49,10 @@ class WorkflowService @Inject constructor(
 
     fun getAll(request: GetAllWorkflowRequest): Observable<Workflow> {
         return workflowRepository.getAll(request)
+    }
+
+    fun getListOfAllWorkflows(request: GetListOfAllWorkflowsRequest): Observable<WorkflowInfo> {
+        return workflowRepository.getListOfAllWorkflows(request)
     }
 
     fun evaluate(key: WorkflowKey, data: JsonObject): Single<WorkflowResult> {

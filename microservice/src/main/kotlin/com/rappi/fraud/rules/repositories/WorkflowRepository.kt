@@ -2,7 +2,9 @@ package com.rappi.fraud.rules.repositories
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.entities.WorkflowKey
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -31,6 +33,14 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
                AND name = $2
              ORDER BY version DESC
              LIMIT 10
+             """
+
+        private const val GET_WORKFLOW_LIST = """
+            SELECT name, MAX(VERSION) as version
+              FROM workflows
+             WHERE country_code = $1
+              GROUP BY name
+              LIMIT 30
              """
     }
 
@@ -64,6 +74,15 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
         )
         return database.get(GET_ALL, params).map {
             Workflow(it)
+        }
+    }
+
+    fun getListOfAllWorkflows(workflowRequest: GetListOfAllWorkflowsRequest): Observable<WorkflowInfo> {
+        val params = listOf(
+            workflowRequest.countryCode
+        )
+        return database.get(GET_WORKFLOW_LIST, params).map {
+            WorkflowInfo(it)
         }
     }
 }

@@ -12,6 +12,10 @@ data class GetAllWorkflowRequest(
     val name: String
 )
 
+data class GetListOfAllWorkflowsRequest(
+    val countryCode: String
+)
+
 data class CreateWorkflowRequest(
     val countryCode: String,
     val workflow: String,
@@ -49,5 +53,15 @@ data class Workflow(
         workflow = row.getString("workflow")!!,
         userId = row.getString("user_id")!!,
         createdAt = row.getValue("created_at") as? LocalDateTime
+    )
+}
+
+data class WorkflowInfo(
+    val name: String,
+    val version: Long? = null
+) {
+    constructor(row: Row) : this(
+        name = row.getString("name")!!,
+        version = row.getLong("version")!!
     )
 }
