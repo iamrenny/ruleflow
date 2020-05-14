@@ -35,12 +35,13 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
              LIMIT 10
              """
 
-        private const val GET_WORKFLOW_LIST = """
-            SELECT name, MAX(VERSION) as version
-              FROM workflows
-             WHERE country_code = $1
-              GROUP BY name
-              LIMIT 30
+        private const val GET_ACTIVE_WORKFLOW_LIST = """
+            SELECT w.name as name, w.version as version
+            FROM workflows w
+            INNER JOIN active_workflows aw ON w.id = aw.workflow_id
+            WHERE w.country_code = $1
+            ORDER BY name ASC
+            LIMIT 30
              """
     }
 
@@ -81,7 +82,7 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
         val params = listOf(
             workflowRequest.countryCode
         )
-        return database.get(GET_WORKFLOW_LIST, params).map {
+        return database.get(GET_ACTIVE_WORKFLOW_LIST, params).map {
             WorkflowInfo(it)
         }
     }
