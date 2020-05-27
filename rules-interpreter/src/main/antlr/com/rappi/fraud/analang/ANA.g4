@@ -1,6 +1,3 @@
- /**
- * written by renny && ivan
- */
  grammar ANA;
 
  @header {
@@ -25,7 +22,7 @@
  ;
 
  rules
- : name cond K_RETURN result = state actions?
+ : name expr K_RETURN result = state actions?
  ;
 
  name
@@ -33,7 +30,7 @@
  ;
 
  default_result
- : K_DEFAULT result = state
+ : K_DEFAULT (K_RETURN)? result = state
  ;
 
  state
@@ -48,15 +45,16 @@
  : ('manual_review')
  ;
 
- cond
- : L_PAREN cond R_PAREN                                                                                     #parenthesis
- | left = cond op = comparators right = cond                                                                #comparator
- | left = cond op = (K_AND | K_OR) right = cond                                                             #binary
- | value = cond DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
-        (L_BRACE predicate = cond R_BRACE | L_PAREN R_PAREN)                                                #list
- | left = cond op = (ADD | SUBTRACT | MULTIPLY | DIVIDE) right = cond                                       #math
- | DATE_DIFF L_PAREN interval = intervalDateComparator COMMA left = cond COMMA right = cond R_PAREN         #dateDiff
- | value = cond op = K_CONTAINS values = stringValues                                                       #string
+ expr
+ : L_PAREN expr R_PAREN                                                                                     #parenthesis
+ | left = expr op = (ADD | SUBTRACT | MULTIPLY | DIVIDE) right = expr                                       #math
+ | left = expr op = comparators right = expr                                                                #comparator
+ | left = expr op = (K_AND | K_OR) right = expr                                                             #binary
+ | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
+        (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #list
+ | DATE_DIFF L_PAREN interval = intervalDateComparator COMMA left = expr COMMA right = expr R_PAREN         #dateDiff
+ | value = expr op = K_CONTAINS values = stringValues                                                       #string
+ | validProperty                                                                                            #property
  | validValue                                                                                               #value
  ;
 
@@ -65,12 +63,15 @@
  ;
 
  validValue
- : property = ID
- | nestedProperty = ID (DOT validValue)+
- | string = STRING_LITERAL
+ : string = STRING_LITERAL
  | number = NUMERIC_LITERAL
- | nullable = K_NULL
+ | nullValue = K_NULL
  | currentDate = CURRENT_DATE
+ ;
+
+ validProperty
+ : property = ID
+ | nestedProperty = ID (DOT validProperty)+
  ;
 
  intervalDateComparator:

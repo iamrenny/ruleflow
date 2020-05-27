@@ -21,14 +21,16 @@ class RuleSetEvaluator(private val data: Map<String, *>) : ANABaseVisitor<Workfl
             .forEach { ruleSet ->
                 ruleSet.rules()
                     .forEach { rule ->
-                        if (ruleEvaluator.visit(rule.cond()) as Boolean) {
-                            return WorkflowResult(
-                                workflow = ctx.name().text.removeSingleQuote(),
-                                ruleSet = ruleSet.name().text.removeSingleQuote(),
-                                rule = rule.name().text.removeSingleQuote(),
-                                risk = rule.result.text,
-                                actions = rule.actions()?.action()?.map { it.text }?.toSet() ?: EMPTY_SET
-                            )
+                        val visitedRule = ruleEvaluator.visit(rule.expr())
+                        if (visitedRule is Boolean) {
+                            if(visitedRule)
+                                return WorkflowResult(
+                                    workflow = ctx.name().text.removeSingleQuote(),
+                                    ruleSet = ruleSet.name().text.removeSingleQuote(),
+                                    rule = rule.name().text.removeSingleQuote(),
+                                    risk = rule.result.text,
+                                    actions = rule.actions()?.action()?.map { it.text }?.toSet() ?: EMPTY_SET
+                                )
                         }
                     }
             }

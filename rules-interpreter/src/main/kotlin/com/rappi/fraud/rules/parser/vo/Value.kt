@@ -3,17 +3,15 @@ package com.rappi.fraud.rules.parser.vo
 import java.math.RoundingMode
 import java.time.LocalDateTime
 
+//TODO THIS MUST BE DELETED ASAP
 class Value private constructor(private val value: Any?, private val property: Boolean) {
 
     companion object {
-
-        fun property(value: Any?) = Value(value, false)
-
-        fun notProperty(value: Any?) = Value(value, true)
-
+        fun notProperty(value: Any?) = Value(value, false)
+        fun property(value: Any?) = Value(value, true)
     }
 
-    fun isPropertyAndNull() = property && value == null
+    fun isNullProperty() = property && value == null
 
     fun isNotPropertyAndNotNull() = !property && value != null
 

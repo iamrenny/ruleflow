@@ -185,9 +185,10 @@ class RuleEngineTest {
             end
         """
 
-        Assertions.assertThrows(RuntimeException::class.java) {
-            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
-        }
+
+        val result = RuleEngine(workflow).evaluate(mapOf("items" to "1"))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
+
     }
 
     @Test
@@ -249,9 +250,8 @@ class RuleEngineTest {
             end
         """
 
-        Assertions.assertThrows(RuntimeException::class.java) {
-            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
-        }
+        val result = RuleEngine(workflow).evaluate(mapOf("items" to 1))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
     @Test
@@ -291,16 +291,16 @@ class RuleEngineTest {
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
-                WorkflowResult("test", "dummy", "rappi_user_has_3", "block"),
-                ruleEngine.evaluate(
-                        mapOf(
-                                "items" to listOf(
-                                        mapOf("type" to "b"),
-                                        mapOf("type" to "a"),
-                                        mapOf("type" to "a")
-                                )
-                        )
+            WorkflowResult("test", "dummy", "rappi_user_has_3", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "items" to listOf(
+                        mapOf("type" to "b"),
+                        mapOf("type" to "a"),
+                        mapOf("type" to "a")
+                    )
                 )
+            )
         )
     }
 
@@ -314,9 +314,8 @@ class RuleEngineTest {
             end
         """
 
-        Assertions.assertThrows(RuntimeException::class.java) {
-            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
-        }
+        val result = RuleEngine(workflow).evaluate(mapOf("items" to 1))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
     @Test
@@ -354,9 +353,8 @@ class RuleEngineTest {
             end
         """
 
-        Assertions.assertThrows(RuntimeException::class.java) {
-            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
-        }
+        val result = RuleEngine(workflow).evaluate(mapOf("items" to listOf("a", "c")))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
     @Test
@@ -371,16 +369,16 @@ class RuleEngineTest {
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
-                WorkflowResult("test", "dummy", "rappi_user_has_2", "block"),
-                ruleEngine.evaluate(
-                        mapOf(
-                                "items" to listOf(
-                                        mapOf("type" to "b"),
-                                        mapOf("type" to "a"),
-                                        mapOf("type" to "a")
-                                )
-                        )
+            WorkflowResult("test", "dummy", "rappi_user_has_2", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "items" to listOf(
+                        mapOf("type" to "b"),
+                        mapOf("type" to "a"),
+                        mapOf("type" to "a")
+                    )
                 )
+            )
         )
     }
 
@@ -396,16 +394,16 @@ class RuleEngineTest {
 
         val ruleEngine = RuleEngine(workflow)
         Assertions.assertEquals(
-                WorkflowResult("test", "dummy", "rappi_user_has_3", "block"),
-                ruleEngine.evaluate(
-                        mapOf(
-                                "items" to listOf(
-                                        mapOf("type" to "b"),
-                                        mapOf("type" to "a"),
-                                        mapOf("type" to "c")
-                                )
-                        )
+            WorkflowResult("test", "dummy", "rappi_user_has_3", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "items" to listOf(
+                        mapOf("type" to "b"),
+                        mapOf("type" to "a"),
+                        mapOf("type" to "c")
+                    )
                 )
+            )
         )
     }
 
@@ -419,9 +417,8 @@ class RuleEngineTest {
             end
         """
 
-        Assertions.assertThrows(RuntimeException::class.java) {
-            RuleEngine(workflow).evaluate(mapOf("items" to "1"))
-        }
+        val result = RuleEngine(workflow).evaluate(mapOf("items" to 1))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
     @Test
@@ -587,6 +584,124 @@ class RuleEngineTest {
             WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "String contains", risk = "block"),
             ruleEngine.evaluate(
                 mapOf("test" to "contains test3")
+            )
+        )
+    }
+    @Test
+
+    fun `given a null collection when processing rule then returns OK`() {
+
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_avg_gte_0_5' order.items.average { type = 'a' } > 0.5 return block default allow
+            end
+            """
+
+        val result = RuleEngine(workflow).evaluate(mapOf("key" to "value"))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
+    }
+
+    @Test
+
+    fun `given a null string field when comparing must return false for the rule`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'String contains' test = 'test1' return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", risk = "allow"),
+            ruleEngine.evaluate(
+                mapOf("test2" to "test3")
+            )
+        )
+    }
+
+    @Test
+    fun `given a null value when applying date diff must return false`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' dateDiff(day, currentDate(), createdAt) > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", risk = "allow"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "not_createdAt" to 1
+                )
+            )
+        )
+    }
+
+
+    @Test
+    fun `given a null value when applying date diff comparation must return false`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' dateDiff(day, currentDate(), createdAt) + 15  > 15 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", risk = "allow"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "not_createdAt" to 1
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `given a null value when comparing must return false`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' createdAt > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", risk = "allow"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "not_createdAt" to 1
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `given any workflow value when evaluating null must return false`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' createdAt > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = RuleEngine(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", risk = "allow"),
+            ruleEngine.evaluate(
+                mapOf()
             )
         )
     }

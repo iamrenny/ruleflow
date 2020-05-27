@@ -14,7 +14,7 @@ class ComparatorCondition : Condition<ComparatorContext> {
         val right = evaluator.visit(ctx.right).asValue()
         return when {
             isNotComparableToNull(left, right) -> return false
-            left.isNumber() || right.isNumber() -> compareNumbers(
+            left.isNumber() && right.isNumber() -> compareNumbers(
                 operator = ctx.op.start,
                 left = left.toRoundedBigDecimal(),
                 right = right.toRoundedBigDecimal()
@@ -28,8 +28,8 @@ class ComparatorCondition : Condition<ComparatorContext> {
     }
 
     private fun isNotComparableToNull(left: Value, right: Value) =
-        ((left.isPropertyAndNull() && right.isNotPropertyAndNotNull())
-                || (right.isPropertyAndNull() && left.isNotPropertyAndNotNull()))
+        ((left.isNullProperty() && right.isNotPropertyAndNotNull())
+                || (right.isNullProperty() && left.isNotPropertyAndNotNull()))
 
     private fun compareNumbers(operator: Token, left: BigDecimal, right: BigDecimal): Boolean {
         return when (operator.type) {
@@ -48,7 +48,7 @@ class ComparatorCondition : Condition<ComparatorContext> {
             EQ -> left == right
             EQ_IC -> (left?.toString() ?: "").compareTo(right?.toString() ?: "", true) == 0
             NOT_EQ -> left != right
-            else -> throw IllegalArgumentException("Operation not supported: ${operator.text}")
+            else -> false
         }
     }
 }

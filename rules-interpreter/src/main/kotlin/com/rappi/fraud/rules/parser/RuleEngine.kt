@@ -22,8 +22,8 @@ class RuleEngine(val workflow: String) {
         tree = parser.parse()
     }
 
-    fun evaluate(data: Map<String, Any>): WorkflowResult {
-        return RuleSetEvaluator(data).visit(tree)
+    fun evaluate(request: Map<String, Any>): WorkflowResult {
+        return RuleSetEvaluator(request).visit(tree)
     }
 
     fun validateAndGetWorkflowName(): String {

@@ -10,9 +10,14 @@ import java.math.RoundingMode
 class MathCondition : Condition<MathContext> {
 
     override fun eval(ctx: MathContext, evaluator: ConditionEvaluator): Value {
-        val left = evaluator.visit(ctx.left).asValue().toRoundedBigDecimal()
-        val right = evaluator.visit(ctx.right).asValue().toRoundedBigDecimal()
-        return Value.notProperty(
+        val leftVal = evaluator.visit(ctx.left).asValue()
+        val rightVal = evaluator.visit(ctx.right).asValue()
+        if(leftVal.isNullProperty() || rightVal.isNullProperty())
+            return Value.property(null)
+
+        val left = leftVal.toRoundedBigDecimal()
+        val right = rightVal.toRoundedBigDecimal()
+        return Value.property(
             when (ctx.op.type) {
                 ANALexer.ADD -> left.add(right)
                 ANALexer.SUBTRACT -> left.subtract(right)

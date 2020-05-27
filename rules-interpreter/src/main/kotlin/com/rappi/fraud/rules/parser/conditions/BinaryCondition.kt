@@ -10,7 +10,7 @@ class BinaryCondition : Condition<BinaryContext> {
         return when (ctx.op.type) {
             ANALexer.K_AND -> evaluator.visit(ctx.left) as Boolean && evaluator.visit(ctx.right) as Boolean
             ANALexer.K_OR -> evaluator.visit(ctx.left) as Boolean || evaluator.visit(ctx.right) as Boolean
-            else -> throw IllegalArgumentException("Operation not supported ${ctx.cond()}")
+            else -> throw IllegalArgumentException("Operation not supported ${ctx.expr()}")
         }
     }
 }

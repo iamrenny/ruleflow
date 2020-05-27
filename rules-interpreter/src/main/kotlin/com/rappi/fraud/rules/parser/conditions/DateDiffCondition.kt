@@ -12,10 +12,17 @@ import kotlin.math.absoluteValue
 class DateDiffCondition : Condition<DateDiffContext> {
 
     override fun eval(ctx: DateDiffContext, evaluator: ConditionEvaluator): Value {
+        val valLeft = evaluator.visit(ctx.left).asValue()
+        val valRight = evaluator.visit(ctx.right).asValue()
         val interval = ctx.interval
-        val left = evaluator.visit(ctx.left).asValue().toLocalDateTime()
-        val right = evaluator.visit(ctx.right).asValue().toLocalDateTime()
-        return Value.notProperty(
+
+        if(valLeft.isNullProperty() || valRight.isNullProperty())
+            return Value.property(null)
+
+        val left = valLeft.toLocalDateTime()
+        val right = valRight.toLocalDateTime()
+
+        return Value.property(
                 when (interval.start.type) {
                     ANAParser.HOUR -> Duration.between(left, right).toHours()
                     ANAParser.DAY -> Duration.between(left, right.truncatedTo(ChronoUnit.DAYS)).toDays()
