@@ -51,15 +51,16 @@
  | left = expr op = comparators right = expr                                                                #comparator
  | left = expr op = (K_AND | K_OR) right = expr                                                             #binary
  | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
-        (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #list
+        (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #aggregation
  | DATE_DIFF L_PAREN interval = intervalDateComparator COMMA left = expr COMMA right = expr R_PAREN         #dateDiff
- | value = expr op = K_CONTAINS values = stringValues                                                       #string
+ | value = expr op = (K_CONTAINS | K_IN) values = listElems                                                   #list
  | validProperty                                                                                            #property
  | validValue                                                                                               #value
  ;
 
- stringValues
- : string = STRING_LITERAL (COMMA STRING_LITERAL)*
+ listElems
+ : aList = STRING_LITERAL (COMMA STRING_LITERAL)*
+ | validProperty
  ;
 
  validValue

@@ -13,13 +13,13 @@ class ConditionEvaluator(val data: Map<String, *>) : ANABaseVisitor<Any>() {
         val condition = when (ctx) {
             is ANAParser.BinaryContext -> BinaryCondition()
             is ANAParser.ComparatorContext -> ComparatorCondition()
-            is ANAParser.ListContext -> ListCondition()
+            is ANAParser.AggregationContext -> AggregationCondition()
             is ANAParser.MathContext -> MathCondition()
             is ANAParser.ParenthesisContext -> ParenthesisCondition()
             is ANAParser.ValueContext -> ValueCondition()
             is ANAParser.PropertyContext -> PropertyCondition()
             is ANAParser.DateDiffContext -> DateDiffCondition()
-            is ANAParser.StringContext -> StringCondition()
+            is ANAParser.ListContext -> ListCondition()
             else -> throw IllegalArgumentException("Context not supported: ${ctx.javaClass}")
         } as Condition< ANAParser.ExprContext>
 

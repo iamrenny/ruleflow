@@ -2,61 +2,55 @@ package com.rappi.fraud.rules.parser.conditions
 
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.fraud.analang.ANAParser.ListContext
 import com.rappi.fraud.rules.parser.asValue
 import com.rappi.fraud.rules.parser.evaluators.ConditionEvaluator
-import com.rappi.fraud.rules.parser.vo.Value
-import java.math.RoundingMode
+import com.rappi.fraud.rules.parser.removeSingleQuote
 
-class ListCondition : Condition<ListContext> {
+class ListCondition : Condition<ANAParser.ListContext> {
 
-    override fun eval(ctx: ListContext, evaluator: ConditionEvaluator): Any? {
+    override fun eval(ctx: ANAParser.ListContext, evaluator: ConditionEvaluator): Any {
         val value = evaluator.visit(ctx.value).asValue()
-        return when {
-            value.isList() -> {
-                when (ctx.op.type) {
-                    ANALexer.K_ALL -> value.toList().all { evalPredicate(it, ctx.predicate) as Boolean }
-                    ANALexer.K_ANY -> value.toList().any { evalPredicate(it, ctx.predicate) as Boolean }
-                    ANALexer.K_AVERAGE -> average(value.toList(), ctx.predicate)
-                    ANALexer.K_COUNT -> count(value.toList(), ctx.predicate)
-                    ANALexer.K_DISTINCT -> distinctBy(value.toList(), ctx.predicate)
-                    else -> throw RuntimeException("Unexpected token near ${ctx.value.text}")
-                }
+        return when (ctx.op.type) {
+                ANALexer.K_CONTAINS -> evalContains(value.toAny().toString(), ctx.values.text.removeSingleQuote().split(","))
+                ANALexer.K_IN -> evalIn(value.toAny().toString(), ctx.values, evaluator)
+                else -> throw RuntimeException("Unexpected token near ${ctx.value.text}")
+        }
+    }
+    private fun evalIn(value: String, ctx: ANAParser.ListElemsContext, evaluator: ConditionEvaluator): Any {
+        return when
+        {
+            (ctx.aList != null) -> {
+                val list = ctx.aList.text.removeSingleQuote().split(",")
+                list.contains(value)
             }
-            value.isNullProperty() -> Value.property(null)
-            else ->  {
-                throw RuntimeException("${ctx.value.text} is not a Collection")
-            }
+            (ctx.validProperty()?.property != null) -> (evaluator.data[ctx.validProperty().property.text] as List<*>).contains(value)
+            (ctx.validProperty()?.nestedProperty != null) -> getNestedValue(ctx.validProperty(), evaluator.data).contains(value)
+
+            else -> error("asda")
         }
     }
 
-        @Suppress("UNCHECKED_CAST")
-        private fun distinctBy(list: List<*>, predicate: ANAParser.ExprContext?): Value {
-            return Value.property(
-                when (predicate) {
-                    null -> list
-                    is ANAParser.ValueContext -> list.distinctBy { (it as Map<String, Any>)[predicate.text] }
-                    else -> list.distinctBy { evalPredicate(it, predicate) }
-                })
+    @Suppress("UNCHECKED_CAST")
+    private fun evalContains(value: String, values: List<String>) =
+        values.any {
+            value.contains(it, true)
         }
 
-        @Suppress("UNCHECKED_CAST")
-        private fun average(list: List<*>, predicate: ANAParser.ExprContext): Value {
-            val count = count(list, predicate).toBigDecimal()
-            return Value.property(count.divide(list.size.toBigDecimal(), 3, RoundingMode.DOWN))
-        }
 
-        @Suppress("UNCHECKED_CAST")
-        private fun count(list: List<*>, predicate: ANAParser.ExprContext?): Value {
-            return Value.property(
-                if (predicate == null) {
-                    list.count()
-                } else {
-                    list.count { ConditionEvaluator(it as Map<String, *>).visit(predicate) as Boolean }
-                }.toBigDecimal())
+    @Suppress("UNCHECKED_CAST")
+    fun getNestedValue(ctx: ANAParser.ValidPropertyContext, data: Map<String, *>): List<Any?> {
+        val queue = mutableListOf(ctx)
+        ctx.validProperty().forEach {
+            queue.add(it)
         }
-
-        @Suppress("UNCHECKED_CAST")
-        private fun evalPredicate(it: Any?, ctx: ANAParser.ExprContext) =
-            ConditionEvaluator(it as Map<String, *>).visit(ctx)
+        var r = (data as MutableMap)
+        queue.take(ctx.validProperty().size).forEach {
+            if (r[it.ID().text] is Map<*, *>) {
+                r = r[it.ID().text] as MutableMap<String, *>
+            } else {
+                return listOf()
+            }
+        }
+        return  r[queue.last().ID().text] as List<Any?>
     }
+}
