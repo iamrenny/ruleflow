@@ -11,7 +11,6 @@ import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.reactivex.Single
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.web.Router

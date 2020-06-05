@@ -4,6 +4,8 @@ import com.rappi.fraud.rules.entities.ActiveKey
 import com.rappi.fraud.rules.entities.ActiveWorkflow
 import io.reactivex.Maybe
 import io.reactivex.Single
+import io.vertx.micrometer.backends.BackendRegistries
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ActiveWorkflowRepository @Inject constructor(private val database: Database) {
@@ -36,12 +38,16 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
     }
 
     fun get(key: ActiveKey): Single<ActiveWorkflow> {
+        val startTimeInMillis = System.currentTimeMillis()
         val params = listOf(
             key.countryCode,
             key.name
         )
         return database.get(GET_BY_KEY, params)
             .map { ActiveWorkflow(it) }
-            .firstOrError()
+            .firstOrError().doAfterTerminate {
+                BackendRegistries.getDefaultNow().timer("fraud.rules.engine.activeWorkflowRepository.get")
+                    .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
+            }
     }
 }

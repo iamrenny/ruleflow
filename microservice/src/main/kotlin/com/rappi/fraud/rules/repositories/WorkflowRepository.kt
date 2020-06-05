@@ -8,6 +8,8 @@ import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.entities.WorkflowKey
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.vertx.micrometer.backends.BackendRegistries
+import java.util.concurrent.TimeUnit
 
 class WorkflowRepository @Inject constructor(private val database: Database) {
 
@@ -58,6 +60,7 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
     }
 
     fun get(workflowKey: WorkflowKey): Single<Workflow> {
+        val startTimeInMillis = System.currentTimeMillis()
         val params = listOf(
                 workflowKey.countryCode,
                 workflowKey.name,
@@ -65,7 +68,10 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
         )
         return database.get(GET_BY_KEY, params)
                 .map { Workflow(it) }
-                .firstOrError()
+                .firstOrError().doAfterTerminate {
+                BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowRepository.get")
+                    .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
+            }
     }
 
     fun getAll(workflowRequest: GetAllWorkflowRequest): Observable<Workflow> {

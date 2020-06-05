@@ -28,6 +28,8 @@ import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
+import io.vertx.micrometer.MicrometerMetricsOptions
+import io.vertx.micrometer.backends.BackendRegistries
 import java.time.LocalDateTime
 import java.util.UUID
 import org.junit.jupiter.api.Assertions
@@ -48,6 +50,7 @@ class WorkflowServiceTest {
         reset(activeWorkflowRepository, activeWorkflowHistoryRepository, ruleEngineCacheService, workflowRepository)
         whenever(ruleEngineCacheService.set(any(), any()))
             .thenReturn(Single.just(RuleEngine(baseWorkflow().workflow)))
+        BackendRegistries.setupBackend(MicrometerMetricsOptions())
     }
 
     @Test

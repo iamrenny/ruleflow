@@ -23,6 +23,8 @@ import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
+import io.vertx.micrometer.backends.BackendRegistries
+import java.util.concurrent.TimeUnit
 
 class WorkflowService @Inject constructor(
     private val activeWorkflowRepository: ActiveWorkflowRepository,
@@ -56,17 +58,22 @@ class WorkflowService @Inject constructor(
     }
 
     fun evaluate(key: WorkflowKey, data: JsonObject): Single<WorkflowResult> {
+        val startTimeInMillis = System.currentTimeMillis()
         return cacheService.get(key)
             .switchIfEmpty(Single.defer {  fromDb(key) })
-                .map {
-                    it.evaluate(data.map)
+            .map {
+                it.evaluate(data.map)
+            }
+            .doOnError {
+                "Workflow not active for key: $key".let {
+                    logger.error(it)
+                    SignalFx.noticeError(it)
                 }
-                .doOnError {
-                    "Workflow not active for key: $key".let {
-                        logger.error(it)
-                        SignalFx.noticeError(it)
-                    }
-                }
+            }
+            .doAfterTerminate {
+                BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate")
+                    .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
+            }
     }
 
     private fun fromDb(key: WorkflowKey): Single<RuleEngine> {

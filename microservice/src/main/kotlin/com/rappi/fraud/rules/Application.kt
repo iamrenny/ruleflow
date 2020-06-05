@@ -9,8 +9,12 @@ import com.google.inject.Guice
 import com.rappi.fraud.rules.config.ConfigParser
 import com.rappi.fraud.rules.module.ResourcesModule
 import com.rappi.fraud.rules.verticle.MainVerticle
+import io.vertx.core.VertxOptions
+import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.json.Json
 import io.vertx.core.logging.SLF4JLogDelegateFactory
+import io.vertx.micrometer.MicrometerMetricsOptions
+import io.vertx.micrometer.VertxPrometheusOptions
 import io.vertx.reactivex.core.Vertx
 import kotlin.system.exitProcess
 import org.slf4j.Logger
@@ -23,7 +27,16 @@ fun main() {
     // Route all vert.x logging to SLF4J
     System.setProperty("vertx.logger-delegate-factory-class-name", SLF4JLogDelegateFactory::class.java.name)
 
-    val vertx = Vertx.vertx()
+    val options = VertxOptions()
+    options.metricsOptions = MicrometerMetricsOptions().setPrometheusOptions(
+        VertxPrometheusOptions()
+            .setEnabled(true)
+            .setStartEmbeddedServer(true)
+            .setEmbeddedServerOptions(HttpServerOptions().setPort(9090))
+            .setEmbeddedServerEndpoint("/metrics")
+    ).setEnabled(true)
+
+    val vertx = Vertx.vertx(options)
 
     jsonConfig()
 

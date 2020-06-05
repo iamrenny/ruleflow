@@ -7,8 +7,10 @@ import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
+import io.vertx.micrometer.backends.BackendRegistries
 import io.vertx.reactivex.redis.RedisClient
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class CacheService @Inject constructor(private val redisClient: RedisClient) {
@@ -17,18 +19,22 @@ class CacheService @Inject constructor(private val redisClient: RedisClient) {
 
     fun get(key: WorkflowKey): Maybe<RuleEngine> {
         logger.info("Getting value in cache for ${buildKey(key)}")
+        val startTimeInMillis = System.currentTimeMillis()
         return exists(key)
-                .filter { it }
-                .flatMap {
-                    redisClient.rxGet(buildKey(key)).flatMap {
-                        Maybe.just(JsonObject(it).mapTo(RuleEngine::class.java))
-                    }
+            .filter { it }
+            .flatMap {
+                redisClient.rxGet(buildKey(key)).flatMap {
+                    Maybe.just(JsonObject(it).mapTo(RuleEngine::class.java))
                 }
+            }.doAfterTerminate {
+                BackendRegistries.getDefaultNow().timer("fraud.rules.engine.cacheService.get")
+                    .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
+            }
     }
 
     fun set(key: WorkflowKey, entity: RuleEngine): Single<RuleEngine> {
         return redisClient
-                .rxSetex(buildKey(key), Duration.ofMinutes(5).seconds, JsonObject.mapFrom(entity).toString())
+            .rxSetex(buildKey(key), Duration.ofMinutes(5).seconds, JsonObject.mapFrom(entity).toString())
             .map {
                 entity
             }

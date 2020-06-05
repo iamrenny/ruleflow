@@ -19,6 +19,8 @@ import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
+import io.vertx.micrometer.MicrometerMetricsOptions
+import io.vertx.micrometer.backends.BackendRegistries
 import io.vertx.reactivex.core.http.HttpClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -52,6 +54,8 @@ abstract class BaseTest {
             })
 
             httpClient = rxVertx.createHttpClient()
+
+            BackendRegistries.setupBackend(MicrometerMetricsOptions())
         }
 
         @AfterAll

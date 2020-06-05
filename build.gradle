@@ -31,4 +31,5 @@ compileTestKotlin {
 ext {
     kotlin_version = '1.3.50'
     vertx_version = '3.8.0'
+    micrometer_version = '1.4.1'
 }
