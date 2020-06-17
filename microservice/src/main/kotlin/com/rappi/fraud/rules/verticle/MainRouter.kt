@@ -69,15 +69,20 @@ class MainRouter @Inject constructor(
     }
 
     private fun evaluateActive(ctx: RoutingContext) {
+        val workflow = WorkflowKey(
+            countryCode = ctx.pathParam("countryCode"),
+            name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8")
+        )
         Single.just(ctx.bodyAsJson).flatMap {
-            val workflow = WorkflowKey(
-                countryCode = ctx.pathParam("countryCode"),
-                name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8")
-            )
             workflowService.evaluate(workflow, it)
         }.subscribe({
-            ctx.ok(JsonObject.mapFrom(it).toString())
+            if(!ctx.response().closed() && !ctx.response().ended()){
+                ctx.ok(JsonObject.mapFrom(it).toString())
+            }else {
+                logger.error("workflow evaluation took to much time, key: $workflow and data: ${ctx.bodyAsJson}")
+            }
         }, {cause ->
+            logger.error("failed to evaluate workflow with key: $workflow and data: ${ctx.bodyAsJson}", cause)
             when (cause) {
                 is NoSuchElementException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
                 else -> ctx.fail(cause)

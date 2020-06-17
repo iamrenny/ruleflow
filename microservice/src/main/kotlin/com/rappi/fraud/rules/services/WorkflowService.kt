@@ -71,7 +71,9 @@ class WorkflowService @Inject constructor(
                 }
             }
             .doAfterTerminate {
-                BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate")
+                BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate",
+                    "countryCode", key.countryCode,
+                    "workflow", key.name)
                     .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
             }
     }
