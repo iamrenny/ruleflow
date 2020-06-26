@@ -13,13 +13,11 @@ import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.entities.WorkflowKey
 import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.parser.RuleEngine
-import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
-import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
@@ -29,7 +27,7 @@ import java.util.concurrent.TimeUnit
 class WorkflowService @Inject constructor(
     private val activeWorkflowRepository: ActiveWorkflowRepository,
     private val activeWorkflowHistoryRepository: ActiveWorkflowHistoryRepository,
-    private val cacheService: CacheService,
+    private val rulesEngineService: RulesEngineService,
     private val workflowRepository: WorkflowRepository
 ) {
 
@@ -59,7 +57,7 @@ class WorkflowService @Inject constructor(
 
     fun evaluate(key: WorkflowKey, data: JsonObject): Single<WorkflowResult> {
         val startTimeInMillis = System.currentTimeMillis()
-        return cacheService.get(key)
+        return rulesEngineService.get(key)
             .switchIfEmpty(Single.defer {  fromDb(key) })
             .map {
                 it.evaluate(data.map)
@@ -91,13 +89,13 @@ class WorkflowService @Inject constructor(
             activeWorkflowRepository
                     .get(ActiveKey(countryCode = key.countryCode, name = key.name))
                 .flatMap {
-                    cacheService.set(key, RuleEngine(it.workflow!!))
+                    rulesEngineService.set(key, RuleEngine(it.workflow!!))
                 }
 
     private fun fromDbWithVersion(key: WorkflowKey) =
             workflowRepository.get(key)
-                .flatMap {
-                    cacheService.set(key, RuleEngine(it.workflow))
+                .map {
+                    RuleEngine(it.workflow)
                 }
 
     fun activate(request: ActivateRequest): Single<Workflow> {
@@ -127,7 +125,7 @@ class WorkflowService @Inject constructor(
     }
 
     private fun saveActiveInCache(workflow: Workflow) {
-        cacheService
+        rulesEngineService
                 .set(
                         WorkflowKey(
                                 countryCode = workflow.countryCode,

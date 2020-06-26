@@ -40,15 +40,15 @@ class WorkflowServiceTest {
 
     private val activeWorkflowRepository = mock<ActiveWorkflowRepository>()
     private val activeWorkflowHistoryRepository = mock<ActiveWorkflowHistoryRepository>()
-    private val ruleEngineCacheService = mock<CacheService>()
+    private val ruleEngineInMemoryService = mock<RulesEngineService>()
     private val workflowRepository = mock<WorkflowRepository>()
     private val service = WorkflowService(activeWorkflowRepository, activeWorkflowHistoryRepository,
-        ruleEngineCacheService, workflowRepository)
+        ruleEngineInMemoryService, workflowRepository)
 
     @BeforeEach
     fun cleanUp() {
-        reset(activeWorkflowRepository, activeWorkflowHistoryRepository, ruleEngineCacheService, workflowRepository)
-        whenever(ruleEngineCacheService.set(any(), any()))
+        reset(activeWorkflowRepository, activeWorkflowHistoryRepository, ruleEngineInMemoryService, workflowRepository)
+        whenever(ruleEngineInMemoryService.set(any(), any()))
             .thenReturn(Single.just(RuleEngine(baseWorkflow().workflow)))
         BackendRegistries.setupBackend(MicrometerMetricsOptions())
     }
@@ -211,7 +211,7 @@ class WorkflowServiceTest {
                             )
                     )
                     argumentCaptor<RuleEngine>().apply {
-                        verify(ruleEngineCacheService).set(
+                        verify(ruleEngineInMemoryService).set(
                                 eq(WorkflowKey(countryCode = expected.countryCode, name = expected.name)), capture()
                         )
                         Assertions.assertEquals(expected.workflow, firstValue.workflow)
@@ -226,7 +226,7 @@ class WorkflowServiceTest {
 
         val key = WorkflowKey(countryCode = workflow.countryCode, name = workflow.name)
 
-        whenever(ruleEngineCacheService.get(key))
+        whenever(ruleEngineInMemoryService.get(key))
                 .thenReturn(Maybe.just(RuleEngine(workflow.workflow)))
 
         val evaluationResult = WorkflowResult(
@@ -257,7 +257,7 @@ class WorkflowServiceTest {
 
         val key = WorkflowKey(countryCode = workflow.countryCode, name = workflow.name)
 
-        whenever(ruleEngineCacheService.get(key))
+        whenever(ruleEngineInMemoryService.get(key))
                 .thenReturn(Maybe.empty())
 
         whenever(activeWorkflowRepository.get(ActiveKey(countryCode = key.countryCode, name = key.name)))
@@ -286,7 +286,7 @@ class WorkflowServiceTest {
                 .assertValue(evaluationResult)
                 .dispose()
 
-        verify(ruleEngineCacheService, times(1)).get(any())
+        verify(ruleEngineInMemoryService, times(1)).get(any())
         verifyZeroInteractions(workflowRepository)
     }
 
@@ -296,7 +296,7 @@ class WorkflowServiceTest {
 
         val key = WorkflowKey(countryCode = workflow.countryCode, name = workflow.name, version = workflow.version)
 
-        whenever(ruleEngineCacheService.get(key))
+        whenever(ruleEngineInMemoryService.get(key))
                 .thenReturn(Maybe.empty())
 
         whenever(workflowRepository.get(key))
@@ -320,7 +320,7 @@ class WorkflowServiceTest {
                 .assertValue(evaluationResult)
                 .dispose()
 
-        verify(ruleEngineCacheService, times(1)).get(any())
+        verify(ruleEngineInMemoryService, times(1)).get(any())
         verifyZeroInteractions(activeWorkflowRepository)
     }
 
