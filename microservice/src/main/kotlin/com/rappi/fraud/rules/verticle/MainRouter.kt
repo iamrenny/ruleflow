@@ -1,28 +1,35 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.WorkflowKey
+import com.rappi.fraud.rules.entities.ListStatus
+import com.rappi.fraud.rules.entities.BatchItemsRequest
+import com.rappi.fraud.rules.errors.ErrorHandler
+import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.errors.NotFoundException
+import com.rappi.fraud.rules.services.ListService
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.reactivex.Single
+import io.vertx.core.json.DecodeException
+import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.RoutingContext
 import io.vertx.reactivex.ext.web.handler.BodyHandler
-import io.vertx.reactivex.ext.web.handler.ErrorHandler
 import io.vertx.reactivex.ext.web.handler.LoggerHandler
 import java.net.URLDecoder
+import kotlin.reflect.KClass
 
 class MainRouter @Inject constructor(
     private val vertx: Vertx,
-    private val workflowService: WorkflowService
+    private val workflowService: WorkflowService,
+    private val listService: ListService
 ) {
 
     private val logger by LoggerDelegate()
@@ -36,7 +43,7 @@ class MainRouter @Inject constructor(
         val router = Router.router(vertx)
 
         router.routeWithRegex("(?!/health-check).*").handler(LoggerHandler.create())
-        router.route("/*").failureHandler(ErrorHandler.create())
+        router.route("/*").failureHandler(ErrorHandler())
         router.route().handler(BodyHandler.create())
 
         router.get("/health-check").handler { it.response().end("OK") }
@@ -48,6 +55,17 @@ class MainRouter @Inject constructor(
         router.post("/workflow/:countryCode/:name/evaluate").handler(::evaluateActive)
         router.post("/workflow/:countryCode/:name/:version/evaluate").handler(::evaluate)
         router.post("/workflow/:countryCode/:name/:version/activate").handler(::activateWorkflow)
+        router.post("/lists").handler(::createList)
+        router.get("/lists").handler(::getLists)
+        router.get("/lists/:list_id").handler(::getListById)
+        router.delete("/lists/:list_id").handler(::deleteList)
+        router.put("/lists/:list_id").handler(::updateList)
+        router.put("/lists/:list_id/status").handler(::updateListStatus)
+        router.post("/lists/:list_id/item").handler(::addItem)
+        router.delete("/lists/:list_id/item").handler(::deleteItem)
+        router.post("/lists/:list_id/items").handler(::addItemsBatch)
+        router.delete("/lists/:list_id/items").handler(::deleteItemsBatch)
+        router.get("/lists/:list_id/items").handler(::getListItems)
 
         return router
     }
@@ -64,7 +82,7 @@ class MainRouter @Inject constructor(
                 JsonObject.mapFrom(w).toString()
             }.toString())
         }, {
-            ctx.serverError(it)
+            ctx.fail(it)
         })
     }
 
@@ -120,7 +138,7 @@ class MainRouter @Inject constructor(
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, {
-            ctx.serverError(it)
+            ctx.fail(it)
         })
     }
 
@@ -136,7 +154,7 @@ class MainRouter @Inject constructor(
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, {
-            ctx.serverError(it)
+            ctx.fail(it)
         })
     }
 
@@ -151,7 +169,7 @@ class MainRouter @Inject constructor(
         }.subscribe({
             ctx.ok(it.map { w -> JsonObject.mapFrom(w).toString() }.toString())
         }, {
-            ctx.serverError(it)
+            ctx.fail(it)
         })
     }
 
@@ -170,7 +188,132 @@ class MainRouter @Inject constructor(
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, {
-            ctx.serverError(it)
+            ctx.fail(it)
+        })
+    }
+
+    private fun createList(ctx: RoutingContext) {
+        val body = ctx.bodyAsJson
+        val listName = body.getString("list_name")  ?: throw ErrorRequestException("list_name required", "validation.body.bad_request", 400)
+        val description = body.getString("description")
+        val responsible = body.getString("responsible") ?: throw ErrorRequestException("responsible required", "validation.body.bad_request", 400)
+        listService.createList(listName, description, responsible).subscribe({
+            ctx.ok(JsonObject.mapFrom(it).toString())
+        },{
+            ctx.fail(it)
+        })
+    }
+
+    private fun getLists(ctx: RoutingContext) {
+
+        listService.getLists().subscribe({ lists ->
+            ctx.ok(JsonObject().put("lists", lists.map { JsonObject.mapFrom(it) }).toString())
+        }, {
+            ctx.fail(it)
+        })
+    }
+
+    private fun deleteList(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+        listService.deleteList(listId.toLong()).subscribe({
+            ctx.ok("")
+        },{
+            ctx.fail(it)
+        })
+    }
+
+    private fun getListById(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+
+        listService.getList(listId.toLong()).subscribe({
+            ctx.ok(JsonObject.mapFrom(it).toString())
+        }, {
+            ctx.fail(it)
+        })
+    }
+
+    private fun updateList(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+        val body = ctx.bodyAsJson
+        val description = body.getString("description") ?: throw ErrorRequestException("description required", "validation.body.bad_request", 400)
+        val responsible = body.getString("responsible") ?: throw ErrorRequestException("responsible required", "validation.body.bad_request", 400)
+
+        listService.updateDescription(listId.toLong(), description, responsible).subscribe({
+            ctx.ok(JsonObject.mapFrom(it).toString())
+        },{
+            ctx.fail(it)
+        })
+    }
+
+    private fun updateListStatus(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+        val body = ctx.bodyAsJson
+        val statusParam = body.getString("status") ?: throw ErrorRequestException("description required", "validation.body.bad_request", 400)
+        val status = if (ListStatus.isValidValue(statusParam.toUpperCase())) ListStatus.valueOf(statusParam.toUpperCase())
+                    else throw ErrorRequestException("status is not valid", "validation.body.bad_request", 400)
+        val responsible = body.getString("responsible") ?: throw ErrorRequestException("responsible required", "validation.body.bad_request", 400)
+
+        listService.updateStatus(listId.toLong(), status, responsible).subscribe({
+            ctx.ok(JsonObject.mapFrom(it).toString())
+        },{
+            ctx.fail(it)
+        })
+    }
+
+    private fun getListItems(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+        listService.getListItems(listId.toLong()).subscribe({ items ->
+            ctx.ok(JsonObject().put("items", items).toString())
+        },{
+            ctx.fail(it)
+        })
+    }
+
+    private fun addItem(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+        val body = ctx.bodyAsJson
+        val itemValue = body.getString("item_value") ?: throw ErrorRequestException("item_value required", "validation.body.bad_request", 400)
+        val responsible = body.getString("responsible") ?: throw ErrorRequestException("responsible required", "validation.body.bad_request", 400)
+
+        listService.addItem(listId.toLong(), itemValue, responsible).subscribe({
+            ctx.ok(JsonObject.mapFrom(it).toString())
+        },{
+            ctx.fail(it)
+        })
+    }
+
+    private fun deleteItem(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+        val body = ctx.bodyAsJson
+        val itemValue = body.getString("item_value") ?: throw ErrorRequestException("item_value required", "validation.body.bad_request", 400)
+        val responsible = body.getString("responsible") ?: throw ErrorRequestException("responsible required", "validation.body.bad_request", 400)
+
+        listService.removeItem(listId.toLong(), itemValue, responsible).subscribe({
+            ctx.ok("")
+        },{
+            ctx.fail(it)
+        })
+    }
+
+    private fun addItemsBatch(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+
+        val addItemsRequest = ctx.bodyAs<BatchItemsRequest>(BatchItemsRequest::class)
+        listService.addItemsBatch(listId.toLong(), addItemsRequest).subscribe({
+            ctx.ok("")
+        },{
+            ctx.fail(it)
+        })
+    }
+
+    private fun deleteItemsBatch(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+
+        val removeItemsRequest = ctx.bodyAs<BatchItemsRequest>(BatchItemsRequest::class)
+        listService.removeItemsBatch(listId.toLong(), removeItemsRequest).subscribe({
+            ctx.ok("")
+        },{
+            ctx.fail(it)
         })
     }
 
@@ -185,9 +328,12 @@ class MainRouter @Inject constructor(
             .putHeader("Content-Type", "application/json")
             .end(chunk)
 
-    private fun RoutingContext.serverError(throwable: Throwable) {
-        logger.error(throwable.message)
-        SignalFx.noticeError(throwable)
-        fail(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), throwable)
+    private fun <T> RoutingContext.bodyAs(clazz: KClass<out Any>): T  {
+        return try {
+            Json.decodeValue(bodyAsString, clazz.java) as T
+        } catch (exception: DecodeException) {
+            logger.warn("Error parsing request Body for class ${clazz.simpleName}", exception)
+            throw ErrorRequestException(exception.message ?: "Fail body validation", "validation.body.bad_request", 400)
+        }
     }
 }
