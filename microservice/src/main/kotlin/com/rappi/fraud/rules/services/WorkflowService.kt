@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit
 class WorkflowService @Inject constructor(
     private val activeWorkflowRepository: ActiveWorkflowRepository,
     private val activeWorkflowHistoryRepository: ActiveWorkflowHistoryRepository,
-    private val rulesEngineService: RulesEngineService,
+    private val cacheService: CacheService,
     private val workflowRepository: WorkflowRepository
 ) {
 
@@ -57,7 +57,7 @@ class WorkflowService @Inject constructor(
 
     fun evaluate(key: WorkflowKey, data: JsonObject): Single<WorkflowResult> {
         val startTimeInMillis = System.currentTimeMillis()
-        return rulesEngineService.get(key)
+        return cacheService.get(key)
             .switchIfEmpty(Single.defer {  fromDb(key) })
             .map {
                 it.evaluate(data.map)
@@ -89,13 +89,13 @@ class WorkflowService @Inject constructor(
             activeWorkflowRepository
                     .get(ActiveKey(countryCode = key.countryCode, name = key.name))
                 .flatMap {
-                    rulesEngineService.set(key, RuleEngine(it.workflow!!))
+                    cacheService.set(key, RuleEngine(it.workflow!!))
                 }
 
     private fun fromDbWithVersion(key: WorkflowKey) =
             workflowRepository.get(key)
-                .map {
-                    RuleEngine(it.workflow)
+                .flatMap {
+                    cacheService.set(key, RuleEngine(it.workflow))
                 }
 
     fun activate(request: ActivateRequest): Single<Workflow> {
@@ -125,7 +125,7 @@ class WorkflowService @Inject constructor(
     }
 
     private fun saveActiveInCache(workflow: Workflow) {
-        rulesEngineService
+        cacheService
                 .set(
                         WorkflowKey(
                                 countryCode = workflow.countryCode,
