@@ -1,17 +1,17 @@
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.rappi.fraud.rules.parser.RuleEngine
+import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-class RuleEngineRappiPayPrepaidTest {
+class WorkflowEvaluatorRappiPayPrepaidTest {
 
     companion object {
 
-        private var engine: RuleEngine? = null
+        private var engine: WorkflowEvaluator? = null
 
         @JvmStatic
         @Suppress("UNUSED")
@@ -157,9 +157,9 @@ class RuleEngineRappiPayPrepaidTest {
         Assertions.assertEquals(expected, actual)
     }
 
-    private fun getEngine(workflow: String): RuleEngine {
+    private fun getEngine(workflow: String): WorkflowEvaluator {
         if (engine == null) {
-            engine = RuleEngine(workflow)
+            engine = WorkflowEvaluator(workflow)
         }
         return engine!!
     }

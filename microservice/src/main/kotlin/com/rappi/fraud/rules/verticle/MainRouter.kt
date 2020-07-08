@@ -2,12 +2,11 @@ package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.entities.ActivateRequest
+import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
-import com.rappi.fraud.rules.entities.WorkflowKey
 import com.rappi.fraud.rules.entities.ListStatus
-import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.errors.ErrorHandler
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.errors.NotFoundException
@@ -76,7 +75,8 @@ class MainRouter @Inject constructor(
                 countryCode = it["countryCode"]!!
             )
         }.flatMap {
-            workflowService.getListOfAllWorkflows(it).toList()
+            workflowService.listAllWorkflows(it)
+                .toList()
         }.subscribe({
             ctx.ok(it.map { w ->
                 JsonObject.mapFrom(w).toString()
@@ -87,20 +87,20 @@ class MainRouter @Inject constructor(
     }
 
     private fun evaluateActive(ctx: RoutingContext) {
-        val workflow = WorkflowKey(
-            countryCode = ctx.pathParam("countryCode"),
-            name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8")
-        )
         Single.just(ctx.bodyAsJson).flatMap {
-            workflowService.evaluate(workflow, it)
+            workflowService.evaluate(
+                countryCode = ctx.pathParam("countryCode"),
+                name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
+                data = it
+            )
         }.subscribe({
-            if(!ctx.response().closed() && !ctx.response().ended()){
+            if (!ctx.response().closed() && !ctx.response().ended()) {
                 ctx.ok(JsonObject.mapFrom(it).toString())
-            }else {
-                logger.error("workflow evaluation took to much time, key: $workflow and data: ${ctx.bodyAsJson}")
+            } else {
+                logger.error("workflow evaluation took to much time, key: $it and data: ${ctx.bodyAsJson}")
             }
-        }, {cause ->
-            logger.error("failed to evaluate workflow with key: $workflow and data: ${ctx.bodyAsJson}", cause)
+        }, { cause ->
+            logger.error("failed to evaluate workflow with request body ${ctx.bodyAsJson}", cause)
             when (cause) {
                 is NoSuchElementException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
                 else -> ctx.fail(cause)
@@ -110,15 +110,13 @@ class MainRouter @Inject constructor(
 
     private fun evaluate(ctx: RoutingContext) {
         Single.just(ctx.bodyAsJson).flatMap {
-            val workflow = WorkflowKey(
-                countryCode = ctx.pathParam("countryCode"),
-                name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
-                version = ctx.pathParam("version").toLong()
-            )
-            workflowService.evaluate(workflow, it)
+        workflowService.evaluate(
+                ctx.pathParam("countryCode"),
+                URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
+                ctx.pathParam("version").toLong(), it)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {cause ->
+        }, { cause ->
             when (cause) {
                 is NotFoundException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
                 else -> ctx.fail(cause)
@@ -143,17 +141,18 @@ class MainRouter @Inject constructor(
     }
 
     private fun getWorkflow(ctx: RoutingContext) {
-        Single.just(ctx.pathParams()).map {
-            WorkflowKey(
-                name = URLDecoder.decode(it["name"]!!, "UTF-8"),
-                version = it["version"]!!.toLong(),
-                countryCode = it["countryCode"]!!
+        Single.just(ctx.pathParams())
+            .flatMap {
+            workflowService.get(
+                it["countryCode"]!!,
+                // TODO: FIX THIS ASAP. NAMES MUST BE URL COMPLIANT
+                URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
+                it["version"]!!.toLong()
             )
-        }.flatMap {
-            workflowService.get(it)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, {
+            logger.error("Error getting workflow", it)
             ctx.fail(it)
         })
     }
@@ -176,11 +175,9 @@ class MainRouter @Inject constructor(
     private fun activateWorkflow(ctx: RoutingContext) {
         Single.just(ctx.pathParams()).map {
             ActivateRequest(
-                key = WorkflowKey(
-                    countryCode = it["countryCode"]!!,
-                    name = URLDecoder.decode(it["name"]!!, "UTF-8")!!,
-                    version = it["version"]!!.toLong()
-                ),
+                countryCode = it["countryCode"]!!,
+                name = URLDecoder.decode(it["name"]!!, "UTF-8")!!,
+                version = it["version"]!!.toLong(),
                 userId = ctx.getUserId()
             )
         }.flatMap {
@@ -194,12 +191,12 @@ class MainRouter @Inject constructor(
 
     private fun createList(ctx: RoutingContext) {
         val body = ctx.bodyAsJson
-        val listName = body.getString("list_name")  ?: throw ErrorRequestException("list_name required", "validation.body.bad_request", 400)
+        val listName = body.getString("list_name") ?: throw ErrorRequestException("list_name required", "validation.body.bad_request", 400)
         val description = body.getString("description")
         val responsible = body.getString("responsible") ?: throw ErrorRequestException("responsible required", "validation.body.bad_request", 400)
         listService.createList(listName, description, responsible).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        },{
+        }, {
             ctx.fail(it)
         })
     }
@@ -217,7 +214,7 @@ class MainRouter @Inject constructor(
         val listId = ctx.pathParam("list_id")
         listService.deleteList(listId.toLong()).subscribe({
             ctx.ok("")
-        },{
+        }, {
             ctx.fail(it)
         })
     }
@@ -240,7 +237,7 @@ class MainRouter @Inject constructor(
 
         listService.updateDescription(listId.toLong(), description, responsible).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        },{
+        }, {
             ctx.fail(it)
         })
     }
@@ -255,7 +252,7 @@ class MainRouter @Inject constructor(
 
         listService.updateStatus(listId.toLong(), status, responsible).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        },{
+        }, {
             ctx.fail(it)
         })
     }
@@ -264,7 +261,7 @@ class MainRouter @Inject constructor(
         val listId = ctx.pathParam("list_id")
         listService.getListItems(listId.toLong()).subscribe({ items ->
             ctx.ok(JsonObject().put("items", items).toString())
-        },{
+        }, {
             ctx.fail(it)
         })
     }
@@ -277,7 +274,7 @@ class MainRouter @Inject constructor(
 
         listService.addItem(listId.toLong(), itemValue, responsible).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        },{
+        }, {
             ctx.fail(it)
         })
     }
@@ -290,7 +287,7 @@ class MainRouter @Inject constructor(
 
         listService.removeItem(listId.toLong(), itemValue, responsible).subscribe({
             ctx.ok("")
-        },{
+        }, {
             ctx.fail(it)
         })
     }
@@ -301,7 +298,7 @@ class MainRouter @Inject constructor(
         val addItemsRequest = ctx.bodyAs<BatchItemsRequest>(BatchItemsRequest::class)
         listService.addItemsBatch(listId.toLong(), addItemsRequest).subscribe({
             ctx.ok("")
-        },{
+        }, {
             ctx.fail(it)
         })
     }
@@ -312,7 +309,8 @@ class MainRouter @Inject constructor(
         val removeItemsRequest = ctx.bodyAs<BatchItemsRequest>(BatchItemsRequest::class)
         listService.removeItemsBatch(listId.toLong(), removeItemsRequest).subscribe({
             ctx.ok("")
-        },{
+        }, {
+            ctx.fail(it)
             ctx.fail(it)
         })
     }
@@ -328,7 +326,7 @@ class MainRouter @Inject constructor(
             .putHeader("Content-Type", "application/json")
             .end(chunk)
 
-    private fun <T> RoutingContext.bodyAs(clazz: KClass<out Any>): T  {
+    private fun <T> RoutingContext.bodyAs(clazz: KClass<out Any>): T {
         return try {
             Json.decodeValue(bodyAsString, clazz.java) as T
         } catch (exception: DecodeException) {

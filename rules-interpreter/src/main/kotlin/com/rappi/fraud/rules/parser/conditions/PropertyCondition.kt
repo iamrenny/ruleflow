@@ -1,37 +1,30 @@
 package com.rappi.fraud.rules.parser.conditions
 
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.fraud.rules.parser.evaluators.ConditionEvaluator
-import com.rappi.fraud.rules.parser.vo.Value
+import com.rappi.fraud.rules.parser.evaluators.Visitor
 
 class PropertyCondition: Condition<ANAParser.PropertyContext> {
-    override fun eval(ctx: ANAParser.PropertyContext, evaluator: ConditionEvaluator): Any? {
+    override fun eval(ctx: ANAParser.PropertyContext, evaluator: Visitor): Any? {
         return when {
-            ctx.validProperty().property != null -> Value.property(evaluator.data[ctx.validProperty().property.text])
-            ctx.validProperty().nestedProperty != null -> Value.property(
+            ctx.validProperty().property != null -> evaluator.data[ctx.validProperty().property.text]
+            ctx.validProperty().nestedProperty != null ->
                 getNestedValue(
                     ctx.validProperty(),
                     evaluator.data
                 )
-            )
-            else -> Value.property(null)
+            else -> null
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     fun getNestedValue(ctx: ANAParser.ValidPropertyContext, data: Map<String, *>): Any? {
-        val queue = mutableListOf(ctx)
-        ctx.validProperty().forEach {
-            queue.add(it)
-        }
-        var r = (data as MutableMap)
-        queue.take(ctx.validProperty().size).forEach {
-            if (r[it.ID().text] is Map<*, *>) {
-                r = r[it.ID().text] as MutableMap<String, *>
-            } else {
-                return null
+        var r = data
+        ctx.ID().forEach { id ->
+            when {
+                r[id.text] is Map<*, *> -> r = r[id.text] as Map<String, Any?>
+                else -> return r[id.text]
             }
         }
-        return r[queue.last().ID().text]
+        return null
     }
 }

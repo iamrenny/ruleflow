@@ -1,4 +1,4 @@
-import com.rappi.fraud.rules.parser.RuleEngine
+import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -8,7 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-class RuleEngineTest {
+class WorkflowEvaluatorTest {
 
     companion object {
         private val data = mapOf(
@@ -105,7 +105,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "rappi_user", "block"),
             ruleEngine.evaluate(
@@ -132,7 +132,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "rappi_user_has_more_than_1", "block"),
             ruleEngine.evaluate(
@@ -157,7 +157,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "rappi_user_has_3", "block"),
             ruleEngine.evaluate(
@@ -182,7 +182,7 @@ class RuleEngineTest {
             end
         """
 
-        val result = RuleEngine(workflow).evaluate(mapOf("items" to 1))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to 1))
         Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
@@ -196,7 +196,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "rappi_user_avg_gte_0_5", "block"),
             ruleEngine.evaluate(
@@ -221,7 +221,7 @@ class RuleEngineTest {
             end
         """
 
-        val result = RuleEngine(workflow).evaluate(mapOf("items" to listOf("a", "c")))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to listOf("a", "c")))
         Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
@@ -235,7 +235,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "rappi_user_has_2", "block"),
             ruleEngine.evaluate(
@@ -260,7 +260,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "rappi_user_has_3", "block"),
             ruleEngine.evaluate(
@@ -285,7 +285,7 @@ class RuleEngineTest {
             end
         """
 
-        val result = RuleEngine(workflow).evaluate(mapOf("items" to 1))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to 1))
         Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
@@ -299,14 +299,14 @@ class RuleEngineTest {
             end
         """
 
-        val actualRisk = RuleEngine(workflow).evaluate(mapOf("subtotal" to 50, "discount" to 50)).risk
+        val actualRisk = WorkflowEvaluator(workflow).evaluate(mapOf("subtotal" to 50, "discount" to 50)).risk
         Assertions.assertEquals("allow", actualRisk)
     }
 
     @Test
     fun testLogical() {
         val file = javaClass.classLoader.getResourceAsStream("samples/test_logical.ANA")!!.reader().readText()
-        val ruleEngine = RuleEngine(file)
+        val ruleEngine = WorkflowEvaluator(file)
         val expected = WorkflowResult("test", "test", "payment_type", "block", setOf("manual_review"))
         Assertions.assertEquals(expected, ruleEngine.evaluate(data))
     }
@@ -315,7 +315,7 @@ class RuleEngineTest {
     @MethodSource("testResult")
     fun testResult(workflowPath: String, expected: WorkflowResult) {
         val workflow = javaClass.classLoader.getResourceAsStream(workflowPath)!!.reader().readText()
-        val actual = RuleEngine(workflow).evaluate(data)
+        val actual = WorkflowEvaluator(workflow).evaluate(data)
         Assertions.assertEquals(expected, actual)
     }
 
@@ -328,21 +328,21 @@ class RuleEngineTest {
                 default allow
             end
         """
-        val actualName = RuleEngine(workflow).validateAndGetWorkflowName()
+        val actualName = WorkflowEvaluator(workflow).validateAndGetWorkflowName()
         Assertions.assertEquals("test", actualName)
     }
 
     @Test
     fun testValidateAndGetWorkflowNameWhenInvalid() {
         Assertions.assertThrows(IllegalArgumentException::class.java) {
-            RuleEngine("workflow").validateAndGetWorkflowName()
+            WorkflowEvaluator("workflow").validateAndGetWorkflowName()
         }
     }
 
     @ParameterizedTest
     @MethodSource("testNullable")
     fun testNullable(workflow: String, expectedRisk: WorkflowResult) {
-        val actualRisk = RuleEngine(workflow).evaluate(data)
+        val actualRisk = WorkflowEvaluator(workflow).evaluate(data)
         Assertions.assertEquals(expectedRisk, actualRisk)
     }
 
@@ -356,7 +356,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "registration_attempts", "block"),
             ruleEngine.evaluate(
@@ -381,7 +381,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "registration_attempts", "block"),
             ruleEngine.evaluate(
@@ -404,7 +404,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"),
             ruleEngine.evaluate(
@@ -428,7 +428,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"),
             ruleEngine.evaluate(
@@ -438,20 +438,20 @@ class RuleEngineTest {
     }
 
     @Test
-    fun testStringContains() {
+    fun `given an existing substring must go ok`() {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    'String contains' test contains 'test1', 'test2', 'test3', 'test4' return block
+                    'String contains' test_property contains 'test1', 'test2', 'test3', 'test4' return block
                 default allow
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "String contains", risk = "block"),
             ruleEngine.evaluate(
-                mapOf("test" to "contains test3")
+                mapOf("test_property" to "this is a test3")
             )
         )
     }
@@ -466,7 +466,7 @@ class RuleEngineTest {
             end
             """
 
-        val result = RuleEngine(workflow).evaluate(mapOf("key" to "value"))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("key" to "value"))
         Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
@@ -481,7 +481,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
 
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"),
@@ -501,7 +501,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"),
             ruleEngine.evaluate(
@@ -523,7 +523,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"),
             ruleEngine.evaluate(
@@ -544,7 +544,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"),
             ruleEngine.evaluate(
@@ -565,7 +565,7 @@ class RuleEngineTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"),
             ruleEngine.evaluate(

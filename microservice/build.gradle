@@ -106,6 +106,8 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-junit-jupiter', version: '2.27.0'
     testCompile group: "org.mockito", name: "mockito-core", version: "2.27.0"
     testCompile group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.6.0'
+    integrationTestCompile 'com.jayway.restassured:rest-assured:2.4.0'
+    integrationTestCompile 'org.assertj:assertj-core:2.0.0'
 
     implementation project(':rules-interpreter')
 

@@ -1,4 +1,4 @@
-import com.rappi.fraud.rules.parser.RuleEngine
+import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
@@ -7,11 +7,11 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.time.Duration
 import java.time.LocalDateTime
 
-class RuleEngineAddCardVelocityTest {
+class WorkflowEvaluatorAddCardVelocityTest {
 
     companion object {
 
-        private var engine: RuleEngine? = null
+        private var engine: WorkflowEvaluator? = null
 
         private val ONE_DAY = Duration.ofDays(1)
         private val ONE_WEEK = Duration.ofDays(7)
@@ -153,9 +153,9 @@ class RuleEngineAddCardVelocityTest {
         Assertions.assertEquals(expected, actual)
     }
 
-    private fun getEngine(workflow: String): RuleEngine {
+    private fun getEngine(workflow: String): WorkflowEvaluator {
         if (engine == null) {
-            engine = RuleEngine(workflow)
+            engine = WorkflowEvaluator(workflow)
         }
         return engine!!
     }

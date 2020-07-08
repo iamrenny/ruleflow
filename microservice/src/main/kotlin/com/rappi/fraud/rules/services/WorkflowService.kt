@@ -3,19 +3,17 @@ package com.rappi.fraud.rules.services
 import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ActivateRequest
-import com.rappi.fraud.rules.entities.ActiveKey
-import com.rappi.fraud.rules.entities.ActiveWorkflow
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.Workflow
-import com.rappi.fraud.rules.entities.WorkflowKey
 import com.rappi.fraud.rules.entities.WorkflowInfo
-import com.rappi.fraud.rules.parser.RuleEngine
+import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
+import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Observable
@@ -28,7 +26,8 @@ class WorkflowService @Inject constructor(
     private val activeWorkflowRepository: ActiveWorkflowRepository,
     private val activeWorkflowHistoryRepository: ActiveWorkflowHistoryRepository,
     private val cacheService: CacheService,
-    private val workflowRepository: WorkflowRepository
+    private val workflowRepository: WorkflowRepository,
+    private val listRepository: ListRepository
 ) {
 
     private val logger by LoggerDelegate()
@@ -36,82 +35,90 @@ class WorkflowService @Inject constructor(
     fun save(request: CreateWorkflowRequest): Single<Workflow> {
         val workflow = Workflow(
                 countryCode = request.countryCode,
-                name = RuleEngine(request.workflow).validateAndGetWorkflowName(),
-                workflow = request.workflow,
+                name = WorkflowEvaluator(request.workflow).validateAndGetWorkflowName(),
+                workflowAsString = request.workflow,
                 userId = request.userId
         )
         return workflowRepository.save(workflow)
     }
 
-    fun get(key: WorkflowKey): Single<Workflow> {
-        return workflowRepository.get(key)
+    fun get(countryCode: String, name: String, version: Long): Single<Workflow> {
+        return workflowRepository.get(countryCode, name, version)
     }
 
     fun getAll(request: GetAllWorkflowRequest): Observable<Workflow> {
         return workflowRepository.getAll(request)
     }
 
-    fun getListOfAllWorkflows(request: GetListOfAllWorkflowsRequest): Observable<WorkflowInfo> {
+    fun listAllWorkflows(request: GetListOfAllWorkflowsRequest): Observable<WorkflowInfo> {
         return workflowRepository.getListOfAllWorkflows(request)
     }
 
-    fun evaluate(key: WorkflowKey, data: JsonObject): Single<WorkflowResult> {
+    fun evaluate(countryCode: String, name: String, version: Long? = null, data: JsonObject): Single<WorkflowResult> {
         val startTimeInMillis = System.currentTimeMillis()
-        return cacheService.get(key)
-            .switchIfEmpty(Single.defer {  fromDb(key) })
-            .map {
-                it.evaluate(data.map)
+        return getWorkflow(countryCode, name, version)
+            .flatMap { workflow ->
+                listRepository.findAllWithEntries()
+                    .map {
+                        Pair(workflow, it)
+                    }
+            }
+            .map { (workflow, list) ->
+                workflow.evaluator.evaluate(data.map, list)
             }
             .doOnError {
-                "Workflow not active for key: $key".let {
+                "Workflow not active for key: $countryCode $name $version".let {
                     logger.error(it)
                     SignalFx.noticeError(it)
                 }
             }
             .doAfterTerminate {
                 BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate",
-                    "countryCode", key.countryCode,
-                    "workflow", key.name)
+                    "countryCode", countryCode,
+                    "workflow", name)
                     .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
             }
     }
 
-    private fun fromDb(key: WorkflowKey): Single<RuleEngine> {
-        logger.info("Getting value in db for $key")
-        return if (key.version == null) {
-            fromDbWithoutVersion(key)
-        } else {
-            fromDbWithVersion(key)
-        }
+    private fun getWorkflow(
+        countryCode: String,
+        name: String,
+        version: Long?
+    ) = cacheService.get(countryCode, name, version)
+        .switchIfEmpty(Single.defer {
+            if (version == null) {
+                fromDbWithoutVersion(countryCode, name)
+            } else {
+                fromDbWithVersion(countryCode, name, version)
+            }
+        })
+
+    private fun fromDb(countryCode: String, name: String, version: Long): Single<Workflow> {
+        logger.info("Getting value in db for $countryCode $name $version")
+        return fromDbWithVersion(countryCode, name, version)
     }
 
-    private fun fromDbWithoutVersion(key: WorkflowKey) =
+    private fun fromDbWithoutVersion(countryCode: String, name: String) =
             activeWorkflowRepository
-                    .get(ActiveKey(countryCode = key.countryCode, name = key.name))
+                    .get(countryCode, name)
                 .flatMap {
-                    cacheService.set(key, RuleEngine(it.workflow!!))
+                    cacheService.set(it)
                 }
 
-    private fun fromDbWithVersion(key: WorkflowKey) =
-            workflowRepository.get(key)
+    private fun fromDbWithVersion(countryCode: String, name: String, version: Long) =
+            workflowRepository.get(countryCode, name, version)
                 .flatMap {
-                    cacheService.set(key, RuleEngine(it.workflow))
+                    cacheService.set(it)
                 }
 
     fun activate(request: ActivateRequest): Single<Workflow> {
         return workflowRepository
-                .get(request.key)
+                .get(request.countryCode, request.name, request.version)
                 .flatMap { toActivate ->
                     activeWorkflowRepository
-                            .save(
-                                    ActiveWorkflow(
-                                            countryCode = request.key.countryCode,
-                                            name = request.key.name,
-                                            workflowId = toActivate.id!!
-                                    )
-                            )
+                            .save(toActivate)
                             .flatMap {
-                                Single.just(toActivate)
+                                Single.just(it)
                             }
                 }
                 .doOnSuccess {
@@ -119,19 +126,14 @@ class WorkflowService @Inject constructor(
                     saveActiveInCache(it)
                 }
                 .doOnError {
-                    logger.error("Activate of workflow ${request.key} could not be completed", it)
+                    logger.error("Activate of workflow $request could not be completed", it)
                     SignalFx.noticeError(it)
                 }
     }
 
     private fun saveActiveInCache(workflow: Workflow) {
         cacheService
-                .set(
-                        WorkflowKey(
-                                countryCode = workflow.countryCode,
-                                name = workflow.name
-                        ),
-                        RuleEngine(workflow.workflow))
+                .set(workflow)
                 .doOnError {
                     logger.error("Workflow ${workflow.id} could not be saved in cache", it)
                     SignalFx.noticeError(it)

@@ -11,6 +11,7 @@ import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
+import kotlin.streams.toList
 
 class ListRepository @Inject constructor(private val database: Database) {
 
@@ -65,11 +66,31 @@ class ListRepository @Inject constructor(private val database: Database) {
             .doOnError { logger.error("error getting lists", it) }
     }
 
+    fun findAllWithEntries(): Single<Map<String, List<String>>> {
+        val query = """SELECT list_name, id, value, description FROM lists JOIN list_items ON lists.id = list_items.list_id WHERE status = 'ENABLED'"""
+        return database.get(query, listOf())
+            .map { it ->
+                Pair(it.getString("list_name"), it.getString("value"))
+            }
+            .toList()
+            // TODO: SIMPLIFY ASAP
+            .map { pair ->
+                pair.groupBy { pair2 -> pair2.first }
+                    .map { entry ->
+                        Pair(entry.key,
+                            entry.value.stream().map { it -> it.second }
+                                .toList()
+                        )
+                    }.toMap()
+            }
+            .doOnError { logger.error("error getting lists", it) }
+    }
+
     fun deleteList(listId: Long): Completable {
         val query = "DELETE from lists WHERE id = $1"
 
         return database.executeDelete(query, listOf(listId)).flatMapCompletable { deletedCount ->
-            if(deletedCount > 0) Completable.complete()
+            if (deletedCount > 0) Completable.complete()
             else Completable.error(NotFoundException("Error deleting. List not found", "error.not_found"))
         }
     }
@@ -139,7 +160,7 @@ class ListRepository @Inject constructor(private val database: Database) {
 
         return database.executeDelete(query, params).flatMapCompletable {
             deletedItemsCount ->
-            if(deletedItemsCount > 0) Completable.complete()
+            if (deletedItemsCount > 0) Completable.complete()
             else Completable.error(ErrorRequestException("Error deleting. Item not found", "error.not_found", 404))
         }
             .doOnError { logger.error("error removing item with value: $itemValue", it) }
@@ -188,5 +209,4 @@ class ListRepository @Inject constructor(private val database: Database) {
         return database.executeDelete(query, listOf(listId)).ignoreElement()
             .doOnError { logger.error("error deleting all items from listId: $listId", it) }
     }
-
 }

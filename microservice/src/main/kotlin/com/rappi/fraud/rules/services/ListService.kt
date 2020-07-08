@@ -1,11 +1,11 @@
 package com.rappi.fraud.rules.services
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.ListItem
 import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.entities.ListStatus
 import com.rappi.fraud.rules.entities.RulesEngineList
-import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.repositories.ListHistoryRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
@@ -14,14 +14,17 @@ import io.reactivex.Single
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 
-class ListService @Inject constructor(private val listRepository: ListRepository,
-                                      private val listHistoryRepository: ListHistoryRepository) {
+class ListService @Inject constructor(
+    private val listRepository: ListRepository,
+    private val listHistoryRepository: ListHistoryRepository
+) {
 
     private val logger by LoggerDelegate()
 
     fun createList(listName: String, description: String?, responsible: String): Single<RulesEngineList> {
 
-        return listRepository.createList(listName, description?: listName, responsible)
+        return listRepository.createList(listName, description ?: listName, responsible)
+        return listRepository.createList(listName, description ?: listName, responsible)
             .doOnSuccess {
                 val changeLog = JsonObject.mapFrom(it)
                 listHistoryRepository.save(it.id!!, ListModificationType.CREATE, it.createdBy, changeLog)
@@ -43,7 +46,7 @@ class ListService @Inject constructor(private val listRepository: ListRepository
     fun updateDescription(listId: Long, description: String, responsible: String): Single<RulesEngineList> {
         return getList(listId)
             .flatMap {
-                if(description != it.description)
+                if (description != it.description)
                     listRepository.updateDescription(listId, description, responsible)
                         .doOnSuccess {
                             val changeLog = JsonObject().put("description", description)
@@ -72,7 +75,7 @@ class ListService @Inject constructor(private val listRepository: ListRepository
     }
 
     fun deleteList(listId: Long): Completable {
-        //TODO definir si es borrado lógico o físico, dependiendo si se puede volver a crear otra lista con el mismo nombre
+        // TODO definir si es borrado lógico o físico, dependiendo si se puede volver a crear otra lista con el mismo nombre
         return Completable.complete()
     }
 
@@ -95,7 +98,7 @@ class ListService @Inject constructor(private val listRepository: ListRepository
             }.doOnSuccess {
                 val changeLog = JsonObject().put("items", JsonArray(listOf(itemValue)))
                 updateTracking(listId, ListModificationType.ADD_ITEMS, responsible, changeLog)
-            }.doOnError{
+            }.doOnError {
                 logger.error("error adding item to list", it)
             }
     }
@@ -132,8 +135,7 @@ class ListService @Inject constructor(private val listRepository: ListRepository
 
     private fun updateTracking(listId: Long, modificationType: ListModificationType, responsible: String, changeLog: JsonObject) {
         listRepository.updateLastUpdatedBy(listId, responsible)
-            .subscribe({},{ logger.error("error updating lastUpdatedBy field", it)})
+            .subscribe({}, { logger.error("error updating lastUpdatedBy field", it) })
         listHistoryRepository.save(listId, modificationType, responsible, changeLog)
     }
-
 }

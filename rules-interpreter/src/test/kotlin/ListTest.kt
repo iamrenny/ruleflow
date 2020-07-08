@@ -1,4 +1,4 @@
-import com.rappi.fraud.rules.parser.RuleEngine
+import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -14,7 +14,7 @@ class ListTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
@@ -41,7 +41,7 @@ class ListTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"), ruleEngine.evaluate(
                 mapOf(
@@ -68,7 +68,7 @@ class ListTest {
         """
 
 
-        val result = RuleEngine(workflow).evaluate(mapOf("items" to "1"))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to "1"))
         Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
 
     }
@@ -83,7 +83,7 @@ class ListTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
@@ -108,7 +108,7 @@ class ListTest {
             end
         """
 
-        val ruleEngine = RuleEngine(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
             WorkflowResult(workflow = "test", risk = "allow"), ruleEngine.evaluate(
                 mapOf(
@@ -132,7 +132,7 @@ class ListTest {
             end
         """
 
-        val result = RuleEngine(workflow).evaluate(mapOf("items" to 1))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to 1))
         Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
@@ -145,7 +145,7 @@ class ListTest {
                 default allow
             end
         """
-        val result = RuleEngine(workflow).evaluate(mapOf("item" to "item"))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "item"))
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
 
     }
@@ -159,7 +159,7 @@ class ListTest {
                 default allow
             end
         """
-        val result = RuleEngine(workflow).evaluate(mapOf("item" to "item"))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "item"))
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
     }
 
@@ -173,7 +173,7 @@ class ListTest {
                 default allow
             end
         """
-        val result = RuleEngine(workflow).evaluate(mapOf("string" to "item"))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item"))
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
@@ -186,7 +186,7 @@ class ListTest {
                 default allow
             end
         """
-        val result = RuleEngine(workflow).evaluate(mapOf("order" to mapOf("payment_method" to mapOf("card_bin"  to "item"))))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("order" to mapOf("payment_method" to mapOf("card_bin"  to "item"))))
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
 
     }
@@ -200,7 +200,7 @@ class ListTest {
                 default allow
             end
         """
-        val result = RuleEngine(workflow).evaluate(mapOf("item2" to "item"))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("item2" to "item"))
         Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 
@@ -213,7 +213,7 @@ class ListTest {
                      default allow
             end
         """
-        val result = RuleEngine(workflow).evaluate(mapOf("string" to "item", "card_bins" to listOf("item1", "item2", "item")))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item", "card_bins" to listOf("item1", "item2", "item")))
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
@@ -222,11 +222,11 @@ class ListTest {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
-                    'rule_a'  string in smart_lists.card_bins return block
+                    'rule_a' string in smart_lists.card_bins return block
                 default allow
             end
         """
-        val result = RuleEngine(workflow).evaluate(mapOf("string" to "item", "smart_lists" to mapOf("card_bins" to listOf("item1", "item2", "item"))))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item", "smart_lists" to mapOf("card_bins" to listOf("item1", "item2", "item"))))
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
@@ -239,7 +239,82 @@ class ListTest {
                 default allow
             end
         """
-        val result = RuleEngine(workflow).evaluate(mapOf("string" to "item", "card_bin" to listOf("item1", "item2", "item")))
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item", "card_bin" to listOf("item1", "item2", "item")))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
+    }
+
+
+    @Test
+    fun `given an empty stored list when evaluating a list must return allow`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a'  card_bin contains list('card_bins') return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item", "card_bin" to listOf("item1", "item2", "item")))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
+    }
+
+    @Test
+    fun `given an existing stored list when evaluating a list must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' card_bin contains list('card_bins') return block
+                default allow
+            end
+        """
+        val request = mapOf("card_bin" to "item1", "card_bins" to listOf("item3", "item2", "item"))
+        val lists = mapOf("card_bins" to listOf("item1"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+
+    @Test
+    fun `given a composed expression with an existing stored list when evaluating a list must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' card_bin contains list('card_bins') and device_id = 'android' return block
+                default allow
+            end
+        """
+        val request = mapOf("card_bin" to "item1", "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
+        val lists = mapOf("card_bins" to listOf<String>("item1"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+    @Test
+    fun `given a composed expression with an existing stored list when evaluating a list  with a nested property must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' order.payment_method.card_bin contains list('card_bins') and device_id = 'android' return block
+                default allow
+            end
+        """
+        val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item1")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
+        val lists = mapOf("card_bins" to listOf<String>("item1"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+    @Test
+    fun `given a composed expression with an existing stored list when evaluating a list with a non existent nested property must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' order.payment_method.not_card_bin contains list('card_bins') and device_id = 'android' return block
+                default allow
+            end
+        """
+        val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
+        val lists = mapOf("card_bins" to listOf<String>("item1"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
         Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
     }
 }

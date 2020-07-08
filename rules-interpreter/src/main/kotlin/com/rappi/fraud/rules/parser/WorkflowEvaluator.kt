@@ -9,7 +9,7 @@ import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 
-class RuleEngine(val workflow: String) {
+class WorkflowEvaluator(val workflow: String) {
 
     private val tree: ANAParser.ParseContext
 
@@ -22,8 +22,8 @@ class RuleEngine(val workflow: String) {
         tree = parser.parse()
     }
 
-    fun evaluate(request: Map<String, Any>): WorkflowResult {
-        return RuleSetEvaluator(request).visit(tree)
+    fun evaluate(request: Map<String, Any>, list: Map<String, List<String>>  = mapOf()): WorkflowResult {
+        return RuleSetEvaluator(request, list).visit(tree)
     }
 
     fun validateAndGetWorkflowName(): String {

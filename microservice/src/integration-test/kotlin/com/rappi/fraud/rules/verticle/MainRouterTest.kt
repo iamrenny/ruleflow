@@ -7,7 +7,6 @@ import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
-import com.rappi.fraud.rules.entities.WorkflowKey
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -41,7 +40,7 @@ class MainRouterTest : BaseTest() {
                 id = 20,
                 name = "Sample workflow",
                 countryCode = data.getString("country_code"),
-                workflow = data.getString("workflow"),
+                workflowAsString = data.getString("workflow"),
                 version = 10,
                 userId = UUID.randomUUID().toString(),
                 createdAt = LocalDateTime.now()
@@ -49,7 +48,7 @@ class MainRouterTest : BaseTest() {
 
         whenever(
                 workflowService
-                        .save(CreateWorkflowRequest(expected.countryCode, expected.workflow, expected.userId))
+                        .save(CreateWorkflowRequest(expected.countryCode, expected.workflowAsString, expected.userId))
         )
                 .thenReturn(Single.just(expected))
 
@@ -107,24 +106,28 @@ class MainRouterTest : BaseTest() {
 
     @Test
     fun testGet(vertx: Vertx, testContext: VertxTestContext) {
-        val data = getSeedAsJsonObject("get_workflow.json")
-        val workflow = data.mapTo(Workflow::class.java)
+        try {
+            val data = getSeedAsJsonObject("get_workflow.json")
+            val workflow = data.mapTo(Workflow::class.java)
 
-        whenever(workflowService
-                .get(WorkflowKey(
+            whenever(
+                workflowService
+                    .get(
                         countryCode = workflow.countryCode,
                         name = workflow.name,
-                        version = workflow.version!!)))
+                        version = workflow.version!!
+                    )
+            )
                 .thenReturn(Single.just(workflow))
 
-        val request = httpClient
+            val request = httpClient
                 .getAbs(
-                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${URLEncoder.encode(
-                                workflow.name,
-                                "UTF-8"
-                        )}/${workflow.version}"
+                    "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${URLEncoder.encode(
+                        workflow.name,
+                        "UTF-8"
+                    )}/${workflow.version}"
                 )
-        request
+            request
                 .toObservable()
                 .subscribe {
                     Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
@@ -138,7 +141,10 @@ class MainRouterTest : BaseTest() {
                         }
                     }
                 }
-        request.end(data.toString())
+            request.end(data.toString())
+        } catch (e: Exception) {
+            testContext.failNow(e)
+        }
     }
 
     @Test
@@ -186,8 +192,11 @@ class MainRouterTest : BaseTest() {
         val expected = getSeedAsJsonObject("get_workflow.json").mapTo(Workflow::class.java)
 
         val activateRequest = ActivateRequest(
-                key = WorkflowKey(countryCode = expected.countryCode, name = expected.name, version = expected.version!!),
-                userId = UUID.randomUUID().toString())
+                countryCode = expected.countryCode,
+                name = expected.name,
+                version = expected.version!!,
+                userId = UUID.randomUUID().toString()
+        )
 
         whenever(workflowService
                 .activate(activateRequest))
@@ -221,9 +230,6 @@ class MainRouterTest : BaseTest() {
     @Test
     fun testEvaluateWithVersion(vertx: Vertx, testContext: VertxTestContext) {
         val workflow = getSeedAsJsonObject("get_workflow.json").mapTo(Workflow::class.java)
-
-        val key = WorkflowKey(countryCode = workflow.countryCode, name = workflow.name, version = workflow.version!!)
-
         val data = JsonObject()
 
         val expected = WorkflowResult(
@@ -233,7 +239,7 @@ class MainRouterTest : BaseTest() {
                 risk = "block")
 
         whenever(workflowService
-                .evaluate(key, data))
+                .evaluate(countryCode = workflow.countryCode, name = workflow.name, version = workflow.version!!, data = data))
                 .thenReturn(Single.just(expected))
 
         val request = httpClient
@@ -264,8 +270,6 @@ class MainRouterTest : BaseTest() {
     fun testEvaluateWithoutVersion(vertx: Vertx, testContext: VertxTestContext) {
         val workflow = getSeedAsJsonObject("get_workflow.json").mapTo(Workflow::class.java)
 
-        val key = WorkflowKey(countryCode = workflow.countryCode, name = workflow.name)
-
         val data = JsonObject()
 
         val expected = WorkflowResult(
@@ -275,7 +279,7 @@ class MainRouterTest : BaseTest() {
                 risk = "allow")
 
         whenever(workflowService
-                .evaluate(key, data))
+                .evaluate(countryCode = workflow.countryCode, name = workflow.name, data = data))
                 .thenReturn(Single.just(expected))
 
         val request = httpClient

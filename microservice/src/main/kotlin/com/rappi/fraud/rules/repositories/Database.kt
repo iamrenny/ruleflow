@@ -4,9 +4,9 @@ import io.reactiverse.pgclient.PgPoolOptions
 import io.reactiverse.reactivex.pgclient.PgPool
 import io.reactiverse.reactivex.pgclient.Row
 import io.reactiverse.reactivex.pgclient.Tuple
+import io.reactiverse.reactivex.pgclient.data.Json
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactiverse.reactivex.pgclient.data.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 
@@ -29,7 +29,7 @@ class Database(vertx: Vertx, dbConfig: DatabaseConfig) {
     fun executeWithParams(query: String, params: List<Any>): Single<Row> {
         val p = Tuple.tuple()
         params.forEach {
-            if(it is JsonObject) p.addJson(Json.create(it))
+            if (it is JsonObject) p.addJson(Json.create(it))
             else p.addValue(it)
         }
         return connectionPool

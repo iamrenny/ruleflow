@@ -8,21 +8,24 @@ import io.vertx.core.Handler
 import io.vertx.core.json.Json
 import io.vertx.reactivex.ext.web.RoutingContext
 
-class ErrorHandler: Handler<RoutingContext> {
+class ErrorHandler : Handler<RoutingContext> {
     val logger by LoggerDelegate()
 
     override fun handle(event: RoutingContext?) {
         var response = event!!.response()
-        var statusCode: Int = HttpResponseStatus.INTERNAL_SERVER_ERROR.code()
-        var message: Any
-        var cause: Any
+        var statusCode: Int
+        var message: Any? = null
+        var cause: Any? = null
 
         when (event.failure()) {
             is ErrorRequestException -> {
                 var exception = (event.failure() as ErrorRequestException)
                 statusCode = exception.statusCode
                 message = exception.message
-                cause = exception.errorCode ?: ""
+                cause = exception.errorCode
+            }
+            is NoSuchElementException -> {
+                statusCode = HttpResponseStatus.NOT_FOUND.code()
             }
             else -> {
                 statusCode = HttpResponseStatus.INTERNAL_SERVER_ERROR.code()

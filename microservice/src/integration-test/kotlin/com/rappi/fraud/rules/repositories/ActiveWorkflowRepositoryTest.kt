@@ -1,8 +1,6 @@
 package com.rappi.fraud.rules.repositories
 
 import com.rappi.fraud.rules.BaseTest
-import com.rappi.fraud.rules.entities.ActiveKey
-import com.rappi.fraud.rules.entities.ActiveWorkflow
 import com.rappi.fraud.rules.entities.Workflow
 import io.vertx.core.json.JsonObject
 import org.junit.jupiter.api.MethodOrderer
@@ -24,10 +22,13 @@ class ActiveWorkflowRepositoryTest : BaseTest() {
     @Test
     @Order(1)
     fun testSave() {
-        val expected = ActiveWorkflow(
+        val expected = Workflow(
             countryCode = SEED[0].countryCode,
             name = SEED[0].name,
-            workflowId = SEED[0].id!!
+            id = SEED[0].id!!,
+            userId = SEED[0].userId,
+            workflowAsString = SEED[0].workflowAsString,
+            active = true
         )
         repository.save(expected)
             .test()
@@ -41,10 +42,13 @@ class ActiveWorkflowRepositoryTest : BaseTest() {
     @Test
     @Order(2)
     fun testSaveWithConflict() {
-        val expected = ActiveWorkflow(
+        val expected = Workflow(
             countryCode = SEED[1].countryCode,
             name = SEED[1].name,
-            workflowId = SEED[1].id!!
+            id = SEED[1].id!!,
+            userId = SEED[1].userId,
+            workflowAsString = SEED[1].workflowAsString,
+            active = true
         )
         repository.save(expected)
             .test()
@@ -58,17 +62,22 @@ class ActiveWorkflowRepositoryTest : BaseTest() {
     @Test
     @Order(3)
     fun testGet() {
-        repository.get(ActiveKey(countryCode = SEED[0].countryCode, name = SEED[0].name))
+        repository.get(countryCode = SEED[0].countryCode, name = SEED[0].name)
             .test()
             .assertSubscribed()
             .await()
             .assertComplete()
             .assertResult(
-                ActiveWorkflow(
+                Workflow(
                     countryCode = SEED[1].countryCode,
                     name = SEED[1].name,
-                    workflowId = SEED[1].id!!,
-                    workflow = SEED[1].workflow
+                    userId = SEED[1].userId,
+                    id = SEED[1].id!!,
+                    version = SEED[1].version,
+                    workflowAsString = SEED[1].workflowAsString,
+                    createdAt = SEED[1].createdAt,
+                    active = true,
+                    lists = listOf()
                 )
             )
     }

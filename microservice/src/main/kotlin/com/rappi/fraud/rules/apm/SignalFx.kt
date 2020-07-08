@@ -5,7 +5,6 @@ import io.opentracing.Span
 import io.opentracing.Tracer
 import io.opentracing.util.GlobalTracer
 
-
 class SignalFx {
     companion object {
         private val MESSAGE = "message"
@@ -16,9 +15,6 @@ class SignalFx {
         private val ERROR_TYPE = "sfx.error.type"
         private val ERROR_OBJECT = "sfx.error.object"
         private val SFX_ERROR_KIND = "sfx.error.kind"
-
-
-
 
         @Deprecated("This is a noop. Use grafana + prometheus instead.")
         fun recordMetric(name: String, value: Double) {
@@ -93,7 +89,6 @@ class SignalFx {
             applyCurrentSpan { span ->
                 span.setOperationName(name)
             }
-
         }
 
         fun startTrace(name: String, async: Boolean): () -> Unit {
@@ -112,7 +107,7 @@ class SignalFx {
 
         fun applyCurrentSpan(fn: (Span) -> Unit) {
             val tracer = GlobalTracer.get() ?: return
-            val span= tracer.scopeManager().activeSpan()
+            val span = tracer.scopeManager().activeSpan()
             if (span != null) {
                 fn.invoke(span)
                 span.finish()

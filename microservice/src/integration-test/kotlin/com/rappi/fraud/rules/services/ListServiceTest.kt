@@ -3,7 +3,6 @@ package com.rappi.fraud.rules.services
 import com.rappi.fraud.rules.BaseTest
 import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.repositories.Database
-import com.rappi.fraud.rules.repositories.ListHistoryRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import io.reactivex.Observable
 import io.vertx.junit5.VertxTestContext
@@ -14,10 +13,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.opentest4j.AssertionFailedError
 
-class ListServiceTest: BaseTest() {
+class ListServiceTest : BaseTest() {
 
     private val listRepository = injector.getInstance(ListRepository::class.java)
-    private val listService =  injector.getInstance(ListService::class.java)
+    private val listService = injector.getInstance(ListService::class.java)
     private val database = injector.getInstance(Database::class.java)
 
     @BeforeEach
@@ -54,7 +53,7 @@ class ListServiceTest: BaseTest() {
                 } catch (e: AssertionFailedError) {
                     testContext.failNow(e)
                 }
-            },{
+            }, {
                 testContext.failNow(it)
             })
     }
@@ -84,7 +83,6 @@ class ListServiceTest: BaseTest() {
         }
     }
 
-
     @Test
     fun `test find by name`(testContext: VertxTestContext) {
         val savedList = listService.createList(
@@ -101,7 +99,7 @@ class ListServiceTest: BaseTest() {
                 } catch (e: AssertionFailedError) {
                     testContext.failNow(e)
                 }
-            },{
+            }, {
                 testContext.failNow(it)
             })
     }
@@ -125,7 +123,7 @@ class ListServiceTest: BaseTest() {
                 } catch (e: AssertionFailedError) {
                     testContext.failNow(e)
                 }
-            },{
+            }, {
                 testContext.failNow(it)
             })
     }
@@ -158,8 +156,8 @@ class ListServiceTest: BaseTest() {
 
         listService.removeItem(item.listId, item.value, "delete_responsible").blockingGet()
 
-        listRepository.getItems(savedList.id!!).toList().subscribe ({ items ->
-            assertTrue(items.none { it.listId == savedList.id!! && it.value == "listItem1"})
+        listRepository.getItems(savedList.id!!).toList().subscribe({ items ->
+            assertTrue(items.none { it.listId == savedList.id!! && it.value == "listItem1" })
             assertTrue(items.isEmpty())
             testContext.completeNow()
         },
@@ -208,7 +206,7 @@ class ListServiceTest: BaseTest() {
             } catch (e: AssertionFailedError) {
                 testContext.failNow(e)
             }
-        },{
+        }, {
             testContext.failNow(it)
         })
     }
@@ -296,7 +294,7 @@ class ListServiceTest: BaseTest() {
     private fun clearTestLists() {
 
         listRepository.getLists()
-            .filter{ list -> list.listName.endsWith("Test")}
+            .filter { list -> list.listName.endsWith("Test") }
             .flatMap { testList ->
                 database.executeDelete("DELETE from list_history WHERE list_id = $1", listOf(testList.id!!)).blockingGet()
                 database.executeDelete("DELETE from list_items WHERE list_id = $1", listOf(testList.id!!)).blockingGet()
@@ -306,5 +304,4 @@ class ListServiceTest: BaseTest() {
         val lists = listRepository.getLists().toList().blockingGet()
         assertTrue(lists.isEmpty())
     }
-
 }

@@ -1,9 +1,12 @@
 package com.rappi.fraud.rules.entities
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.rappi.fraud.rules.entities.serializers.LocalDateTimeDeserializer
 import com.rappi.fraud.rules.entities.serializers.LocalDateTimeSerializer
+import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import io.reactiverse.reactivex.pgclient.Row
 import java.time.LocalDateTime
 
@@ -23,14 +26,10 @@ data class CreateWorkflowRequest(
 )
 
 data class ActivateRequest(
-    val key: WorkflowKey,
-    val userId: String
-)
-
-data class WorkflowKey(
+    val userId: String,
     val countryCode: String,
     val name: String,
-    val version: Long? = null
+    val version: Long
 )
 
 data class Workflow(
@@ -38,22 +37,29 @@ data class Workflow(
     val countryCode: String,
     val name: String,
     val version: Long? = null,
-    val workflow: String,
+    @JsonProperty("workflow")
+    val workflowAsString: String,
     val userId: String,
+    @JsonIgnore val lists: List<RulesEngineList>? = listOf(),
     @JsonDeserialize(using = LocalDateTimeDeserializer::class)
     @JsonSerialize(using = LocalDateTimeSerializer::class)
-    val createdAt: LocalDateTime? = null
+    val createdAt: LocalDateTime? = null,
+    val active: Boolean = false
 ) {
-
     constructor(row: Row) : this(
         id = row.getLong("id")!!,
         name = row.getString("name")!!,
         version = row.getLong("version")!!,
         countryCode = row.getString("country_code")!!,
-        workflow = row.getString("workflow")!!,
+        workflowAsString = row.getString("workflow")!!,
         userId = row.getString("user_id")!!,
-        createdAt = row.getValue("created_at") as? LocalDateTime
+        createdAt = row.getValue("created_at") as? LocalDateTime,
+        lists = listOf<RulesEngineList>()
     )
+
+    val evaluator @JsonIgnore get() = WorkflowEvaluator(this.workflowAsString)
+
+    fun activate(): Workflow = this.copy(active = true)
 }
 
 data class WorkflowInfo(

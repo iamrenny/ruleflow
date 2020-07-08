@@ -4,17 +4,20 @@ import io.reactiverse.reactivex.pgclient.Row
 import io.vertx.core.json.JsonObject
 import java.time.LocalDateTime
 
-data class RulesEngineList (val id: Long? = null,
-                            val listName: String,
-                            val description: String,
-                            val status: ListStatus = ListStatus.DISABLED,
-                            val createdAt: LocalDateTime? = null,
-                            val updatedAt: LocalDateTime? = null,
-                            val createdBy: String,
-                            val lastUpdatedBy: String? = null
+data class RulesEngineList(
+    val id: Long? = null,
+    val listName: String,
+    val description: String,
+    val status: ListStatus = ListStatus.DISABLED,
+    val createdAt: LocalDateTime? = null,
+    val updatedAt: LocalDateTime? = null,
+    val createdBy: String,
+    val lastUpdatedBy: String? = null,
+    val listItems: List<ListItem>? = null
+
 ) {
 
-    constructor(row: Row): this(
+    constructor(row: Row) : this(
         id = row.getLong("id"),
         listName = row.getString("list_name"),
         description = row.getString("description"),
@@ -29,16 +32,15 @@ data class RulesEngineList (val id: Long? = null,
 enum class ListStatus {
     ENABLED, DISABLED;
 
-    companion object{
+    companion object {
         fun isValidValue(value: String) = values().any { it.name == value.toUpperCase() }
     }
-
 }
 
 enum class ListModificationType { CREATE, EDIT, CHANGE_STATUS, ADD_ITEMS, REMOVE_ITEMS, DELETE }
 
-data class ListItem (val listId: Long, val value: String) {
-    constructor(row: Row): this(
+data class ListItem(val listId: Long, val value: String) {
+    constructor(row: Row) : this(
         listId = row.getLong("list_id"),
         value = row.getString("value")
     )
@@ -51,8 +53,8 @@ data class ListHistory(
     val createdAt: LocalDateTime? = null,
     val responsible: String,
     val changeLog: JsonObject
-)  {
-    constructor(row: Row): this(
+) {
+    constructor(row: Row) : this(
         id = row.getLong("id"),
         listId = row.getLong("list_id"),
         modificationType = row.getString("modification_type"),

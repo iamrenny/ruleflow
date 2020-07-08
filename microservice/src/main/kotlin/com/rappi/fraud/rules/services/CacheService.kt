@@ -1,9 +1,7 @@
 package com.rappi.fraud.rules.services
 
-import com.rappi.fraud.rules.entities.WorkflowKey
-import com.rappi.fraud.rules.parser.RuleEngine
+import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.verticle.LoggerDelegate
-import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
@@ -17,14 +15,14 @@ class CacheService @Inject constructor(private val redisClient: RedisClient) {
 
     private val logger by LoggerDelegate()
 
-    fun get(key: WorkflowKey): Maybe<RuleEngine> {
-        logger.info("Getting value in cache for ${buildKey(key)}")
+    fun get(countryCode: String, name: String, version: Long? = null): Maybe<Workflow> {
+        logger.info("Getting value in cache for ${buildKey(countryCode, name, version)}")
         val startTimeInMillis = System.currentTimeMillis()
-        return exists(key)
-            .filter { it }
+        return exists(countryCode, name, version)
+            .filter { exists -> exists }
             .flatMap {
-                redisClient.rxGet(buildKey(key)).flatMap {
-                    Maybe.just(JsonObject(it).mapTo(RuleEngine::class.java))
+                redisClient.rxGet(buildKey(countryCode, name, version)).flatMap {
+                    Maybe.just(JsonObject(it).mapTo(Workflow::class.java).activate())
                 }
             }.doAfterTerminate {
                 BackendRegistries.getDefaultNow().timer("fraud.rules.engine.cacheService.get")
@@ -32,19 +30,28 @@ class CacheService @Inject constructor(private val redisClient: RedisClient) {
             }
     }
 
-    fun set(key: WorkflowKey, entity: RuleEngine): Single<RuleEngine> {
+    // TODO: This should return either the saved instance or a completable.
+    fun set(entity: Workflow): Single<Workflow> {
         return redisClient
-            .rxSetex(buildKey(key), Duration.ofMinutes(5).seconds, JsonObject.mapFrom(entity).toString())
+            .rxSetex(buildKey(entity), Duration.ofMinutes(5).seconds, JsonObject.mapFrom(entity).toString())
             .map {
                 entity
             }
     }
 
-    fun exists(key: WorkflowKey): Single<Boolean> {
-        return redisClient.rxExists(buildKey(key)).map { it > 0 }
+    fun exists(countryCode: String, name: String, version: Long?): Single<Boolean> {
+        return redisClient.rxExists(buildKey(countryCode, name, version)).map { it > 0 }
     }
 
-    private fun buildKey(key: WorkflowKey): String {
-        return "rule_engine_${key.hashCode()}"
+    private fun buildKey(workflow: Workflow): String {
+        return buildKey(workflow.countryCode, workflow.name, workflow.version)
     }
-}
+
+    private fun buildKey(countryCode: String, name: String, version: Long?): String {
+        return if (version != null) {
+            "rule_engine_${countryCode}_${name}_$version"
+            } else {
+            "rule_engine_${countryCode}_$name"
+            }
+        }
+    }

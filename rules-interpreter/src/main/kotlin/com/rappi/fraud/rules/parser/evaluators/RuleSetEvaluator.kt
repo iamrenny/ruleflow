@@ -5,7 +5,7 @@ import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.removeSingleQuote
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 
-class RuleSetEvaluator(private val data: Map<String, *>) : ANABaseVisitor<WorkflowResult>() {
+class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map<String, List<String>>) : ANABaseVisitor<WorkflowResult>() {
 
     companion object {
         val EMPTY_SET = emptySet<String>()
@@ -16,22 +16,22 @@ class RuleSetEvaluator(private val data: Map<String, *>) : ANABaseVisitor<Workfl
     }
 
     override fun visitWorkflow(ctx: ANAParser.WorkflowContext): WorkflowResult {
-        val ruleEvaluator = ConditionEvaluator(data)
+        val ruleEvaluator = Visitor(data, lists)
         ctx.rulesets()
             .forEach { ruleSet ->
                 ruleSet.rules()
                     .forEach { rule ->
-                        val visitedRule = ruleEvaluator.visit(rule.expr())
-                        if (visitedRule is Boolean) {
-                            if(visitedRule)
-                                return WorkflowResult(
-                                    workflow = ctx.name().text.removeSingleQuote(),
-                                    ruleSet = ruleSet.name().text.removeSingleQuote(),
-                                    rule = rule.name().text.removeSingleQuote(),
-                                    risk = rule.result.text,
-                                    actions = rule.actions()?.action()?.map { it.text }?.toSet() ?: EMPTY_SET
-                                )
-                        }
+                            val visitedRule = ruleEvaluator.visit(rule.expr())
+                            if (visitedRule is Boolean) {
+                                if (visitedRule)
+                                    return WorkflowResult(
+                                        workflow = ctx.name().text.removeSingleQuote(),
+                                        ruleSet = ruleSet.name().text.removeSingleQuote(),
+                                        rule = rule.name().text.removeSingleQuote(),
+                                        risk = rule.result.text,
+                                        actions = rule.actions()?.action()?.map { it.text }?.toSet() ?: EMPTY_SET
+                                    )
+                            }
                     }
             }
         return WorkflowResult(

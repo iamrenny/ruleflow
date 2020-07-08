@@ -5,7 +5,7 @@ import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.conditions.*
 import org.antlr.v4.runtime.tree.ParseTree
 
-class ConditionEvaluator(val data: Map<String, *>) : ANABaseVisitor<Any>() {
+class Visitor(val data: Map<String, *>, val lists:  Map<String, List<String>> = mapOf()) : ANABaseVisitor<Any>() {
 
     override fun visit(tree: ParseTree?): Any? {
         val ctx = tree as ANAParser.ExprContext

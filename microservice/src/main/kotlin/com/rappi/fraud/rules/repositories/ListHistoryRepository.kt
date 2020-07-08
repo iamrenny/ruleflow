@@ -2,9 +2,8 @@ package com.rappi.fraud.rules.repositories
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.SignalFx
-import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.entities.ListHistory
-import com.rappi.fraud.rules.entities.RulesEngineList
+import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Observable
 import io.vertx.core.json.JsonObject
@@ -27,7 +26,7 @@ class ListHistoryRepository @Inject constructor(private val database: Database) 
 
         database.executeWithParams(insert, params)
             .map { ListHistory(it) }
-            .subscribe({},{
+            .subscribe({}, {
                 logger.error("error saving list history for listId: $listId, modificationType: $modificationType, responsible: $responsible", it)
                 SignalFx.noticeError(it)
             })
