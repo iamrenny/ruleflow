@@ -24,7 +24,6 @@ class ListService @Inject constructor(
     fun createList(listName: String, description: String?, responsible: String): Single<RulesEngineList> {
 
         return listRepository.createList(listName, description ?: listName, responsible)
-        return listRepository.createList(listName, description ?: listName, responsible)
             .doOnSuccess {
                 val changeLog = JsonObject.mapFrom(it)
                 listHistoryRepository.save(it.id!!, ListModificationType.CREATE, it.createdBy, changeLog)
