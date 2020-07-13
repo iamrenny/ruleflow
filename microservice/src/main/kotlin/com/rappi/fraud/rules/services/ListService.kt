@@ -6,6 +6,7 @@ import com.rappi.fraud.rules.entities.ListItem
 import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.entities.ListStatus
 import com.rappi.fraud.rules.entities.RulesEngineList
+import com.rappi.fraud.rules.entities.ListHistory
 import com.rappi.fraud.rules.repositories.ListHistoryRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
@@ -137,4 +138,13 @@ class ListService @Inject constructor(
             .subscribe({}, { logger.error("error updating lastUpdatedBy field", it) })
         listHistoryRepository.save(listId, modificationType, responsible, changeLog)
     }
+
+    fun getListHistory(listId: Long): Single<List<ListHistory>> {
+        return listHistoryRepository.getListHistory(listId)
+            .toList()
+            .doOnError {
+                logger.error("error retrieving listHistory for listId: $listId", it)
+            }
+    }
+
 }

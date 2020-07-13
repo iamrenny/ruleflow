@@ -60,7 +60,7 @@ class ListRepository @Inject constructor(private val database: Database) {
 
     fun getLists(): Observable<RulesEngineList> {
         val query = """SELECT id, list_name, description, created_at, updated_at, created_by, last_updated_by, status 
-            FROM lists"""
+            FROM lists ORDER BY status desc, id"""
         return database.get(query, listOf())
             .map { RulesEngineList(it) }
             .doOnError { logger.error("error getting lists", it) }

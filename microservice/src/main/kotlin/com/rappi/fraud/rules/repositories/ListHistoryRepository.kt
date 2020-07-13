@@ -2,8 +2,8 @@ package com.rappi.fraud.rules.repositories
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.SignalFx
-import com.rappi.fraud.rules.entities.ListHistory
 import com.rappi.fraud.rules.entities.ListModificationType
+import com.rappi.fraud.rules.entities.ListHistory
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Observable
 import io.vertx.core.json.JsonObject
@@ -33,8 +33,8 @@ class ListHistoryRepository @Inject constructor(private val database: Database) 
     }
 
     fun getListHistory(listId: Long): Observable<ListHistory> {
-        val query = """SELECT id, list_Id, modification_type, created_at, updated_at, created_by, last_updated_by, status FROM rules_engine_list
-            WHERE list_id = $1"""
+        val query = """SELECT id, list_Id, modification_type, created_at, responsible, change_log FROM list_history
+            WHERE list_id = $1 ORDER BY id desc limit 50"""
 
         return database.get(query, listOf(listId))
             .map { ListHistory(it) }

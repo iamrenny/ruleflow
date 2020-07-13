@@ -65,6 +65,7 @@ class MainRouter @Inject constructor(
         router.post("/lists/:list_id/items").handler(::addItemsBatch)
         router.delete("/lists/:list_id/items").handler(::deleteItemsBatch)
         router.get("/lists/:list_id/items").handler(::getListItems)
+        router.get("/lists/:list_id/history").handler(::getListHistory)
 
         return router
     }
@@ -262,6 +263,15 @@ class MainRouter @Inject constructor(
         listService.getListItems(listId.toLong()).subscribe({ items ->
             ctx.ok(JsonObject().put("items", items).toString())
         }, {
+            ctx.fail(it)
+        })
+    }
+
+    private fun getListHistory(ctx: RoutingContext) {
+        val listId = ctx.pathParam("list_id")
+        listService.getListHistory(listId.toLong()).subscribe({ listHistory ->
+            ctx.ok(JsonObject().put("history", listHistory).toString())
+        },{
             ctx.fail(it)
         })
     }
