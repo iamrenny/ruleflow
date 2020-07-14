@@ -1,3 +1,5 @@
+settings:
+  APP_RESPONSE_TIMEOUT: 1500
 database:
   DB_URL: "${DB_URL}"
   DB_USER: "${DB_USER}"

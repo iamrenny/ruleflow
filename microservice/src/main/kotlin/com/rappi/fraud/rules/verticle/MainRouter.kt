@@ -24,12 +24,15 @@ import io.vertx.reactivex.ext.web.RoutingContext
 import io.vertx.reactivex.ext.web.handler.BodyHandler
 import io.vertx.reactivex.ext.web.handler.LoggerHandler
 import java.net.URLDecoder
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.reflect.KClass
 
 class MainRouter @Inject constructor(
     private val vertx: Vertx,
     private val workflowService: WorkflowService,
-    private val listService: ListService
+    private val listService: ListService,
+    val config: Config
 ) {
 
     private val logger by LoggerDelegate()
@@ -96,7 +99,7 @@ class MainRouter @Inject constructor(
                 countryCode = ctx.pathParam("countryCode"),
                 name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
                 data = it
-            )
+            ).timeout(config.timeout, TimeUnit.MILLISECONDS)
         }.subscribe({
             if (!ctx.response().closed() && !ctx.response().ended()) {
                 ctx.ok(JsonObject.mapFrom(it).toString())
@@ -107,6 +110,7 @@ class MainRouter @Inject constructor(
             logger.error("failed to evaluate workflow with request body ${ctx.bodyAsJson}", cause)
             when (cause) {
                 is NoSuchElementException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
+                is TimeoutException -> ctx.response().setStatusCode(503).end()
                 else -> ctx.fail(cause)
             }
         })
@@ -117,12 +121,14 @@ class MainRouter @Inject constructor(
         workflowService.evaluate(
                 ctx.pathParam("countryCode"),
                 URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
-                ctx.pathParam("version").toLong(), it)
+                ctx.pathParam("version").toLong(), it).timeout(config.timeout, TimeUnit.MILLISECONDS)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, { cause ->
+            logger.error("failed to evaluate workflow with request body ${ctx.bodyAsJson}", cause)
             when (cause) {
                 is NotFoundException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
+                is TimeoutException -> ctx.response().setStatusCode(503).end()
                 else -> ctx.fail(cause)
             }
         })
@@ -347,4 +353,8 @@ class MainRouter @Inject constructor(
             throw ErrorRequestException(exception.message ?: "Fail body validation", "validation.body.bad_request", 400)
         }
     }
+
+    data class Config(
+        val timeout: Long
+    )
 }

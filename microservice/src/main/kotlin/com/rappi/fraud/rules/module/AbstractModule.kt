@@ -42,4 +42,11 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
             .put("port", config.getJsonObject("redis").getString("REDIS_PORT").toInt())
         return RedisClient.create(vertx, redisConfig)
     }
+
+    @Provides
+    fun mainRouterConfig(): MainRouter.Config {
+        return MainRouter.Config(
+            timeout = config.getJsonObject("settings").getLong("APP_RESPONSE_TIMEOUT")
+        )
+    }
 }
