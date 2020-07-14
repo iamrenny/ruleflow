@@ -50,7 +50,7 @@ class WorkflowEvaluatorTest {
             return arrayOf(
                 Arguments.of(
                     "samples/test_result_default.ANA",
-                    WorkflowResult(workflow = "create-order", risk = "allow")
+                    WorkflowResult(workflow = "create-order", ruleSet = "default", rule = "default",  risk = "allow")
                 ),
                 Arguments.of(
                     "samples/test_result_allow.ANA",
@@ -85,11 +85,12 @@ class WorkflowEvaluatorTest {
                     """
                         workflow 'test'
                             ruleset 'dummy'
-                                'has_user' user.type = NULL return block
+                                'has_user' user.type <> null and user.type = 'test' return block
+                                'not_has_user' order_id = '818811' return block
                             default allow
                         end
                     """,
-                    WorkflowResult("test", "dummy", "has_user", "block")
+                    WorkflowResult("test", "dummy", "not_has_user", "block", setOf(), setOf("type field cannot be found"))
                 )
             )
         }
@@ -183,7 +184,7 @@ class WorkflowEvaluatorTest {
         """
 
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to 1))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", warnings = setOf("order field cannot be found")), result)
     }
 
     @Test
@@ -222,7 +223,7 @@ class WorkflowEvaluatorTest {
         """
 
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to listOf("a", "c")))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test",  ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("order field cannot be found")), result)
     }
 
     @Test
@@ -286,7 +287,21 @@ class WorkflowEvaluatorTest {
         """
 
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to 1))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", warnings = setOf("order field cannot be found")), result)
+    }
+
+    @Test
+    fun testNestedNotFound() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi_user_has_more_than_1' order.items.distinct() return block
+                default allow
+            end
+        """
+
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("order" to mapOf("items2" to "13")))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", warnings = setOf("items field cannot be found")), result)
     }
 
     @Test
@@ -406,7 +421,7 @@ class WorkflowEvaluatorTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", risk = "allow"),
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow"),
             ruleEngine.evaluate(
                 mapOf(
                     "paymentMethods" to listOf(
@@ -430,7 +445,7 @@ class WorkflowEvaluatorTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", risk = "allow"),
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow"),
             ruleEngine.evaluate(
                 mapOf("test" to "not contains")
             )
@@ -467,7 +482,7 @@ class WorkflowEvaluatorTest {
             """
 
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("key" to "value"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow"), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", warnings = setOf("order field cannot be found")), result)
     }
 
     @Test
@@ -484,7 +499,7 @@ class WorkflowEvaluatorTest {
         val ruleEngine = WorkflowEvaluator(workflow)
 
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", risk = "allow"),
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", warnings = setOf("test field cannot be found")),
             ruleEngine.evaluate(
                 mapOf("test2" to "test3")
             )
@@ -503,7 +518,7 @@ class WorkflowEvaluatorTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", risk = "allow"),
+            WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default",  warnings = setOf("createdAt field cannot be found")),
             ruleEngine.evaluate(
                 mapOf(
                     "not_createdAt" to 1
@@ -525,7 +540,7 @@ class WorkflowEvaluatorTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", risk = "allow"),
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("createdAt field cannot be found")),
             ruleEngine.evaluate(
                 mapOf(
                     "not_createdAt" to 1
@@ -546,7 +561,7 @@ class WorkflowEvaluatorTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", risk = "allow"),
+            WorkflowResult(workflow = "test",  ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("createdAt field cannot be found")),
             ruleEngine.evaluate(
                 mapOf(
                     "not_createdAt" to 1
@@ -567,7 +582,7 @@ class WorkflowEvaluatorTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", risk = "allow"),
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", warnings = setOf("createdAt field cannot be found")),
             ruleEngine.evaluate(
                 mapOf()
             )

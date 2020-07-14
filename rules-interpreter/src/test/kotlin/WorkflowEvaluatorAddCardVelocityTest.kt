@@ -48,9 +48,11 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_TODAY,
                                     CREDIT_CARD_ADDED_TODAY
                             )),
-                            WorkflowResult(
-                                    workflow = "Add card",
-                                    risk = "allow")
+                        WorkflowResult(
+                            workflow = "Add card",
+                            ruleSet = "default",
+                            rule = "default",
+                            risk = "allow")
                     ),
 
                     // Has more than allowed per day

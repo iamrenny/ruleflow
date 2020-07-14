@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.apm.MetricHandler
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
@@ -42,6 +43,8 @@ class MainRouter @Inject constructor(
         val router = Router.router(vertx)
 
         router.routeWithRegex("(?!/health-check).*").handler(LoggerHandler.create())
+        router.routeWithRegex("(?!/health-check).*").handler(MetricHandler.create())
+
         router.route("/*").failureHandler(ErrorHandler())
         router.route().handler(BodyHandler.create())
 

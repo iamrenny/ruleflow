@@ -96,9 +96,13 @@ dependencies {
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.4'
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.2.3-1'
     compile group: 'javax.activation', name: 'activation', version: '1.1.1'
+    compile "io.vertx:vertx-micrometer-metrics:$vertx_version"
+
+    compile "io.micrometer:micrometer-registry-prometheus:$micrometer_version"
+
 
     compile group: "io.vertx", name: "vertx-micrometer-metrics", version: vertx_version
-    compile group: "io.micrometer", name: "micrometer-registry-prometheus", version: micrometer_version
+    compile group: "io.micrometer", name: "micrometer-registry-prometheus", version: '1.4.1'
 
     testCompile group: "io.vertx", name: "vertx-junit5", version: vertx_version
     testCompile group: "org.junit.jupiter", name: "junit-jupiter-engine", version: "5.3.2"

@@ -1,9 +1,13 @@
 package com.rappi.fraud.rules.apm
 
+import com.rappi.fraud.rules.verticle.LoggerDelegate
 import com.signalfx.tracing.context.TraceScope
 import io.opentracing.Span
 import io.opentracing.Tracer
 import io.opentracing.util.GlobalTracer
+import io.reactivex.Completable
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 
 class SignalFx {
     companion object {
@@ -15,6 +19,8 @@ class SignalFx {
         private val ERROR_TYPE = "sfx.error.type"
         private val ERROR_OBJECT = "sfx.error.object"
         private val SFX_ERROR_KIND = "sfx.error.kind"
+
+        private val logger by LoggerDelegate()
 
         @Deprecated("This is a noop. Use grafana + prometheus instead.")
         fun recordMetric(name: String, value: Double) {
@@ -105,13 +111,16 @@ class SignalFx {
             }
         }
 
-        fun applyCurrentSpan(fn: (Span) -> Unit) {
-            val tracer = GlobalTracer.get() ?: return
-            val span = tracer.scopeManager().activeSpan()
-            if (span != null) {
-                fn.invoke(span)
-                span.finish()
+        fun applyCurrentSpan(fn: (Span) -> Unit): Disposable {
+            return Completable.fromAction {
+                val span = GlobalTracer.get()?.scopeManager()?.activeSpan()
+                if (span != null) {
+                    fn.invoke(span)
+                    span.finish()
+                }
             }
+                .subscribeOn(Schedulers.io())
+                .subscribe({},{ex -> logger.error("Error notifying to signalfx", ex) })
         }
     }
 }

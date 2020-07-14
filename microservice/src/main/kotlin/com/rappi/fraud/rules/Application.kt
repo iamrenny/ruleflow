@@ -27,18 +27,12 @@ fun main() {
     // Route all vert.x logging to SLF4J
     System.setProperty("vertx.logger-delegate-factory-class-name", SLF4JLogDelegateFactory::class.java.name)
 
-    val options = VertxOptions()
-    options.metricsOptions = MicrometerMetricsOptions().setPrometheusOptions(
-        VertxPrometheusOptions()
-            .setEnabled(true)
-            .setStartEmbeddedServer(true)
-            .setEmbeddedServerOptions(HttpServerOptions().setPort(9090))
-            .setEmbeddedServerEndpoint("/metrics")
-    ).setEnabled(true)
+    val options = configPrometheus()
+
+    jsonConfig()
 
     val vertx = Vertx.vertx(options)
 
-    jsonConfig()
 
     val config = ConfigParser(vertx).read().blockingGet()
     val injector = Guice.createInjector(ResourcesModule(vertx, config))
@@ -51,6 +45,19 @@ fun main() {
         log.error("Could not start application", it.message)
         exitProcess(1)
     })
+}
+
+private fun configPrometheus(): VertxOptions {
+    val options = VertxOptions()
+    options.metricsOptions = MicrometerMetricsOptions().setPrometheusOptions(
+        VertxPrometheusOptions()
+            .setEnabled(true)
+            .setStartEmbeddedServer(true)
+            .setEmbeddedServerOptions(HttpServerOptions().setPort(9090))
+            .setEmbeddedServerEndpoint("/metrics")
+    )
+        .setEnabled(true)
+    return options
 }
 
 private fun jsonConfig() {

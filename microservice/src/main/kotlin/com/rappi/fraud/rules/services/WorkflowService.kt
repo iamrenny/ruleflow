@@ -16,6 +16,7 @@ import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
+import io.micrometer.core.instrument.Tag
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
@@ -65,6 +66,17 @@ class WorkflowService @Inject constructor(
             }
             .map { (workflow, list) ->
                 workflow.evaluator.evaluate(data.map, list)
+            }
+            .doOnSuccess { result ->
+                result.warnings.forEach {warning ->
+                BackendRegistries.getDefaultNow().counter(
+                    "fraud.rules.engine.workflows.warnings",
+                    listOf(
+                        Tag.of("workflow", result.workflow),
+                        Tag.of("warning", warning)
+                    )
+                ).increment()
+                }
             }
             .doOnError {
                 "Workflow not active for key: $countryCode $name $version".let {

@@ -23,7 +23,8 @@ class WorkflowEvaluator(val workflow: String) {
     }
 
     fun evaluate(request: Map<String, Any>, list: Map<String, List<String>>  = mapOf()): WorkflowResult {
-        return RuleSetEvaluator(request, list).visit(tree)
+        return RuleSetEvaluator(request, list)
+            .visit(tree)
     }
 
     fun validateAndGetWorkflowName(): String {

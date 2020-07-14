@@ -28,9 +28,7 @@ class ListCondition : Condition<ANAParser.ListContext> {
                 // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                 val list = visitor.lists[ctx.values.STRING_LITERAL()[0].toString().replace("\'", "")]
 
-                list?.any {
-                    value.contains(it, true)
-                } ?: false
+                list?.contains(value as String?) ?: false
             }
             ctx.values.validProperty().property != null -> (visitor.data[ctx.values.validProperty().property.text] as List<*>).contains(
                 value
@@ -65,8 +63,7 @@ class ListCondition : Condition<ANAParser.ListContext> {
             }
         }
 
-
-
+    //TODO: CHECK IF THIS IS FROM PROPERTY CONDITION
     @Suppress("UNCHECKED_CAST")
     fun getFromProperty(ctx: ANAParser.ValidPropertyContext, data: Map<String, *>): List<Any?> {
         var r = data
@@ -74,9 +71,9 @@ class ListCondition : Condition<ANAParser.ListContext> {
             when {
                 r[id.text] is List<Any?> -> return r[id.text] as List<Any?>
                 r[id.text] is Map<*, *> -> r = r[id.text] as Map<String, Any?>
-                else -> return emptyList()
+                else -> error("${id.text} field cannot be found")
             }
         }
-        return listOf()
+        return error("${ctx.ID().joinToString(".")} field cannot be found")
     }
 }
