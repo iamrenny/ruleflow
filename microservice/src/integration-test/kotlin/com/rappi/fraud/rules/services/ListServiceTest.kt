@@ -21,7 +21,16 @@ class ListServiceTest : BaseTest() {
 
     @BeforeEach
     fun configure() {
-        clearTestLists()
+        listRepository.getLists()
+            .filter{ list -> list.listName.endsWith("Test")}
+            .flatMap { testList ->
+                database.executeDelete("DELETE from list_history WHERE list_id = $1", listOf(testList.id!!)).blockingGet()
+                database.executeDelete("DELETE from list_items WHERE list_id = $1", listOf(testList.id!!)).blockingGet()
+                database.executeDelete("DELETE from lists where id = $1", listOf(testList.id!!)).blockingGet()
+                Observable.just(testList)
+            }.toList().blockingGet()
+        val lists = listRepository.getLists().toList().blockingGet()
+        assertTrue(lists.isEmpty())
     }
 
     @Test
@@ -289,19 +298,5 @@ class ListServiceTest : BaseTest() {
         } catch (e: AssertionFailedError) {
             testContext.failNow(e)
         }
-    }
-
-    private fun clearTestLists() {
-
-        listRepository.getLists()
-            .filter { list -> list.listName.endsWith("Test") }
-            .flatMap { testList ->
-                database.executeDelete("DELETE from list_history WHERE list_id = $1", listOf(testList.id!!)).blockingGet()
-                database.executeDelete("DELETE from list_items WHERE list_id = $1", listOf(testList.id!!)).blockingGet()
-                database.executeDelete("DELETE from lists where id = $1", listOf(testList.id!!)).blockingGet()
-                Observable.just(testList)
-            }.toList().blockingGet()
-        val lists = listRepository.getLists().toList().blockingGet()
-        assertTrue(lists.isEmpty())
     }
 }

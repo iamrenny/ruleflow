@@ -7,7 +7,6 @@ import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import java.lang.Exception
 
 class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map<String, List<String>>) : ANABaseVisitor<WorkflowResult>() {
-
     companion object {
         val EMPTY_SET = emptySet<String>()
     }

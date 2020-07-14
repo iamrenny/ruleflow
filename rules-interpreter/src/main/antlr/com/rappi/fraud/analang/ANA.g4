@@ -33,8 +33,7 @@
  : K_DEFAULT (K_RETURN)? result = state
  ;
 
- state
- : ('allow'|'block'|'prevent')
+ state: ('allow' | 'block' | 'prevent')
  ;
 
  actions
@@ -49,11 +48,11 @@
  : L_PAREN expr R_PAREN                                                                                     #parenthesis
  | left = expr op = (ADD | SUBTRACT | MULTIPLY | DIVIDE) right = expr                                       #math
  | left = expr op = (LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right = expr                            #comparator
- | left = expr op = (K_AND | K_OR) right = expr                                                             #binary
+ | value = expr op = (K_CONTAINS | K_IN) values = listElems                                                #list
  | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
         (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #aggregation
  | DATE_DIFF L_PAREN (HOUR | DAY) COMMA left = expr COMMA right = expr R_PAREN                              #dateDiff
- | value = expr op = (K_CONTAINS | K_IN) values = listElems                                                 #list
+ | left = expr op = (K_AND | K_OR) right = expr                                                             #binary
  | validProperty                                                                                            #property
  | validValue                                                                                               #value
  ;

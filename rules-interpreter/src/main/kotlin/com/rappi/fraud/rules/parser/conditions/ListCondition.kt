@@ -16,19 +16,19 @@ class ListCondition : Condition<ANAParser.ListContext> {
     }
 
     private fun evalIn(ctx: ANAParser.ListContext, visitor: Visitor): Any {
-        val value = visitor.visit(ctx.value)
+        val value = visitor.visit(ctx.value) as String?
         return when
         {
             (ctx.values.literalList != null) -> {
                 val list = ctx.values.literalList.text.removeSingleQuote().split(",")
-                list.contains(value as String?)
+                list.contains(value)
             }
             ctx.values.storedList != null -> {
                 val value = value.toString()
                 // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                 val list = visitor.lists[ctx.values.STRING_LITERAL()[0].toString().replace("\'", "")]
 
-                list?.contains(value as String?) ?: false
+                list?.contains(value) ?: false
             }
             ctx.values.validProperty().property != null -> (visitor.data[ctx.values.validProperty().property.text] as List<*>).contains(
                 value
