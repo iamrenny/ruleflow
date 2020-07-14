@@ -60,23 +60,20 @@ class WorkflowService @Inject constructor(
         return getWorkflow(countryCode, name, version)
             .flatMap { workflow ->
                 listRepository.findAllWithEntries()
-                    .map {
-                        Pair(workflow, it)
+                    .map { list ->   workflow.evaluator.evaluate(data.map, list) }
+                    .doOnSuccess { result ->
+                        result.warnings.forEach {warning ->
+                            BackendRegistries.getDefaultNow().counter(
+                                "fraud.rules.engine.workflows.warnings",
+                                listOf(
+                                    Tag.of("workflow", result.workflow),
+                                    Tag.of("workflow_country", workflow.countryCode),
+                                    Tag.of("workflow_version", workflow.version?.toString() ?: "active") ,
+                                    Tag.of("warning", warning)
+                                )
+                            ).increment()
+                        }
                     }
-            }
-            .map { (workflow, list) ->
-                workflow.evaluator.evaluate(data.map, list)
-            }
-            .doOnSuccess { result ->
-                result.warnings.forEach {warning ->
-                BackendRegistries.getDefaultNow().counter(
-                    "fraud.rules.engine.workflows.warnings",
-                    listOf(
-                        Tag.of("workflow", result.workflow),
-                        Tag.of("warning", warning)
-                    )
-                ).increment()
-                }
             }
             .doOnError {
                 "Workflow not active for key: $countryCode $name $version".let {
