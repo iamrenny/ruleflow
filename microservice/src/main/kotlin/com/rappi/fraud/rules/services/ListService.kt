@@ -12,13 +12,18 @@ import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Completable
 import io.reactivex.Single
+import io.reactivex.SingleObserver
+import io.reactivex.SingleSource
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
+import java.time.Duration
+import java.time.LocalDateTime
 
 class ListService @Inject constructor(
     private val listRepository: ListRepository,
     private val listHistoryRepository: ListHistoryRepository
 ) {
+
 
     private val logger by LoggerDelegate()
 

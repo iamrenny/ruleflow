@@ -11,7 +11,7 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class CacheService @Inject constructor(private val redisClient: RedisClient) {
+class WorkflowCache @Inject constructor(private val redisClient: RedisClient) {
 
     private val logger by LoggerDelegate()
 

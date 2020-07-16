@@ -11,11 +11,14 @@ import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
+import java.time.Duration
+import java.time.LocalDateTime
 import kotlin.streams.toList
 
 class ListRepository @Inject constructor(private val database: Database) {
 
     private val logger by LoggerDelegate()
+    private val listCache = ListCache(findAllWithEntriesWithoutCache())
 
     fun createList(listName: String, description: String, createdBy: String): Single<RulesEngineList> {
         val insert = """INSERT INTO lists (list_name, description, created_by, status, last_updated_by) 
@@ -63,26 +66,6 @@ class ListRepository @Inject constructor(private val database: Database) {
             FROM lists ORDER BY status desc, id"""
         return database.get(query, listOf())
             .map { RulesEngineList(it) }
-            .doOnError { logger.error("error getting lists", it) }
-    }
-
-    fun findAllWithEntries(): Single<Map<String, List<String>>> {
-        val query = """SELECT list_name, id, value, description FROM lists JOIN list_items ON lists.id = list_items.list_id WHERE status = 'ENABLED'"""
-        return database.get(query, listOf())
-            .map { it ->
-                Pair(it.getString("list_name"), it.getString("value"))
-            }
-            .toList()
-            // TODO: SIMPLIFY ASAP
-            .map { pair ->
-                pair.groupBy { pair2 -> pair2.first }
-                    .map { entry ->
-                        Pair(entry.key,
-                            entry.value.stream().map { it -> it.second }
-                                .toList()
-                        )
-                    }.toMap()
-            }
             .doOnError { logger.error("error getting lists", it) }
     }
 
@@ -208,5 +191,42 @@ class ListRepository @Inject constructor(private val database: Database) {
         val query = "DELETE FROM list_items WHERE list_id = $1"
         return database.executeDelete(query, listOf(listId)).ignoreElement()
             .doOnError { logger.error("error deleting all items from listId: $listId", it) }
+    }
+
+
+    fun findAllWithEntries(): Single<Map<String, List<String>>> = listCache.get()
+
+
+    private fun findAllWithEntriesWithoutCache(): Single<Map<String, List<String>>> {
+        val query = """SELECT list_name, id, value, description FROM lists JOIN list_items ON lists.id = list_items.list_id WHERE status = 'ENABLED'"""
+        return database.get(query, listOf())
+            .map { it ->
+                Pair(it.getString("list_name"), it.getString("value"))
+            }
+            .toList()
+            // TODO: SIMPLIFY ASAP
+            .map { pair ->
+                pair.groupBy { pair2 -> pair2.first }
+                    .map { entry ->
+                        Pair(entry.key,
+                            entry.value.stream().map { it -> it.second }
+                                .toList()
+                        )
+                    }.toMap()
+            }
+            .doOnError { logger.error("error getting lists", it) }
+    }
+}
+
+class ListCache(val source: Single<Map<String, List<String>>>) {
+    private var cachedEntries = source
+    private var cacheUpdatedAt = LocalDateTime.now()
+    private val cacheTtl = 60000
+    fun get(): Single<Map<String, List<String>>> {
+        if(Duration.between(cacheUpdatedAt, LocalDateTime.now()).toMillis() > cacheTtl) {
+            cacheUpdatedAt = LocalDateTime.now()
+            cachedEntries = source.cache()
+        }
+        return cachedEntries
     }
 }

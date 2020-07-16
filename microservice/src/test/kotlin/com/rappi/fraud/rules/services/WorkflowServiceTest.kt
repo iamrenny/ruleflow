@@ -37,7 +37,7 @@ class WorkflowServiceTest {
 
     private val activeWorkflowRepository = mock<ActiveWorkflowRepository>()
     private val activeWorkflowHistoryRepository = mock<ActiveWorkflowHistoryRepository>()
-    private val cacheService = mock<CacheService>()
+    private val cacheService = mock<WorkflowCache>()
     private val workflowRepository = mock<WorkflowRepository>()
     private val listRepository = mock<ListRepository>()
     private val service = WorkflowService(activeWorkflowRepository, activeWorkflowHistoryRepository,

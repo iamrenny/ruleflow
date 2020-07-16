@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
-class CacheServiceTest : BaseTest() {
+class WorkflowCacheTest : BaseTest() {
 
-    private val service = injector.getInstance(CacheService::class.java)
+    private val service = injector.getInstance(WorkflowCache::class.java)
 
     companion object {
         private val SEED_KEY = Workflow(countryCode = "MX", name = "Sample", version = 1, userId = "123", workflowAsString = "workflow 'Sample' ruleset 'Sample' 'test' d > 100 return allow default block end")

@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
 class WorkflowService @Inject constructor(
     private val activeWorkflowRepository: ActiveWorkflowRepository,
     private val activeWorkflowHistoryRepository: ActiveWorkflowHistoryRepository,
-    private val cacheService: CacheService,
+    private val workflowCache: WorkflowCache,
     private val workflowRepository: WorkflowRepository,
     private val listRepository: ListRepository
 ) {
@@ -59,7 +59,10 @@ class WorkflowService @Inject constructor(
         val startTimeInMillis = System.currentTimeMillis()
         return getWorkflow(countryCode, name, version)
             .flatMap { workflow ->
-                Single.just(workflow.evaluator.evaluate(data.map, mapOf()))
+                listRepository.findAllWithEntries()
+                    .flatMap { lists ->
+                        Single.just(workflow.evaluator.evaluate(data.map, lists))
+                    }
                     .doOnSuccess { result ->
                         result.warnings.forEach {warning ->
                             BackendRegistries.getDefaultNow().counter(
@@ -92,7 +95,7 @@ class WorkflowService @Inject constructor(
         countryCode: String,
         name: String,
         version: Long?
-    ) = cacheService.get(countryCode, name, version)
+    ) = workflowCache.get(countryCode, name, version)
         .switchIfEmpty(Single.defer {
             if (version == null) {
                 fromDbWithoutVersion(countryCode, name)
@@ -110,13 +113,13 @@ class WorkflowService @Inject constructor(
             activeWorkflowRepository
                     .get(countryCode, name)
                 .flatMap {
-                    cacheService.set(it)
+                    workflowCache.set(it)
                 }
 
     private fun fromDbWithVersion(countryCode: String, name: String, version: Long) =
             workflowRepository.get(countryCode, name, version)
                 .flatMap {
-                    cacheService.set(it)
+                    workflowCache.set(it)
                 }
 
     fun activate(request: ActivateRequest): Single<Workflow> {
@@ -140,7 +143,7 @@ class WorkflowService @Inject constructor(
     }
 
     private fun saveActiveInCache(workflow: Workflow) {
-        cacheService
+        workflowCache
                 .set(workflow)
                 .doOnError {
                     logger.error("Workflow ${workflow.id} could not be saved in cache", it)

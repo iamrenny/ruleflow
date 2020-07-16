@@ -221,7 +221,7 @@ class ListServiceTest : BaseTest() {
     }
 
     @Test
-    fun `add masive items to list`(testContext: VertxTestContext) {
+    fun `add batch items to list`(testContext: VertxTestContext) {
         val savedList = listService.createList(
             listName = "batchItemsListTest", description = "test list", responsible = "integrationTest"
         ).blockingGet()
@@ -259,7 +259,7 @@ class ListServiceTest : BaseTest() {
     }
 
     @Test
-    fun `remove massive items from list with an unexistent item`(testContext: VertxTestContext) {
+    fun `remove batch items from list with an unexistent item`(testContext: VertxTestContext) {
         val savedList = listService.createList(
             listName = "batchItemsListTest", description = "test list", responsible = "integrationTest"
         ).blockingGet()
