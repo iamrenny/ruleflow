@@ -8,17 +8,20 @@ import com.rappi.fraud.rules.parser.removeSingleQuote
 class ListCondition : Condition<ANAParser.ListContext> {
 
     override fun eval(ctx: ANAParser.ListContext, evaluator: Visitor): Any {
-        return when (ctx.op.type) {
-            ANALexer.K_CONTAINS -> evalContains(ctx, evaluator)
-            ANALexer.K_IN -> evalIn(ctx, evaluator)
+
+        return when {
+            ctx.not == null && ctx.op.type == ANALexer.K_CONTAINS -> evalContains(ctx, evaluator)
+            ctx.not != null && ctx.op.type == ANALexer.K_CONTAINS -> evalContains(ctx, evaluator) == false
+            ctx.not == null && ctx.op.type == ANALexer.K_IN -> evalIn(ctx, evaluator)
+            ctx.not != null && ctx.op.type == ANALexer.K_IN -> evalIn(ctx, evaluator) == false
             else -> throw RuntimeException("Unexpected token near ${ctx.value.text}")
         }
+
     }
 
     private fun evalIn(ctx: ANAParser.ListContext, visitor: Visitor): Any {
         val value = visitor.visit(ctx.value) as String?
-        return when
-        {
+        return when {
             (ctx.values.literalList != null) -> {
                 val list = ctx.values.literalList.text.removeSingleQuote().split(",")
                 list.contains(value)

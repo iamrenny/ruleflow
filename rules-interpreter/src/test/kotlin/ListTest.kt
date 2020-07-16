@@ -178,6 +178,19 @@ class ListTest {
     }
 
     @Test
+    fun `evaluating not in of basic property should work`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a'  string not in 'item' return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "auto"))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+    @Test
     fun `given a list that contains a value when evaluating a nested property must return true`() {
         val workflow = """
             workflow 'test'
@@ -187,6 +200,20 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("order" to mapOf("payment_method" to mapOf("card_bin"  to "item"))))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
+
+    }
+
+    @Test
+    fun `given a list that not contains a value when evaluating a nested property must return true`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' order.payment_method.card_bin not in 'item', 'item2', 'item3' return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("order" to mapOf("payment_method" to mapOf("card_bin"  to "item5"))))
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
 
     }
@@ -272,6 +299,36 @@ class ListTest {
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
+    @Test
+    fun `given an existing stored list when evaluating a not contains list must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' card_bin not contains list('card_bins') return block
+                default allow
+            end
+        """
+        val request = mapOf("card_bin" to "item2")
+        val lists = mapOf("card_bins" to listOf("item1"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+    @Test
+    fun `given an existing stored list when evaluating a not in list must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' card_bin not in list('card_bins') return block
+                default allow
+            end
+        """
+        val request = mapOf("card_bin" to "item2")
+        val lists = mapOf("card_bins" to listOf("item1"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
 
     @Test
     fun `given a composed expression with an existing stored list when evaluating a list must return block`() {
@@ -309,6 +366,36 @@ class ListTest {
             workflow 'test'
                 ruleset 'dummy'
                     'rule_a' order.payment_method.not_card_bin contains list('card_bins') and device_id = 'android' return block
+                default allow
+            end
+        """
+        val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
+        val lists = mapOf("card_bins" to listOf<String>("item1"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found")), result)
+    }
+
+    @Test
+    fun `given a composed expression with an existing stored list when evaluating not contains a list with a non existent nested property must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' order.payment_method.not_card_bin not contains list('card_bins') and device_id = 'android' return block
+                default allow
+            end
+        """
+        val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
+        val lists = mapOf("card_bins" to listOf<String>("item1"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found")), result)
+    }
+
+    @Test
+    fun `given a composed expression with an existing stored list when evaluating not in a list with a non existent nested property must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' order.payment_method.not_card_bin not in list('card_bins') and device_id = 'android' return block
                 default allow
             end
         """
