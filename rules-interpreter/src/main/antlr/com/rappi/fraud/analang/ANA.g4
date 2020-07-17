@@ -43,7 +43,7 @@
  action
  : 'manual_review'
  // TODO: THIS SHOULD BE REFINED AS BEHAVIOUR IS WRITTEN
- | K_ACTION_ID L_PAREN K_ACTION_NAME EQ_IC STRING_LITERAL (COMMA K_ACTION_PARAMS EQ_IC L_BRACE params_list? R_BRACE)? R_PAREN
+ |  ID L_PAREN ID EQ_IC STRING_LITERAL (COMMA ID EQ_IC L_BRACE params_list? R_BRACE)? R_PAREN
  ;
 
  params_list
@@ -152,10 +152,6 @@
  SPACES
  : [ \u000B\t\r\n] -> channel(HIDDEN)
  ;
-
- K_ACTION_ID: 'action';
- K_ACTION_NAME: 'name';
- K_ACTION_PARAMS: 'params';
 
  fragment DIGIT : [0-9];
 
