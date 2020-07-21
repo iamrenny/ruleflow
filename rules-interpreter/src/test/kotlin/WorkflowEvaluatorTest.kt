@@ -319,6 +319,20 @@ class WorkflowEvaluatorTest {
     }
 
     @Test
+    fun testMathNegative() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rappi' subtotal * -1 = -50 return allow
+                default prevent
+            end
+        """
+
+        val actualRisk = WorkflowEvaluator(workflow).evaluate(mapOf("subtotal" to 50)).risk
+        Assertions.assertEquals("allow", actualRisk)
+    }
+
+    @Test
     fun testLogical() {
         val file = javaClass.classLoader.getResourceAsStream("samples/test_logical.ANA")!!.reader().readText()
         val ruleEngine = WorkflowEvaluator(file)
@@ -367,6 +381,81 @@ class WorkflowEvaluatorTest {
             workflow 'test'
                 ruleset 'dummy'
                     'registration_attempts' paymentMethods.count { dateDiff(hour, currentDate(), createdAt) = 1 } > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult("test", "dummy", "registration_attempts", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "paymentMethods" to listOf(
+                        mapOf("createdAt" to LocalDateTime.now().minusSeconds(60 * 60).toString()),
+                        mapOf("createdAt" to LocalDateTime.now().toString()),
+                        mapOf("createdAt" to LocalDateTime.now().toString())
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun testDateDiffInMinutes() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' paymentMethods.count { dateDiff(minute, currentDate(), createdAt) = 60 } > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult("test", "dummy", "registration_attempts", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "paymentMethods" to listOf(
+                        mapOf("createdAt" to LocalDateTime.now().minusSeconds(60 * 60).toString()),
+                        mapOf("createdAt" to LocalDateTime.now().toString()),
+                        mapOf("createdAt" to LocalDateTime.now().toString())
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun testDateDiffInMinutesIsZero() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' paymentMethods.count { dateDiff(minute, currentDate(), createdAt) = 0 } > 0 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult("test", "dummy", "registration_attempts", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "paymentMethods" to listOf(
+                        mapOf("createdAt" to LocalDateTime.now().toString()),
+                        mapOf("createdAt" to LocalDateTime.now().toString()),
+                        mapOf("createdAt" to LocalDateTime.now().toString())
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `given a negative result in datediff operation must return absolute value`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'registration_attempts' paymentMethods.count { dateDiff(minute, createdAt, currentDate()) = 60 } > 0 return block
                 default allow
             end
         """

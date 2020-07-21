@@ -19,6 +19,7 @@ class DateDiffCondition : Condition<DateDiffContext> {
         val right = LocalDateTime.parse(valRight.toString())
 
         return when {
+                    ctx.MINUTE() != null ->  Duration.between(left, right).toMinutes()
                     ctx.HOUR() != null -> Duration.between(left, right).toHours()
                     ctx.DAY() != null -> Duration.between(left, right.truncatedTo(ChronoUnit.DAYS)).toDays()
                     else -> throw RuntimeException("Interval not supoorted in ${ctx.text}")

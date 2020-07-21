@@ -52,12 +52,12 @@
 
  expr
  : L_PAREN expr R_PAREN                                                                                     #parenthesis
- | left = expr op = (ADD | SUBTRACT | MULTIPLY | DIVIDE) right = expr                                       #math
+ | left = expr op = (ADD | MINUS | MULTIPLY | DIVIDE) right = expr                                       #math
  | left = expr op = (LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right = expr                            #comparator
  | value = expr not = K_NOT? op = (K_CONTAINS | K_IN) values = listElems                                        #list
  | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
         (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #aggregation
- | DATE_DIFF L_PAREN (HOUR | DAY) COMMA left = expr COMMA right = expr R_PAREN                              #dateDiff
+ | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left = expr COMMA right = expr R_PAREN                              #dateDiff
  | left = expr op = (K_AND | K_OR) right = expr                                                             #binary
  | validProperty                                                                                            #property
  | validValue                                                                                               #value
@@ -85,7 +85,7 @@
  DOT : '.';
  COMMA : ',';
  ADD : '+';
- SUBTRACT : '-';
+ MINUS : '-';
  MULTIPLY: '*';
  DIVIDE: '/';
  TILDE : '~';
@@ -96,6 +96,7 @@
  EQ_IC : '=';
  EQ : '==';
  NOT_EQ : '<>';
+ MINUTE : 'minute';
  HOUR : 'hour';
  DAY : 'day';
  CURRENT_DATE : 'currentDate' L_PAREN R_PAREN;
@@ -133,7 +134,7 @@
  ;
 
  NUMERIC_LITERAL
-  : DIGIT+ ( '.' DIGIT* )? ( E [-+]? DIGIT+ )?
+  : MINUS? DIGIT+ ( '.' DIGIT* )? ( E [-+]? DIGIT+ )?
   | '.' DIGIT+ ( E [-+]? DIGIT+ )?
   ;
 

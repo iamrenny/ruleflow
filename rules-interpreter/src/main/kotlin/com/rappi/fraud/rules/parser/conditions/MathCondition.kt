@@ -15,7 +15,7 @@ class MathCondition : Condition<MathContext> {
         val right = rightVal?.toString()?.toBigDecimal()?.setScale(2, RoundingMode.DOWN)
         return when (ctx.op.type) {
                 ANALexer.ADD -> left?.add(right)
-                ANALexer.SUBTRACT -> left?.subtract(right)
+                ANALexer.MINUS -> left?.subtract(right)
                 ANALexer.MULTIPLY -> left?.multiply(right)
                 ANALexer.DIVIDE -> left?.divide(right, 2, RoundingMode.DOWN)
                 else -> throw IllegalArgumentException("Operation not supported: ${ctx.op.text}")
