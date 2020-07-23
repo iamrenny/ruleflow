@@ -677,4 +677,125 @@ class WorkflowEvaluatorTest {
             )
         )
     }
+
+    @Test
+    fun `math greater within precision works`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'test_a' score > 0.04 return block
+                    default allow
+                end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "test_a", risk = "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "score" to 0.041
+                )
+            )
+        )
+    }
+    @Test
+    fun `math greater out of precision fails`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'test_a' score > 0.04 return block
+                    default allow
+                end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+
+        Assertions.assertEquals(
+            WorkflowResult(workflow="test", ruleSet = "default", rule = "default", risk = "allow"),
+            ruleEngine.evaluate(mapOf(
+                "score" to 0.0400000000001
+            ))
+        )
+    }
+
+    @Test
+    fun `math lower within precision works`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'test_a' score < 0.04 return block
+                    default allow
+                end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "test_a", risk = "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "score" to 0.03999999999
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `math lower out of precision fails`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'test_a' score < 0.04 return block
+                    default allow
+                end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+
+        Assertions.assertEquals(
+            WorkflowResult(workflow="test", ruleSet = "default", rule = "default", risk = "allow"),
+            ruleEngine.evaluate(mapOf(
+                "score" to 0.0400000000001
+            ))
+        )
+    }
+
+    @Test
+    fun `math equal within precision works`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'test_a' score = 0.04 return block
+                    default allow
+                end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow="test", ruleSet = "default", rule = "default", risk = "allow"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "score" to 0.0400000001
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `math equal out of precision fails`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'test_a' score = 0.04 return block
+                    default allow
+                end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "test_a", risk = "block"),
+            ruleEngine.evaluate(mapOf(
+                "score" to 0.0400000000000000002
+            ))
+        )
+    }
 }

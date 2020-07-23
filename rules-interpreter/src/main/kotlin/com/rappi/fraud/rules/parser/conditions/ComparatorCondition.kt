@@ -21,8 +21,8 @@ class ComparatorCondition : Condition<ComparatorContext> {
         return when {
             left is Number && right is Number? -> compareNumbers(
                 operator = ctx.op,
-                left = left.toString().toBigDecimal().setScale(2, RoundingMode.DOWN),
-                right = right?.toString()?.toBigDecimal()?.setScale(2, RoundingMode.DOWN)
+                left = left.toString().toBigDecimal().setScale(10, RoundingMode.DOWN),
+                right = right?.toString()?.toBigDecimal()?.setScale(10, RoundingMode.DOWN)
             )
             else -> compareAny(
                 operator = ctx.op,
