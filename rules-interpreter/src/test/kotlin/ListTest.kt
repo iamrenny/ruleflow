@@ -404,4 +404,25 @@ class ListTest {
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found")), result)
     }
+
+    @Test
+    fun `given a collection and a existing stored list when evaluating a list must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' payment_methods.any { card_bin in list('card_bins')} return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "payment_methods" to listOf(
+                mapOf(
+                    "card_bin" to "477213"
+                )
+            )
+        )
+        val lists = mapOf("card_bins" to listOf("477213"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
 }
