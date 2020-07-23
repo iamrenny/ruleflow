@@ -32,9 +32,19 @@ class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map
                                         ruleSet = ruleSet.name().text.removeSingleQuote(),
                                         rule = rule.name().text.removeSingleQuote(),
                                         risk = rule.result.text,
-                                        actions = rule.actions()?.action()?.map { it.text }?.toSet() ?: EMPTY_SET,
                                         warnings = warnings
-                                    )
+                                    ).let {
+                                        if(rule.actions() != null) {
+                                            val actions = ActionsEvaluator().evaluate(rule.actions())
+                                            it.copy(
+                                                actions = actions.keys,
+                                                actionsWithParams = actions
+                                            )
+                                        } else {
+                                            it
+                                        }
+
+                                    }
                             }
                         } catch (ex: Exception){
                             warnings.add(ex.message ?: "Unexpected Exception at ${rule.text}")

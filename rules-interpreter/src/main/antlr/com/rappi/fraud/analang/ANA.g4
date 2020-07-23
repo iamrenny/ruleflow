@@ -41,23 +41,21 @@
  ;
 
  action
- : 'manual_review'
- // TODO: THIS SHOULD BE REFINED AS BEHAVIOUR IS WRITTEN
- |  ID L_PAREN ID EQ_IC STRING_LITERAL (COMMA ID EQ_IC L_BRACE params_list? R_BRACE)? R_PAREN
+ : K_ACTION '(' param_value = STRING_LITERAL (COMMA  action_params )? ')'
+ | action_id = ID ('(' action_params ')')?
  ;
-
- params_list
- : STRING_LITERAL K_COLON validValue (COMMA STRING_LITERAL K_COLON validValue)*
+ action_params
+ : '{' STRING_LITERAL ':' validValue (',' STRING_LITERAL ':' validValue)* '}'
  ;
 
  expr
  : L_PAREN expr R_PAREN                                                                                     #parenthesis
- | left = expr op = (ADD | MINUS | MULTIPLY | DIVIDE) right = expr                                       #math
+ | left = expr op = (ADD | MINUS | MULTIPLY | DIVIDE) right = expr                                          #math
  | left = expr op = (LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right = expr                            #comparator
- | value = expr not = K_NOT? op = (K_CONTAINS | K_IN) values = listElems                                        #list
+ | value = expr not = K_NOT? op = (K_CONTAINS | K_IN) values = listElems                                    #list
  | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
         (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #aggregation
- | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left = expr COMMA right = expr R_PAREN                              #dateDiff
+ | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left = expr COMMA right = expr R_PAREN                     #dateDiff
  | left = expr op = (K_AND | K_OR) right = expr                                                             #binary
  | validProperty                                                                                            #property
  | validValue                                                                                               #value
@@ -99,14 +97,16 @@
  MINUTE : 'minute';
  HOUR : 'hour';
  DAY : 'day';
- CURRENT_DATE : 'currentDate' L_PAREN R_PAREN;
- DATE_DIFF: 'dateDiff';
+ CURRENT_DATE : 'currentDate' L_PAREN R_PAREN
+ | 'currentdate' L_PAREN R_PAREN ;
+ DATE_DIFF: 'dateDiff' | 'datediff' ;
  K_LIST: 'list';
  L_BRACE : '{';
  R_BRACE : '}';
  L_PAREN: '(';
  R_PAREN: ')';
  K_COLON: ':';
+ K_ACTION: 'action';
 
  K_WORKFLOW: W O R K F L O W;
  K_RULESET: R U L E S E T;
@@ -128,6 +128,7 @@
  K_AVERAGE: A V E R A G E;
  K_DISTINCT: D I S T I N C T;
  K_NULL: N U L L;
+
  ID
  : [a-zA-Z_] [a-zA-Z_0-9]*
  | [a-zA-Z_] [a-zA-Z_0-9]*

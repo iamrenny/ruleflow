@@ -336,7 +336,7 @@ class WorkflowEvaluatorTest {
     fun testLogical() {
         val file = javaClass.classLoader.getResourceAsStream("samples/test_logical.ANA")!!.reader().readText()
         val ruleEngine = WorkflowEvaluator(file)
-        val expected = WorkflowResult("test", "test", "payment_type", "block", setOf("manual_review"))
+        val expected = WorkflowResult("test", "test", "payment_type", "block", setOf("manual_review"), setOf(), mapOf("manual_review" to mapOf()))
         Assertions.assertEquals(expected, ruleEngine.evaluate(data))
     }
 

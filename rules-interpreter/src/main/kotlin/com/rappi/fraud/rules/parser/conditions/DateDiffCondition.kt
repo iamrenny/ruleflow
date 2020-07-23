@@ -1,6 +1,5 @@
 package com.rappi.fraud.rules.parser.conditions
 
-import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.analang.ANAParser.DateDiffContext
 import com.rappi.fraud.rules.parser.evaluators.Visitor
 import java.time.Duration

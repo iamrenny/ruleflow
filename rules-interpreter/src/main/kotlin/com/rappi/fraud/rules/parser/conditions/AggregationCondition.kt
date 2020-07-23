@@ -18,7 +18,7 @@ class AggregationCondition : Condition<AggregationContext> {
                     ANALexer.K_AVERAGE -> average(value, ctx.predicate)
                     ANALexer.K_COUNT -> count(value, ctx.predicate)
                     ANALexer.K_DISTINCT -> distinctBy(value, ctx.predicate)
-                    else -> throw RuntimeException("Unexpected token near ${ctx.value.text}")
+                    else -> throw RuntimeException("Operation not supported: ${ctx.op.text}")
                 }
             }
             value == null -> null
