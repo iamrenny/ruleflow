@@ -4,6 +4,7 @@ import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.evaluators.Visitor
 import com.rappi.fraud.rules.parser.removeSingleQuote
+import org.antlr.v4.runtime.tree.TerminalNode
 
 class ListCondition : Condition<ANAParser.ListContext> {
 
@@ -23,8 +24,10 @@ class ListCondition : Condition<ANAParser.ListContext> {
         val value = visitor.visit(ctx.value) as String?
         return when {
             (ctx.values.literalList != null) -> {
-                val list = ctx.values.literalList.text.removeSingleQuote().split(",")
-                list.contains(value)
+                ctx.values.STRING_LITERAL()
+                    .map(TerminalNode::toString)
+                    .map{ it.replace("'", "") }
+                    .contains(value)
             }
             ctx.values.storedList != null -> {
                 val value = value.toString()
@@ -48,9 +51,9 @@ class ListCondition : Condition<ANAParser.ListContext> {
        return when {
             ctx.values.literalList != null  -> {
                 val value = visitor.visit(ctx.value)
-                val list = ctx.values.text.removeSingleQuote().split(",")
+                val list = ctx.values.STRING_LITERAL()
                 list.any {
-                    value.toString().contains(it, true)
+                    value.toString().contains(it.text.replace("'", ""), true)
                 }
             }
             ctx.values.storedList != null -> {

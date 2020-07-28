@@ -400,7 +400,7 @@ class ListTest {
             end
         """
         val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
-        val lists = mapOf("card_bins" to listOf<String>("item1"))
+        val lists = mapOf("card_bins" to listOf("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found")), result)
     }
@@ -424,5 +424,97 @@ class ListTest {
         val lists = mapOf("card_bins" to listOf("477213"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+    @Test
+    fun `given a collection and a literal list when evaluating a list must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' device_id in  'itemA', 'itemB', 'itemC' return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "device_id" to "itemC"
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+    @Test
+    fun `given a string and a value when using contains operator must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' device_agent contains 'iPhone' return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "device_agent" to "Mozilla iPhone bla bla bla "
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+    @Test
+    fun `given a string and a literal value when evaluating contains must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' payment_methods.any { card_bin contains '477' } return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "payment_methods" to listOf(
+                mapOf(
+                    "card_bin" to "477213"
+                )
+            )
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
+    }
+
+    @Test
+    fun `given a string and a literal value when evaluating in must return default allow`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' payment_methods.any { card_bin in '477' } return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "payment_methods" to listOf(
+                mapOf(
+                    "card_bin" to "477213"
+                )
+            )
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"), result)
+    }
+
+    @Test
+    fun `given a string and a literal value when evaluating equals must return default allow`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' payment_methods.any { card_bin = '477' } return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "payment_methods" to listOf(
+                mapOf(
+                    "card_bin" to "477213"
+                )
+            )
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"), result)
     }
 }

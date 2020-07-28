@@ -25,6 +25,7 @@ class AggregationCondition : Condition<AggregationContext> {
             }
         }
     }
+
     @Suppress("UNCHECKED_CAST")
     private fun distinctBy(
         list: List<*>,
@@ -37,6 +38,7 @@ class AggregationCondition : Condition<AggregationContext> {
             else -> list.distinctBy { evalPredicate(it, lists, predicate) }
         }
     }
+
     @Suppress("UNCHECKED_CAST")
     private fun average(
         list: List<*>,
@@ -46,6 +48,7 @@ class AggregationCondition : Condition<AggregationContext> {
         val count = count(list, predicate, lists).toString().toBigDecimal()
         return count.divide(list.size.toBigDecimal(), 3, RoundingMode.DOWN)
     }
+
     @Suppress("UNCHECKED_CAST")
     private fun count(
         list: List<*>,
@@ -59,6 +62,7 @@ class AggregationCondition : Condition<AggregationContext> {
             list.count { data ->  Visitor(data as Map<String, *>, lists).visit(predicate) as Boolean }.toBigDecimal()
         }
     }
+
     @Suppress("UNCHECKED_CAST")
     private fun evalPredicate(data: Any?, lists: Map<String, List<String>>, ctx: ANAParser.ExprContext) =
         Visitor(data as Map<String, *>, lists).visit(ctx)
