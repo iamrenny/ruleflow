@@ -798,4 +798,54 @@ class WorkflowEvaluatorTest {
             ))
         )
     }
+
+    @Test
+    fun `eq_ic is case insensitive`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'test' test.any { a = 'A' } return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "test",  risk = "block", warnings = setOf()),
+            ruleEngine.evaluate(
+                mapOf(
+                    "test" to listOf(
+                        mapOf(
+                            "a" to "a"
+                        )
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `eq is case sensitive`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'test' test.any { a == 'A' } return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", warnings = setOf()),
+            ruleEngine.evaluate(
+                mapOf(
+                    "test" to listOf(
+                        mapOf(
+                            "a" to "a"
+                        )
+                    )
+                )
+            )
+        )
+    }
 }
