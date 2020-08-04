@@ -153,15 +153,14 @@ class WorkflowService @Inject constructor(
 
     private fun saveHistory(workflow: Workflow, request: ActivateRequest) {
         activeWorkflowHistoryRepository
-                .save(
-                        ActiveWorkflowHistory(
-                                workflowId = workflow.id!!,
-                                userId = request.userId
-                        )
+            .save(
+                ActiveWorkflowHistory(
+                    workflowId = workflow.id!!,
+                    userId = request.userId
                 )
-                .doOnError {
-                    logger.error("Activate of workflow ${workflow.id} could not be saved in the history", it)
-                    SignalFx.noticeError(it)
-                }
+            ).subscribe({}, { it ->
+                logger.error("Activate of workflow ${workflow.id} could not be saved in the history", it)
+                SignalFx.noticeError(it)
+        })
     }
 }
