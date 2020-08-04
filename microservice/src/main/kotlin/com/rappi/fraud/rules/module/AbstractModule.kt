@@ -4,11 +4,12 @@ import com.google.inject.AbstractModule
 import com.google.inject.Provides
 import com.google.inject.Singleton
 import com.rappi.fraud.rules.repositories.Database
-import com.rappi.fraud.rules.repositories.DatabaseConfig
+import com.rappi.fraud.rules.verticle.JdbcClientProvider
 import com.rappi.fraud.rules.verticle.MainRouter
 import com.rappi.fraud.rules.verticle.MainVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
+import io.vertx.reactivex.ext.jdbc.JDBCClient
 import io.vertx.reactivex.redis.RedisClient
 
 abstract class AbstractModule(private val vertx: Vertx, private val config: JsonObject) : AbstractModule() {
@@ -17,21 +18,31 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
         bind(Vertx::class.java).toInstance(vertx)
         bind(MainVerticle::class.java).`in`(Singleton::class.java)
         bind(MainRouter::class.java).`in`(Singleton::class.java)
+        bind(JDBCClient::class.java)
+            .toProvider(JdbcClientProvider::class.java)
+            .`in`(Singleton::class.java)
     }
 
     @Provides
-    fun dbConfig(): DatabaseConfig {
+    fun dbConfig(): Database.Config {
         val db = config.getJsonObject("database")
-        return DatabaseConfig(
+        return Database.Config(
             url = db.getString("DB_URL"),
             user = db.getString("DB_USER"),
             pass = db.getString("DB_PASSWORD"),
-            driver = db.getString("DRIVER_CLASS")
+            driver = db.getString("DRIVER_CLASS"),
+            providerClass = db.getString("PROVIDER_CLASS"),
+            connTimeout = db.getString("CONNECTION_TIMEOUT").toString().toLong(),
+            leakDetectionThreshold = db.getString("LEAK_THRESHOLD").toString().toLong(),
+            maxPoolSize = db.getString("MAX_POOL_SIZE").toString().toInt(),
+            maxLifetime = db.getString("MAX_LIFETIME").toString().toInt(),
+            minimumIdle = db.getString("MINIMUM_IDLE").toString().toInt(),
+            idleTimeout = db.getString("IDLE_TIMEOUT").toString().toInt()
         )
     }
 
     @Provides
-    fun database(db: DatabaseConfig): Database {
+    fun database(db: Database.Config): Database {
         return Database(vertx, db)
     }
 

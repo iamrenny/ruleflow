@@ -1,7 +1,7 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.repositories.DatabaseConfig
+import com.rappi.fraud.rules.repositories.Database
 import io.reactivex.Completable
 import io.vertx.core.Promise
 import io.vertx.reactivex.CompletableHelper
@@ -47,7 +47,7 @@ class MainVerticle @Inject constructor(private val router: MainRouter, private v
     }
 }
 
-class FlywayMigration @Inject constructor(private val vertx: Vertx, private val database: DatabaseConfig) {
+class FlywayMigration @Inject constructor(private val vertx: Vertx, private val database: Database.Config) {
     fun migrateDB(): Completable {
         return vertx.rxExecuteBlocking<Unit> {
             val flyway = Flyway.configure()

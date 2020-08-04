@@ -12,11 +12,11 @@ import io.vertx.reactivex.core.Vertx
 
 private const val MAX_CONNECTIONS_PER_INSTANCE = 5
 
-class Database(vertx: Vertx, dbConfig: DatabaseConfig) {
+class Database(vertx: Vertx, config: Config) {
 
-    val connectionPool = createClient(vertx, dbConfig)
+    val connectionPool = createClient(vertx, config)
 
-    private fun createClient(vertx: Vertx, cfg: DatabaseConfig): PgPool {
+    private fun createClient(vertx: Vertx, cfg: Config): PgPool {
         val url = cfg.url.removePrefix("jdbc:")
         val config = PgPoolOptions.fromUri(url).apply {
             user = cfg.user
@@ -67,11 +67,18 @@ class Database(vertx: Vertx, dbConfig: DatabaseConfig) {
                 .flatMapObservable { Observable.fromIterable(it.delegate) }
                 .map(::Row)
     }
-}
 
-data class DatabaseConfig(
-    val url: String,
-    val user: String,
-    val pass: String,
-    val driver: String
-)
+    data class Config(
+        val url: String,
+        val user: String,
+        val pass: String,
+        val driver: String,
+        val providerClass: String,
+        val connTimeout: Long,
+        val leakDetectionThreshold: Long,
+        val maxPoolSize: Int,
+        val maxLifetime: Int,
+        val minimumIdle: Int,
+        val idleTimeout: Int
+    )
+}
