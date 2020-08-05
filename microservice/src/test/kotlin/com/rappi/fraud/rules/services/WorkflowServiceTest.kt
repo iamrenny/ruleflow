@@ -13,9 +13,7 @@ import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
-import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.Workflow
-import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
@@ -68,9 +66,9 @@ class WorkflowServiceTest {
         service
             .save(
                 CreateWorkflowRequest(
-                    countryCode = expected.countryCode,
-                    workflow = expected.workflowAsString,
-                    userId = expected.userId))
+                    countryCode = expected.countryCode!!,
+                    workflow = expected.workflowAsString!!,
+                    userId = expected.userId!!))
             .test()
             .assertSubscribed()
             .await()
@@ -83,15 +81,15 @@ class WorkflowServiceTest {
     fun testGet() {
         val expected = baseWorkflow()
 
-        whenever(workflowRepository.get(
-            countryCode = expected.countryCode,
+        whenever(workflowRepository.getWorkflow(
+            countryCode = expected.countryCode!!,
             name = expected.name,
             version = expected.version!!)
         )
             .thenReturn(Single.just(expected))
 
         service
-                .get(countryCode = expected.countryCode, name = expected.name, version = expected.version!!)
+                .getWorkflow(countryCode = expected.countryCode!!, name = expected.name, version = expected.version!!)
                 .test()
                 .assertSubscribed()
                 .await()
@@ -107,15 +105,15 @@ class WorkflowServiceTest {
         val expected = listOf(base, base.copy(id = 13, version = 2))
 
         val request = GetAllWorkflowRequest(
-                countryCode = base.countryCode,
+                countryCode = base.countryCode!!,
                 name = base.name
         )
 
-        whenever(workflowRepository.getAll(request))
+        whenever(workflowRepository.getWorkflowsByCountryAndName(request))
                 .thenReturn(Observable.merge(expected.map { Observable.just(it) }))
 
         service
-                .getAll(request)
+                .getWorkflowsByCountryAndName(request)
                 .test()
                 .assertSubscribed()
                 .await()
@@ -126,24 +124,27 @@ class WorkflowServiceTest {
 
     @Test
     fun testGetListOfAllWorkflowsByCountry() {
-        val base = WorkflowInfo(
+        val base = Workflow(
+            id = 20,
             name = "Sample",
-            version = 1
+            countryCode = "co",
+            workflowAsString = "workflow",
+            version = 10,
+            userId = UUID.randomUUID().toString(),
+            createdAt = LocalDateTime.now()
         )
 
         val expected = listOf(base,
-            base.copy(version = 2, name = "Sample2"),
-            base.copy(version = 1, name = "Sample3"))
+            base.copy(name = "Sample2"),
+            base.copy(name = "Sample3"))
 
-        val request = GetListOfAllWorkflowsRequest(
-            countryCode = "MX"
-        )
+        val countryCode = "MX"
 
-        whenever(workflowRepository.getListOfAllWorkflows(request))
+        whenever(workflowRepository.getActiveWorkflowsByCountry(countryCode))
             .thenReturn(Observable.merge(expected.map { Observable.just(it) }))
 
         service
-            .listAllWorkflows(request)
+            .getActiveWorkflowsByCountry(countryCode)
             .test()
             .assertSubscribed()
             .await()
@@ -157,15 +158,15 @@ class WorkflowServiceTest {
         val expected = baseWorkflow().activate()
 
         val request = ActivateRequest(
-                        countryCode = expected.countryCode,
+                        countryCode = expected.countryCode!!,
                         name = expected.name,
                         version = expected.version!!,
                         userId = UUID.randomUUID().toString()
         )
 
         whenever(workflowRepository
-            .get(
-                countryCode = expected.countryCode,
+            .getWorkflow(
+                countryCode = expected.countryCode!!,
                 name = expected.name,
                 version = expected.version!!
             )
@@ -215,7 +216,7 @@ class WorkflowServiceTest {
     fun testEvaluateFromCache() {
         val workflow = baseWorkflow()
 
-        whenever(cacheService.get(workflow.countryCode, workflow.name))
+        whenever(cacheService.get(workflow.countryCode!!, workflow.name))
                 .thenReturn(Maybe.just(workflow))
 
         val evaluationResult = WorkflowResult(
@@ -228,7 +229,7 @@ class WorkflowServiceTest {
         val data = JsonObject()
                 .put("d", 101)
 
-        service.evaluate(countryCode = workflow.countryCode, name = workflow.name, data = data)
+        service.evaluate(countryCode = workflow.countryCode!!, name = workflow.name, data = data)
                 .test()
                 .assertSubscribed()
                 .await()
@@ -244,10 +245,10 @@ class WorkflowServiceTest {
     fun testEvaluateFromDbWithoutVersion() {
         val workflow = baseWorkflow()
 
-        whenever(cacheService.get(workflow.countryCode, workflow.name))
+        whenever(cacheService.get(workflow.countryCode!!, workflow.name))
                 .thenReturn(Maybe.empty())
 
-        whenever(activeWorkflowRepository.get(countryCode = workflow.countryCode, name = workflow.name))
+        whenever(activeWorkflowRepository.get(countryCode = workflow.countryCode!!, name = workflow.name))
                 .thenReturn(Single.just(
                         Workflow(
                                 id = workflow.id!!,
@@ -267,7 +268,7 @@ class WorkflowServiceTest {
         val data = JsonObject()
                 .put("d", 101)
 
-        service.evaluate(countryCode = workflow.countryCode, name = workflow.name, data = data)
+        service.evaluate(countryCode = workflow.countryCode!!, name = workflow.name, data = data)
                 .test()
                 .assertSubscribed()
                 .await()
@@ -282,10 +283,10 @@ class WorkflowServiceTest {
     fun testEvaluateFromDbWithVersion() {
         val workflow = baseWorkflow()
 
-        whenever(cacheService.get(workflow.countryCode, workflow.name, workflow.version))
+        whenever(cacheService.get(workflow.countryCode!!, workflow.name, workflow.version))
                 .thenReturn(Maybe.empty())
 
-        whenever(workflowRepository.get(workflow.countryCode, workflow.name, workflow.version!!))
+        whenever(workflowRepository.getWorkflow(workflow.countryCode!!, workflow.name, workflow.version!!))
                 .thenReturn(Single.just(workflow))
 
         val evaluationResult = WorkflowResult(
@@ -298,7 +299,7 @@ class WorkflowServiceTest {
         val data = JsonObject()
                 .put("d", 101)
 
-        service.evaluate(countryCode = workflow.countryCode, name = workflow.name, version = workflow.version, data = data)
+        service.evaluate(countryCode = workflow.countryCode!!, name = workflow.name, version = workflow.version, data = data)
                 .test()
                 .assertSubscribed()
                 .await()

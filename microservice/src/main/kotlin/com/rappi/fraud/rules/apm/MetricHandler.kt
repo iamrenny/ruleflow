@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.Tag
 import io.vertx.core.Handler
 import io.vertx.micrometer.backends.BackendRegistries
 import io.vertx.reactivex.ext.web.RoutingContext
-import kotlin.random.Random
+import java.util.UUID
 
 val REQUEST_ID = "request_id"
 val START_TIME = "start_time"
@@ -17,7 +17,7 @@ class MetricHandler : Handler<RoutingContext> {
     override fun handle(event: RoutingContext) {
         try {
             event.put(START_TIME, System.currentTimeMillis())
-            event.put(REQUEST_ID, Random.Default.nextLong())
+            event.put(REQUEST_ID, UUID.randomUUID().toString())
             event.addBodyEndHandler {
                 try {
                     val startTime = event.get(START_TIME) as Long

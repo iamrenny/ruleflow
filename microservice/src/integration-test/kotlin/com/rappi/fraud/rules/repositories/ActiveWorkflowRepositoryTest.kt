@@ -62,7 +62,7 @@ class ActiveWorkflowRepositoryTest : BaseTest() {
     @Test
     @Order(3)
     fun testGet() {
-        repository.get(countryCode = SEED[0].countryCode, name = SEED[0].name)
+        repository.get(countryCode = SEED[0].countryCode!!, name = SEED[0].name)
             .test()
             .assertSubscribed()
             .await()

@@ -44,7 +44,7 @@ class WorkflowCache @Inject constructor(private val redisClient: RedisClient) {
     }
 
     private fun buildKey(workflow: Workflow): String {
-        return buildKey(workflow.countryCode, workflow.name, workflow.version)
+        return buildKey(workflow.countryCode!!, workflow.name, workflow.version)
     }
 
     private fun buildKey(countryCode: String, name: String, version: Long?): String {

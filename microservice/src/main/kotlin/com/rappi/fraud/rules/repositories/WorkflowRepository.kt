@@ -2,9 +2,7 @@ package com.rappi.fraud.rules.repositories
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
-import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.Workflow
-import com.rappi.fraud.rules.entities.WorkflowInfo
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.micrometer.backends.BackendRegistries
@@ -14,7 +12,7 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
 
     fun save(workflow: Workflow): Single<Workflow> {
         // TODO: Change versioning for is extremely inefficient
-        val INSERT = """
+        val insertWorkflow = """
             INSERT INTO workflows (name, version, workflow, country_code, user_id) 
                  VALUES ($1::VARCHAR, (SELECT COALESCE(MAX(version), 0) + 1 FROM workflows w WHERE w.country_code = $3 AND w.name = $1::VARCHAR), $2, $3, $4) 
               RETURNING id, name, version, workflow, country_code, user_id, created_at
@@ -22,23 +20,25 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
 
         val params = listOf(
                 workflow.name,
-                workflow.workflowAsString,
-                workflow.countryCode,
-                workflow.userId
+                workflow.workflowAsString!!,
+                workflow.countryCode!!,
+                workflow.userId!!
         )
 
-        return database.executeWithParams(INSERT, params)
+        return database.executeWithParams(insertWorkflow, params)
             .map { Workflow(it) }
     }
 
-    fun get(countryCode: String, name: String, version: Long): Single<Workflow> {
+    fun getWorkflow(countryCode: String, name: String, version: Long): Single<Workflow> {
 
-        val GET_BY_KEY = """
-            SELECT *
-              FROM workflows
-             WHERE country_code = $1
-               AND name = $2 
-               AND version = $3
+        val getWorkflow = """
+            SELECT w.*,
+                   CASE WHEN aw.workflow_id isnull THEN false ELSE true END AS is_active
+            FROM workflows w
+            left JOIN active_workflows aw ON w.id = aw.workflow_id
+            WHERE w.country_code = $1
+              AND w.name = $2
+              AND w.version = $3
             """
         val startTimeInMillis = System.currentTimeMillis()
         val params = listOf(
@@ -46,7 +46,7 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
                 name,
                 version
         )
-        return database.get(GET_BY_KEY, params)
+        return database.get(getWorkflow, params)
                 .map { Workflow(it) }
                 .firstOrError()
                 .doAfterTerminate {
@@ -55,40 +55,59 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
             }
     }
 
-    fun getAll(workflowRequest: GetAllWorkflowRequest): Observable<Workflow> {
-        val GET_ALL = """
-            SELECT *
-              FROM workflows
-             WHERE country_code = $1
-               AND name = $2
-             ORDER BY version DESC
-             LIMIT 10
+    fun getWorkflowsByCountryAndName(workflowRequest: GetAllWorkflowRequest): Observable<Workflow> {
+        val getWorkflowsByCountryAndName = """
+            SELECT w.*,
+                   CASE WHEN aw.workflow_id isnull THEN false ELSE true END AS is_active
+            FROM workflows w
+            left JOIN active_workflows aw ON w.id = aw.workflow_id
+            WHERE w.country_code = $1
+              AND w.name = $2
+              ORDER BY version DESC
+             LIMIT 15
              """
 
         val params = listOf(
                 workflowRequest.countryCode,
                 workflowRequest.name
         )
-        return database.get(GET_ALL, params).map {
+        return database.get(getWorkflowsByCountryAndName, params).map {
             Workflow(it)
         }
     }
 
-    fun getListOfAllWorkflows(workflowRequest: GetListOfAllWorkflowsRequest): Observable<WorkflowInfo> {
+    fun getActiveWorkflowsByCountry(countryCode: String): Observable<Workflow> {
 
-        val GET_ACTIVE_WORKFLOW_LIST = """
-            SELECT w.name as name, w.version as version
+        val getActiveWorkflows = """
+            SELECT w.name as name, true AS is_active
             FROM workflows w
             INNER JOIN active_workflows aw ON w.id = aw.workflow_id
             WHERE w.country_code = $1
-            ORDER BY name ASC
-            LIMIT 30
              """
-        val params = listOf(
-            workflowRequest.countryCode
-        )
-        return database.get(GET_ACTIVE_WORKFLOW_LIST, params).map {
-            WorkflowInfo(it)
+        val params = listOf(countryCode)
+
+        return database.get(getActiveWorkflows, params).map {
+            Workflow(it)
+        }
+    }
+
+    fun getAllWorkflowsByCountry(countryCode: String): Observable<Workflow> {
+
+        val getActiveAndInactiveWorkflows = """
+                SELECT distinct(wo.name) AS name,
+                       COALESCE(
+                                  (SELECT TRUE
+                                   FROM workflows w
+                                   INNER JOIN active_workflows aw ON w.id = aw.workflow_id
+                                   WHERE w.country_code = wo.country_code
+                                     AND w.name = wo.name),FALSE) AS is_active
+                FROM workflows wo
+                WHERE wo.country_code = $1
+             """
+        val params = listOf(countryCode)
+
+        return database.get(getActiveAndInactiveWorkflows, params).map {
+            Workflow(it)
         }
     }
 }

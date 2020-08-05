@@ -6,7 +6,6 @@ import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
-import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.ListStatus
 import com.rappi.fraud.rules.errors.ErrorHandler
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
@@ -54,9 +53,10 @@ class MainRouter @Inject constructor(
         router.get("/health-check").handler { it.response().end("OK") }
 
         router.post("/workflow").handler(::createWorkflow)
+        router.get("/workflow/active/:countryCode").handler(::getActiveWorkflowsByCountry)
         router.get("/workflow/:countryCode/:name/:version").handler(::getWorkflow)
-        router.get("/workflow/:countryCode/:name").handler(::getAllWorkflows)
-        router.get("/workflow/:countryCode").handler(::getListOfAllWorkflowsByCountry)
+        router.get("/workflow/:countryCode/:name").handler(::getWorkflowsByCountryAndName)
+        router.get("/workflow/:countryCode").handler(::getAllWorkflowsByCountry)
         router.post("/workflow/:countryCode/:name/evaluate").handler(::evaluateActive)
         router.post("/workflow/:countryCode/:name/:version/evaluate").handler(::evaluate)
         router.post("/workflow/:countryCode/:name/:version/activate").handler(::activateWorkflow)
@@ -76,13 +76,22 @@ class MainRouter @Inject constructor(
         return router
     }
 
-    private fun getListOfAllWorkflowsByCountry(ctx: RoutingContext) {
-        Single.just(ctx.pathParams()).map {
-            GetListOfAllWorkflowsRequest(
-                countryCode = it["countryCode"]!!
-            )
-        }.flatMap {
-            workflowService.listAllWorkflows(it)
+    private fun getAllWorkflowsByCountry(ctx: RoutingContext) {
+        Single.just(ctx.pathParams()).flatMap {
+            workflowService.getAllWorkflowsByCountry(it["countryCode"]!!)
+                .toList()
+        }.subscribe({
+            ctx.ok(it.map { w ->
+                JsonObject.mapFrom(w).toString()
+            }.toString())
+        }, {
+            ctx.fail(it)
+        })
+    }
+
+    private fun getActiveWorkflowsByCountry(ctx: RoutingContext) {
+        Single.just(ctx.pathParams()).flatMap {
+            workflowService.getActiveWorkflowsByCountry(it["countryCode"]!!)
                 .toList()
         }.subscribe({
             ctx.ok(it.map { w ->
@@ -153,7 +162,7 @@ class MainRouter @Inject constructor(
     private fun getWorkflow(ctx: RoutingContext) {
         Single.just(ctx.pathParams())
             .flatMap {
-            workflowService.get(
+            workflowService.getWorkflow(
                 it["countryCode"]!!,
                 // TODO: FIX THIS ASAP. NAMES MUST BE URL COMPLIANT
                 URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
@@ -167,14 +176,14 @@ class MainRouter @Inject constructor(
         })
     }
 
-    private fun getAllWorkflows(ctx: RoutingContext) {
+    private fun getWorkflowsByCountryAndName(ctx: RoutingContext) {
         Single.just(ctx.pathParams()).map {
             GetAllWorkflowRequest(
                 countryCode = it["countryCode"]!!,
                 name = URLDecoder.decode(it["name"]!!, "UTF-8")!!
             )
         }.flatMap {
-            workflowService.getAll(it).toList()
+            workflowService.getWorkflowsByCountryAndName(it).toList()
         }.subscribe({
             ctx.ok(it.map { w -> JsonObject.mapFrom(w).toString() }.toString())
         }, {

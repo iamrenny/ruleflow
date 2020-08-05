@@ -44,11 +44,12 @@ class WorkflowRepositoryTest : BaseTest() {
             workflowAsString = "Workflow \"Workflow 1\" ruleset \"test\" \"test\" total >= 100 return allow default block end",
             userId = "84b22591-7894-4063-943f-511a157409c3",
             createdAt = LocalDateTime.parse("2019-10-31T08:31:58.129"),
-            lists = listOf()
+            lists = listOf(),
+            active = false
         )
 
-        repository.get(
-            countryCode = expected.countryCode,
+        repository.getWorkflow(
+            countryCode = expected.countryCode!!,
             name = expected.name,
             version = expected.version!!
         )
@@ -67,10 +68,10 @@ class WorkflowRepositoryTest : BaseTest() {
             .toList()
 
         val request = GetAllWorkflowRequest(
-            countryCode = expected[0].countryCode,
-            name = expected[1].name
+            countryCode = expected[0].countryCode!!,
+            name = expected[0].name
         )
-        repository.getAll(request)
+        repository.getWorkflowsByCountryAndName(request)
             .test()
             .assertSubscribed()
             .await()

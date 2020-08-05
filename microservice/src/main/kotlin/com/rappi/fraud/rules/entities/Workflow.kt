@@ -15,10 +15,6 @@ data class GetAllWorkflowRequest(
     val name: String
 )
 
-data class GetListOfAllWorkflowsRequest(
-    val countryCode: String
-)
-
 data class CreateWorkflowRequest(
     val countryCode: String,
     val workflow: String,
@@ -34,40 +30,31 @@ data class ActivateRequest(
 
 data class Workflow(
     val id: Long? = null,
-    val countryCode: String,
+    val countryCode: String? = null,
     val name: String,
     val version: Long? = null,
     @JsonProperty("workflow")
-    val workflowAsString: String,
-    val userId: String,
+    val workflowAsString: String? = null,
+    val userId: String? = null,
     @JsonIgnore val lists: List<RulesEngineList>? = listOf(),
     @JsonDeserialize(using = LocalDateTimeDeserializer::class)
     @JsonSerialize(using = LocalDateTimeSerializer::class)
     val createdAt: LocalDateTime? = null,
-    val active: Boolean = false
+    val active: Boolean? = null
 ) {
     constructor(row: Row) : this(
-        id = row.getLong("id")!!,
-        name = row.getString("name")!!,
-        version = row.getLong("version")!!,
-        countryCode = row.getString("country_code")!!,
-        workflowAsString = row.getString("workflow")!!,
-        userId = row.getString("user_id")!!,
+        id = row.getLong("id"),
+        name = row.getString("name"),
+        version = row.getLong("version"),
+        countryCode = row.getString("country_code"),
+        workflowAsString = row.getString("workflow"),
+        userId = row.getString("user_id"),
         createdAt = row.getValue("created_at") as? LocalDateTime,
-        lists = listOf<RulesEngineList>()
+        lists = listOf<RulesEngineList>(),
+        active = row.getBoolean("is_active")
     )
 
-    val evaluator @JsonIgnore get() = WorkflowEvaluator(this.workflowAsString)
+    val evaluator @JsonIgnore get() = WorkflowEvaluator(this.workflowAsString!!)
 
     fun activate(): Workflow = this.copy(active = true)
-}
-
-data class WorkflowInfo(
-    val name: String,
-    val version: Long? = null
-) {
-    constructor(row: Row) : this(
-        name = row.getString("name")!!,
-        version = row.getLong("version")!!
-    )
 }

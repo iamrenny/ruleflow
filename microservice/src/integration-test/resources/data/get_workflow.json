@@ -5,5 +5,7 @@
   "countryCode": "CO",
   "workflow": "Workflow \"Workflow 1\" ruleset \"test\" \"test\" total >= 100 return allow default block end",
   "userId": "84b22591-7894-4063-943f-511a157409c3",
-  "createdAt": "2019-10-31T08:31:58.129"
+  "createdAt": "2019-10-31T08:31:58.129",
+  "lists": [],
+  "active": true
 }

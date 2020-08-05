@@ -6,9 +6,7 @@ import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
-import com.rappi.fraud.rules.entities.GetListOfAllWorkflowsRequest
 import com.rappi.fraud.rules.entities.Workflow
-import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
@@ -43,16 +41,20 @@ class WorkflowService @Inject constructor(
         return workflowRepository.save(workflow)
     }
 
-    fun get(countryCode: String, name: String, version: Long): Single<Workflow> {
-        return workflowRepository.get(countryCode, name, version)
+    fun getWorkflow(countryCode: String, name: String, version: Long): Single<Workflow> {
+        return workflowRepository.getWorkflow(countryCode, name, version)
     }
 
-    fun getAll(request: GetAllWorkflowRequest): Observable<Workflow> {
-        return workflowRepository.getAll(request)
+    fun getWorkflowsByCountryAndName(request: GetAllWorkflowRequest): Observable<Workflow> {
+        return workflowRepository.getWorkflowsByCountryAndName(request)
     }
 
-    fun listAllWorkflows(request: GetListOfAllWorkflowsRequest): Observable<WorkflowInfo> {
-        return workflowRepository.getListOfAllWorkflows(request)
+    fun getActiveWorkflowsByCountry(countryCode: String): Observable<Workflow> {
+        return workflowRepository.getActiveWorkflowsByCountry(countryCode)
+    }
+
+    fun getAllWorkflowsByCountry(countryCode: String): Observable<Workflow> {
+        return workflowRepository.getAllWorkflowsByCountry(countryCode)
     }
 
     fun evaluate(countryCode: String, name: String, version: Long? = null, data: JsonObject): Single<WorkflowResult> {
@@ -117,14 +119,14 @@ class WorkflowService @Inject constructor(
                 }
 
     private fun fromDbWithVersion(countryCode: String, name: String, version: Long) =
-            workflowRepository.get(countryCode, name, version)
+            workflowRepository.getWorkflow(countryCode, name, version)
                 .flatMap {
                     workflowCache.set(it)
                 }
 
     fun activate(request: ActivateRequest): Single<Workflow> {
         return workflowRepository
-                .get(request.countryCode, request.name, request.version)
+                .getWorkflow(request.countryCode, request.name, request.version)
                 .flatMap { toActivate ->
                     activeWorkflowRepository
                             .save(toActivate)

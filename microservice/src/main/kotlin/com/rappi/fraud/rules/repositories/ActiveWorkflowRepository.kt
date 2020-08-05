@@ -18,7 +18,7 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
         """
 
         val params = listOf(
-            workflow.countryCode,
+            workflow.countryCode!!,
             workflow.name,
             workflow.id!!
         )

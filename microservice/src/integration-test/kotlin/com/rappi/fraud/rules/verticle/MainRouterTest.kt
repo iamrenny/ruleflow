@@ -37,24 +37,25 @@ class MainRouterTest : BaseTest() {
         val data = getSeedAsJsonObject("create_workflow.json")
 
         val expected = Workflow(
-                id = 20,
-                name = "Sample workflow",
-                countryCode = data.getString("country_code"),
-                workflowAsString = data.getString("workflow"),
-                version = 10,
-                userId = UUID.randomUUID().toString(),
-                createdAt = LocalDateTime.now()
+            id = 20,
+            name = "Sample workflow",
+            countryCode = data.getString("country_code"),
+            workflowAsString = data.getString("workflow"),
+            version = 10,
+            userId = UUID.randomUUID().toString(),
+            createdAt = LocalDateTime.now(),
+            active = false
         )
 
         whenever(
                 workflowService
-                        .save(CreateWorkflowRequest(expected.countryCode, expected.workflowAsString, expected.userId))
+                        .save(CreateWorkflowRequest(expected.countryCode!!, expected.workflowAsString!!, expected.userId!!))
         )
                 .thenReturn(Single.just(expected))
 
         val request = httpClient
             .postAbs("http://localhost:8080/api/fraud-rules-engine/workflow")
-            .putAuthUserHeader(expected.userId)
+            .putAuthUserHeader(expected.userId!!)
         request
                 .toObservable()
                 .subscribe {
@@ -112,8 +113,8 @@ class MainRouterTest : BaseTest() {
 
             whenever(
                 workflowService
-                    .get(
-                        countryCode = workflow.countryCode,
+                    .getWorkflow(
+                        countryCode = workflow.countryCode!!,
                         name = workflow.name,
                         version = workflow.version!!
                     )
@@ -155,8 +156,8 @@ class MainRouterTest : BaseTest() {
                 .toList()
 
         whenever(workflowService
-                .getAll(GetAllWorkflowRequest(
-                        countryCode = workflows[0].countryCode,
+                .getWorkflowsByCountryAndName(GetAllWorkflowRequest(
+                        countryCode = workflows[0].countryCode!!,
                         name = workflows[0].name
                 )))
                 .thenReturn(Observable.merge(workflows.map { Observable.just(it) }))
@@ -192,7 +193,7 @@ class MainRouterTest : BaseTest() {
         val expected = getSeedAsJsonObject("get_workflow.json").mapTo(Workflow::class.java)
 
         val activateRequest = ActivateRequest(
-                countryCode = expected.countryCode,
+                countryCode = expected.countryCode!!,
                 name = expected.name,
                 version = expected.version!!,
                 userId = UUID.randomUUID().toString()
@@ -239,7 +240,7 @@ class MainRouterTest : BaseTest() {
                 risk = "block")
 
         whenever(workflowService
-                .evaluate(countryCode = workflow.countryCode, name = workflow.name, version = workflow.version!!, data = data))
+                .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, version = workflow.version!!, data = data))
                 .thenReturn(Single.just(expected))
 
         val request = httpClient
@@ -279,7 +280,7 @@ class MainRouterTest : BaseTest() {
                 risk = "allow")
 
         whenever(workflowService
-                .evaluate(countryCode = workflow.countryCode, name = workflow.name, data = data))
+                .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, data = data))
                 .thenReturn(Single.just(expected))
 
         val request = httpClient
