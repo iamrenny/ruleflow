@@ -2,6 +2,7 @@ package com.rappi.fraud.rules.services
 
 import com.rappi.fraud.rules.BaseTest
 import com.rappi.fraud.rules.entities.BatchItemsRequest
+import com.rappi.fraud.rules.entities.RulesEngineList
 import com.rappi.fraud.rules.repositories.Database
 import com.rappi.fraud.rules.repositories.ListRepository
 import io.reactivex.Observable
@@ -29,8 +30,6 @@ class ListServiceTest : BaseTest() {
                 database.executeDelete("DELETE from lists where id = $1", listOf(testList.id!!)).blockingGet()
                 Observable.just(testList)
             }.toList().blockingGet()
-        val lists = listRepository.getLists().toList().blockingGet()
-        assertTrue(lists.isEmpty())
     }
 
     @Test
@@ -41,23 +40,25 @@ class ListServiceTest : BaseTest() {
 
         listService.getLists().subscribe(
             { lists ->
+                val listsMap = lists.associateBy { it.listName }.toMap()
                 try {
-                    assertEquals(2, lists.size)
-                    assertEquals("list1Test", lists[0].listName)
-                    assertEquals("list 1", lists[0].description)
-                    assertEquals("integrationTest", lists[0].createdBy)
-                    assertEquals("DISABLED", lists[0].status.name)
-                    assertNotNull(lists[0].createdAt)
-                    assertEquals("integrationTest", lists[0].lastUpdatedBy)
-                    assertNotNull(lists[0].updatedAt)
+                    assertTrue(listsMap.containsKey("list1Test"))
+                    assertEquals("list1Test", listsMap["list1Test"]?.listName)
+                    assertEquals("list 1", listsMap["list1Test"]?.description)
+                    assertEquals("integrationTest", listsMap["list1Test"]?.createdBy)
+                    assertEquals("DISABLED", listsMap["list1Test"]?.status?.name)
+                    assertNotNull(listsMap["list1Test"]?.createdAt)
+                    assertEquals("integrationTest", listsMap["list1Test"]?.lastUpdatedBy)
+                    assertNotNull(listsMap["list1Test"]?.updatedAt)
 
-                    assertEquals("list2Test", lists[1].listName)
-                    assertEquals("list 2", lists[1].description)
-                    assertEquals("integrationTest", lists[1].createdBy)
-                    assertEquals("DISABLED", lists[1].status.name)
-                    assertNotNull(lists[1].createdAt)
-                    assertEquals("integrationTest", lists[1].lastUpdatedBy)
-                    assertNotNull(lists[1].updatedAt)
+                    assertTrue(listsMap.containsKey("list2Test"))
+                    assertEquals("list2Test", listsMap["list2Test"]?.listName)
+                    assertEquals("list 2", listsMap["list2Test"]?.description)
+                    assertEquals("integrationTest", listsMap["list2Test"]?.createdBy)
+                    assertEquals("DISABLED", listsMap["list2Test"]?.status?.name)
+                    assertNotNull(listsMap["list2Test"]?.createdAt)
+                    assertEquals("integrationTest", listsMap["list2Test"]?.lastUpdatedBy)
+                    assertNotNull(listsMap["list2Test"]?.updatedAt)
                     testContext.completeNow()
                 } catch (e: AssertionFailedError) {
                     testContext.failNow(e)
