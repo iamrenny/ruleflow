@@ -137,7 +137,7 @@ class ListTest {
     }
 
     @Test
-    fun `given a list contains a value when evaluating must return true`() {
+    fun `given a list contains a value when evaluating must return block`() {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
@@ -516,5 +516,107 @@ class ListTest {
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"), result)
+    }
+
+    @Test
+    fun `given a string value and a list when applying starts with must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' item starts_with 'value', 'value2', 'value3' return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "valueABCD"))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
+    }
+
+    @Test
+    fun `given a string value and one value list when applying starts with must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' item starts_with 'item' return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "itemABCDE"))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
+
+    }
+
+    @Test
+    fun `given a string value and a value when applying unmatching starts with must return allow`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' item starts_with 'item' return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "notitemABCDE"))
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"),
+            result
+        )
+
+    }
+
+    @Test
+    fun `given a non existent and a literal when applying unmatching starts with must return allow`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' item starts_with 'item' return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf())
+        Assertions.assertEquals(WorkflowResult(
+            workflow = "test",
+            ruleSet = "default",
+            rule = "default",
+            risk = "allow",
+            warnings = setOf("item field cannot be found")
+        ), result)
+    }
+
+    @Test
+    fun `given a a value and a literal list when applying starts with must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' item starts_with 'item', 'value3', 'value4' return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "value4"))
+        Assertions.assertEquals(WorkflowResult(
+            workflow = "test",
+            ruleSet = "dummy",
+            rule = "rule_a",
+            risk = "block"
+        ), result)
+    }
+
+    @Test
+    fun `given a a value and a stored list when applying starts with must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' item starts_with list('test_me') return block
+                default allow
+            end
+        """
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "value4"),
+            mapOf("test_me" to listOf("item", "value3", "value4")))
+        Assertions.assertEquals(
+            WorkflowResult(
+            workflow = "test",
+            ruleSet = "dummy",
+            rule = "rule_a",
+            risk = "block")
+            , result
+        )
     }
 }
