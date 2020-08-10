@@ -1,4 +1,4 @@
-workflow 'Add card'
+workflow 'add_card'
     ruleset 'Registration velocity'
         'Has more than allowed per day'
             (payment_methods.count { payment_type = 'credit_card' AND dateDiff(day, currentDate(), created_at) = 0 } > 0)

@@ -1,4 +1,4 @@
-workflow 'Rappi Pay Prepaid'
+workflow 'rappi_pay_prepaid'
     ruleset 'vector_rule_hard_cap'
         'amt_1d' rappiPayPrepaidTransaction.type = 'PURCHASE'
             AND rappiPayPrepaidTransactionsHistory.RpPrepaidPayerApprovedAmount_1d > 30000 return block

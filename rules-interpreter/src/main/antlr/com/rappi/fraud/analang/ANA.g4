@@ -14,7 +14,19 @@
  ;
 
  workflow
- : K_WORKFLOW name rulesets* defaultResult = default_result K_END
+ : K_WORKFLOW workflow_name rulesets* defaultResult = default_result K_END
+ ;
+
+ workflow_name
+ : STRING_NOT_SPECIAL_CHARS
+ ;
+
+ string_literal
+ : ( STRING_NOT_SPECIAL_CHARS | SQUOTA_STRING )
+ ;
+
+ STRING_NOT_SPECIAL_CHARS
+ : '\'' [a-zA-Z0-9_-]+ '\''
  ;
 
  rulesets
@@ -26,7 +38,7 @@
  ;
 
  name
- : STRING_LITERAL
+ : string_literal
  ;
 
  default_result
@@ -41,11 +53,11 @@
  ;
 
  action
- : K_ACTION '(' param_value = STRING_LITERAL (COMMA  action_params )? ')'
+ : K_ACTION '(' param_value = string_literal (COMMA  action_params )? ')'
  | action_id = ID ('(' action_params ')')?
  ;
  action_params
- : '{' STRING_LITERAL ':' validValue (',' STRING_LITERAL ':' validValue)* '}'
+ : '{' string_literal ':' validValue (',' string_literal ':' validValue)* '}'
  ;
 
  expr
@@ -62,13 +74,13 @@
  ;
 
  listElems
- : storedList = K_LIST L_PAREN STRING_LITERAL R_PAREN
- | literalList = STRING_LITERAL (COMMA STRING_LITERAL)*
+ : storedList = K_LIST L_PAREN string_literal R_PAREN
+ | literalList = string_literal (COMMA string_literal)*
  | validProperty
  ;
 
  validValue
- : string = STRING_LITERAL
+ : string = string_literal
  | number = NUMERIC_LITERAL
  | nullValue = K_NULL
  | currentDate = CURRENT_DATE
@@ -140,8 +152,8 @@
   | '.' DIGIT+ ( E [-+]? DIGIT+ )?
   ;
 
- STRING_LITERAL
- : '\'' ( ~'\'' | '\'\'' )* '\''
+ SQUOTA_STRING
+ : '\'' ('\\'. | '\'\'' | ~('\'' | '\\'))* '\''
  ;
 
  SINGLE_LINE_COMMENT

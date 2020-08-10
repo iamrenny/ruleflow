@@ -7,6 +7,6 @@ import com.rappi.fraud.rules.parser.removeSingleQuote
 class GrammarEvaluator : ANABaseVisitor<String>() {
 
     override fun visitParse(ctx: ANAParser.ParseContext): String {
-        return ctx.workflow().name().text.removeSingleQuote()
+        return ctx.workflow().workflow_name().text.removeSingleQuote()
     }
 }

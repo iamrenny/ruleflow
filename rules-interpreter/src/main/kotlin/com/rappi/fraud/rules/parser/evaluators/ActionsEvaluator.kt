@@ -27,7 +27,7 @@ class ActionEvaluator {
     fun evaluate(action: ANAParser.ActionContext): Map<String, String> {
 
         return if (action.action_params() != null)
-            action.action_params().STRING_LITERAL().asSequence().withIndex()
+            action.action_params().string_literal().asSequence().withIndex()
                 .map { (i, node) -> IndexedValue<String>(i, node.text) }
                 .map { (i, name) ->  IndexedValue(i, name.replace("'","")) }
                 .map { (i, name) ->

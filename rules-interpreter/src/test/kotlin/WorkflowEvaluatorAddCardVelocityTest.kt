@@ -49,7 +49,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_TODAY
                             )),
                         WorkflowResult(
-                            workflow = "Add card",
+                            workflow = "add_card",
                             ruleSet = "default",
                             rule = "default",
                             risk = "allow")
@@ -75,7 +75,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_TODAY
                             )),
                             WorkflowResult(
-                                    workflow = "Add card",
+                                    workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per day",
                                     risk = "block")
@@ -106,7 +106,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_LAST_7_DAYS
                             )),
                             WorkflowResult(
-                                    workflow = "Add card",
+                                    workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per week",
                                     risk = "block")
@@ -137,7 +137,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_LAST_30_DAYS
                             )),
                             WorkflowResult(
-                                    workflow = "Add card",
+                                    workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per month",
                                     risk = "block")

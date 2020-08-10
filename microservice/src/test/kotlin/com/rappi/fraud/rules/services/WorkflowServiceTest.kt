@@ -30,6 +30,8 @@ import java.util.UUID
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.lang.IllegalArgumentException
 
 class WorkflowServiceTest {
 
@@ -75,6 +77,40 @@ class WorkflowServiceTest {
             .assertComplete()
             .assertValue(expected)
             .dispose()
+    }
+
+    @Test
+    fun testInvalidRuleNameHaveSpaces() {
+        val invalidWorkflow = workflowWithRuleNameSpaces()
+
+        assertThrows<java.lang.IllegalArgumentException> {
+            service
+                    .save(
+                            CreateWorkflowRequest(
+                                    countryCode = invalidWorkflow.countryCode!!,
+                                    workflow = invalidWorkflow.workflowAsString!!,
+                                    userId = invalidWorkflow.userId!!))
+
+        }
+
+        verifyZeroInteractions(workflowRepository)
+    }
+
+    @Test
+    fun testInvalidRuleNameHaveSpecialCharacters() {
+        val invalidWorkflow = workflowWithRuleNameSpecialChars()
+
+        assertThrows<IllegalArgumentException> {
+            service
+                    .save(
+                            CreateWorkflowRequest(
+                                    countryCode = invalidWorkflow.countryCode!!,
+                                    workflow = invalidWorkflow.workflowAsString!!,
+                                    userId = invalidWorkflow.userId!!))
+
+        }
+
+        verifyZeroInteractions(workflowRepository)
     }
 
     @Test
@@ -313,6 +349,36 @@ class WorkflowServiceTest {
 
     private fun baseWorkflow(): Workflow {
         val request = "workflow 'Sample' ruleset 'Sample' 'Deny' d >= 100 return allow default block end"
+        return Workflow(
+                id = 12,
+                countryCode = "MX",
+                name = "Sample",
+                version = 1,
+                workflowAsString = request,
+                userId = UUID.randomUUID().toString()
+        )
+    }
+
+    private fun workflowWithRuleNameSpaces(): Workflow {
+        val request = "workflow 'Sample 1' ruleset 'Sample' " +
+                "'Invalid rule' d >= 100 return allow " +
+                "'valid_rule' d >= 100 return allow " +
+                "default block end"
+        return Workflow(
+                id = 12,
+                countryCode = "MX",
+                name = "Sample",
+                version = 1,
+                workflowAsString = request,
+                userId = UUID.randomUUID().toString()
+        )
+    }
+
+    private fun workflowWithRuleNameSpecialChars(): Workflow {
+        val request = "workflow 'Sample#' ruleset 'Sample' " +
+                "'valid_rule' d >= 100 return allow " +
+                "'Invalid_rule_&_#_^' d >= 100 return allow " +
+                "default block end"
         return Workflow(
                 id = 12,
                 countryCode = "MX",

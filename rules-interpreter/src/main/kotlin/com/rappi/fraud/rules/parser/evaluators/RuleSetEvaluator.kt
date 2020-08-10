@@ -28,7 +28,7 @@ class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map
                             if (visitedRule is Boolean) {
                                 if (visitedRule)
                                     return WorkflowResult(
-                                        workflow = ctx.name().text.removeSingleQuote(),
+                                        workflow = ctx.workflow_name().text.removeSingleQuote(),
                                         ruleSet = ruleSet.name().text.removeSingleQuote(),
                                         rule = rule.name().text.removeSingleQuote(),
                                         risk = rule.result.text,
@@ -52,7 +52,7 @@ class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map
                     }
             }
         return WorkflowResult(
-            workflow = ctx.name().text.removeSingleQuote(),
+            workflow = ctx.workflow_name().text.removeSingleQuote(),
             ruleSet = "default",
             rule = "default",
             risk = ctx.defaultResult.result.text,
