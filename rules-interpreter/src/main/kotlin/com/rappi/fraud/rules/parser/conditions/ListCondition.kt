@@ -78,14 +78,13 @@ class ListCondition : Condition<ANAParser.ListContext> {
         val value = visitor.visit(ctx.value).toString()
         val list =  when {
             (ctx.values.literalList != null) -> {
-                ctx.values.STRING_LITERAL()
-                    .map(TerminalNode::toString)
-                    .map{ it.replace("'", "") }
+                ctx.values.string_literal()
+                    .map{it.text.replace("'", "", true)}
             }
             ctx.values.storedList != null -> {
                 val value = value.toString()
                 // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
-               visitor.lists[ctx.values.STRING_LITERAL()[0].toString().replace("\'", "")]
+               visitor.lists[ctx.values.string_literal()[0].text.replace("\'", "")]
             }
             ctx.values.validProperty() != null && ctx.values.validProperty().property != null -> (visitor.data[ctx.values.validProperty().property.text] as List<*>)
 
