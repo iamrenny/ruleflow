@@ -24,6 +24,11 @@ class ErrorHandler : Handler<RoutingContext> {
                 message = exception.message
                 cause = exception.errorCode
             }
+            is IllegalArgumentException -> {
+                var exception = (event.failure() as IllegalArgumentException)
+                statusCode = 400
+                message = exception.message
+            }
             is NoSuchElementException -> {
                 statusCode = HttpResponseStatus.NOT_FOUND.code()
             }

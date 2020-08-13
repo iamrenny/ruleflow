@@ -78,6 +78,7 @@ class MainRouter @Inject constructor(
 
     private fun getAllWorkflowsByCountry(ctx: RoutingContext) {
         Single.just(ctx.pathParams()).flatMap {
+            validateCountry(it["countryCode"]!!)
             workflowService.getAllWorkflowsByCountry(it["countryCode"]!!)
                 .toList()
         }.subscribe({
@@ -91,6 +92,7 @@ class MainRouter @Inject constructor(
 
     private fun getActiveWorkflowsByCountry(ctx: RoutingContext) {
         Single.just(ctx.pathParams()).flatMap {
+            validateCountry(it["countryCode"]!!)
             workflowService.getActiveWorkflowsByCountry(it["countryCode"]!!)
                 .toList()
         }.subscribe({
@@ -103,6 +105,7 @@ class MainRouter @Inject constructor(
     }
 
     private fun evaluateActive(ctx: RoutingContext) {
+        validateCountry(ctx.pathParam("countryCode"))
         Single.just(ctx.bodyAsJson).flatMap {
             workflowService.evaluate(
                 countryCode = ctx.pathParam("countryCode"),
@@ -126,6 +129,7 @@ class MainRouter @Inject constructor(
     }
 
     private fun evaluate(ctx: RoutingContext) {
+        validateCountry(ctx.pathParam("countryCode"))
         Single.just(ctx.bodyAsJson).flatMap {
         workflowService.evaluate(
                 ctx.pathParam("countryCode"),
@@ -145,6 +149,7 @@ class MainRouter @Inject constructor(
 
     private fun createWorkflow(ctx: RoutingContext) {
         Single.just(ctx.bodyAsJson).map {
+            validateCountry(it.getString("country_code"))
             CreateWorkflowRequest(
                 countryCode = it.getString("country_code"),
                 workflow = it.getString("workflow"),
@@ -162,6 +167,7 @@ class MainRouter @Inject constructor(
     private fun getWorkflow(ctx: RoutingContext) {
         Single.just(ctx.pathParams())
             .flatMap {
+                validateCountry(it["countryCode"]!!)
             workflowService.getWorkflow(
                 it["countryCode"]!!,
                 // TODO: FIX THIS ASAP. NAMES MUST BE URL COMPLIANT
@@ -178,6 +184,7 @@ class MainRouter @Inject constructor(
 
     private fun getWorkflowsByCountryAndName(ctx: RoutingContext) {
         Single.just(ctx.pathParams()).map {
+            validateCountry(it["countryCode"]!!)
             GetAllWorkflowRequest(
                 countryCode = it["countryCode"]!!,
                 name = URLDecoder.decode(it["name"]!!, "UTF-8")!!
@@ -193,6 +200,7 @@ class MainRouter @Inject constructor(
 
     private fun activateWorkflow(ctx: RoutingContext) {
         Single.just(ctx.pathParams()).map {
+            validateCountry(it["countryCode"]!!)
             ActivateRequest(
                 countryCode = it["countryCode"]!!,
                 name = URLDecoder.decode(it["name"]!!, "UTF-8")!!,
@@ -360,6 +368,12 @@ class MainRouter @Inject constructor(
         } catch (exception: DecodeException) {
             logger.warn("Error parsing request Body for class ${clazz.simpleName}", exception)
             throw ErrorRequestException(exception.message ?: "Fail body validation", "validation.body.bad_request", 400)
+        }
+    }
+
+    private fun validateCountry(country: String) {
+        if(!country.matches("[a-z]+".toRegex())){
+            throw ErrorRequestException(country, "Invalid country code", 400)
         }
     }
 

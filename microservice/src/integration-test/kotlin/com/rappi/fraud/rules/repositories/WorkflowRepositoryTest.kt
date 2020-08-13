@@ -40,7 +40,7 @@ class WorkflowRepositoryTest : BaseTest() {
             id = 1,
             version = 1,
             name = "Workflow 1",
-            countryCode = "CO",
+            countryCode = "co",
             workflowAsString = "Workflow \"Workflow 1\" ruleset \"test\" \"test\" total >= 100 return allow default block end",
             userId = "84b22591-7894-4063-943f-511a157409c3",
             createdAt = LocalDateTime.parse("2019-10-31T08:31:58.129"),
