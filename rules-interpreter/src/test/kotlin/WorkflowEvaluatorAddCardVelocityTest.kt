@@ -1,4 +1,5 @@
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
+import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
@@ -52,7 +53,8 @@ class WorkflowEvaluatorAddCardVelocityTest {
                             workflow = "add_card",
                             ruleSet = "default",
                             rule = "default",
-                            risk = "allow")
+                            risk = "allow",
+                            workflowInfo = WorkflowInfo("", ""))
                     ),
 
                     // Has more than allowed per day
@@ -78,7 +80,8 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per day",
-                                    risk = "block")
+                                    risk = "block",
+                                    workflowInfo = WorkflowInfo("", ""))
                     ),
 
                     // Has more than allowed per week
@@ -109,7 +112,8 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per week",
-                                    risk = "block")
+                                    risk = "block",
+                                    workflowInfo = WorkflowInfo("", ""))
                     ),
 
                     // Has more than allowed per week
@@ -140,7 +144,8 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per month",
-                                    risk = "block")
+                                    risk = "block",
+                                    workflowInfo = WorkflowInfo("", ""))
                     )
             )
         }

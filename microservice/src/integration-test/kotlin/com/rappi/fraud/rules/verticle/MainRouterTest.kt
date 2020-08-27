@@ -7,6 +7,7 @@ import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -237,7 +238,8 @@ class MainRouterTest : BaseTest() {
                 workflow = "Workflow 1",
                 ruleSet = "test",
                 rule = "test",
-                risk = "block")
+                risk = "block",
+                workflowInfo = WorkflowInfo("1","Workflow 1"))
 
         whenever(workflowService
                 .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, version = workflow.version!!, data = data))
@@ -277,7 +279,8 @@ class MainRouterTest : BaseTest() {
                 workflow = "Workflow 1",
                 ruleSet = "test",
                 rule = "test",
-                risk = "allow")
+                risk = "allow",
+                workflowInfo = WorkflowInfo("1","Workflow 1"))
 
         whenever(workflowService
                 .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, data = data))

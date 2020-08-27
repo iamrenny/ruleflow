@@ -15,67 +15,67 @@ class WorkflowRepositoryTest : BaseTest() {
     @Test
     fun testSave() {
         val expected = Workflow(
-            countryCode = "MX",
-            name = "Name",
-            workflowAsString = "Workflow",
-            userId = UUID.randomUUID().toString()
+                countryCode = "MX",
+                name = "Name",
+                workflowAsString = "Workflow",
+                userId = UUID.randomUUID().toString()
         )
         repository.save(expected)
-            .test()
-            .assertSubscribed()
-            .await()
-            .assertComplete()
-            .assertValue { it.id != null }
-            .assertValue { it.countryCode == expected.countryCode }
-            .assertValue { it.name == expected.name }
-            .assertValue { it.workflowAsString == expected.workflowAsString }
-            .assertValue { it.version!! > 0L }
-            .assertValue { it.createdAt != null }
-            .dispose()
+                .test()
+                .assertSubscribed()
+                .await()
+                .assertComplete()
+                .assertValue { it.id != null }
+                .assertValue { it.countryCode == expected.countryCode }
+                .assertValue { it.name == expected.name }
+                .assertValue { it.workflowAsString == expected.workflowAsString }
+                .assertValue { it.version!! > 0L }
+                .assertValue { it.createdAt != null }
+                .dispose()
     }
 
     @Test
     fun testGet() {
         val expected = Workflow(
-            id = 1,
-            version = 1,
-            name = "Workflow 1",
-            countryCode = "co",
-            workflowAsString = "Workflow \"Workflow 1\" ruleset \"test\" \"test\" total >= 100 return allow default block end",
-            userId = "84b22591-7894-4063-943f-511a157409c3",
-            createdAt = LocalDateTime.parse("2019-10-31T08:31:58.129"),
-            lists = listOf(),
-            active = false
+                id = 1,
+                version = 1,
+                name = "Workflow 1",
+                countryCode = "co",
+                workflowAsString = "Workflow \"Workflow 1\" ruleset \"test\" \"test\" total >= 100 return allow default block end",
+                userId = "84b22591-7894-4063-943f-511a157409c3",
+                createdAt = LocalDateTime.parse("2019-10-31T08:31:58.129"),
+                lists = listOf(),
+                active = false
         )
 
         repository.getWorkflow(
-            countryCode = expected.countryCode!!,
-            name = expected.name,
-            version = expected.version!!
+                countryCode = expected.countryCode!!,
+                name = expected.name,
+                version = expected.version!!
         )
-            .test()
-            .assertSubscribed()
-            .await()
-            .assertComplete()
-            .assertValue(expected)
-            .dispose()
+                .test()
+                .assertSubscribed()
+                .await()
+                .assertComplete()
+                .assertValue(expected)
+                .dispose()
     }
 
     @Test
     fun testGetAll() {
         val expected = getSeedAsJsonArray("get_all_workflow.json")
-            .mapTo(mutableListOf(), { x -> (x as JsonObject).mapTo(Workflow::class.java) })
-            .toList()
+                .mapTo(mutableListOf(), { x -> (x as JsonObject).mapTo(Workflow::class.java) })
+                .toList()
 
         val request = GetAllWorkflowRequest(
-            countryCode = expected[0].countryCode!!,
-            name = expected[0].name
+                countryCode = expected[0].countryCode!!,
+                name = expected[0].name
         )
         repository.getWorkflowsByCountryAndName(request)
-            .test()
-            .assertSubscribed()
-            .await()
-            .assertValueSequence(expected.sortedByDescending { it.id })
-            .dispose()
+                .test()
+                .assertSubscribed()
+                .await()
+                .assertValueSequence(expected.sortedByDescending { it.id })
+                .dispose()
     }
 }

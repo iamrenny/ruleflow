@@ -14,6 +14,7 @@ import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
@@ -259,7 +260,8 @@ class WorkflowServiceTest {
                 workflow = "Sample",
                 ruleSet = "Sample",
                 rule = "Deny",
-                risk = "allow"
+                risk = "allow",
+                workflowInfo = WorkflowInfo("1","Sample")
         )
 
         val data = JsonObject()
@@ -298,7 +300,8 @@ class WorkflowServiceTest {
                 workflow = "Sample",
                 ruleSet = "Sample",
                 rule = "Deny",
-                risk = "allow"
+                risk = "allow",
+                workflowInfo = WorkflowInfo("1","Sample")
         )
 
         val data = JsonObject()
@@ -329,7 +332,8 @@ class WorkflowServiceTest {
                 workflow = "Sample",
                 ruleSet = "Sample",
                 rule = "Deny",
-                risk = "allow"
+                risk = "allow",
+                workflowInfo = WorkflowInfo("1","Sample")
         )
 
         val data = JsonObject()

@@ -3,6 +3,7 @@ package com.rappi.fraud.rules.parser.evaluators
 import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.removeSingleQuote
+import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import java.lang.Exception
 
@@ -32,7 +33,8 @@ class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map
                                         ruleSet = ruleSet.name().text.removeSingleQuote(),
                                         rule = rule.name().text.removeSingleQuote(),
                                         risk = rule.result.text,
-                                        warnings = warnings
+                                        warnings = warnings,
+                                        workflowInfo = WorkflowInfo("","")
                                     ).let {
                                         if(rule.actions() != null) {
                                             val actions = ActionsEvaluator().evaluate(rule.actions())
@@ -56,7 +58,8 @@ class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map
             ruleSet = "default",
             rule = "default",
             risk = ctx.defaultResult.result.text,
-            warnings = warnings
+            warnings = warnings,
+            workflowInfo = WorkflowInfo("","")
         )
     }
 }

@@ -8,6 +8,7 @@ import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
+import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
@@ -64,6 +65,9 @@ class WorkflowService @Inject constructor(
                 listRepository.findAllWithEntries()
                     .flatMap { lists ->
                         Single.just(workflow.evaluator.evaluate(data.map, lists))
+                    }
+                    .map {  result ->
+                        result.copy(workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name))
                     }
                     .doOnSuccess { result ->
                         result.warnings.forEach {warning ->
