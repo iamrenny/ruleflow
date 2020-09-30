@@ -1,16 +1,5 @@
 version: '3'
 services:
-  test:
-    image: openjdk:11.0-jdk-slim
-    volumes:
-      - ${MY_WORKSPACE}:/ws
-    working_dir: /ws${WORKSPACE_PATH:-/}
-    user: ${MY_USER:-root}
-    depends_on:
-      - postgres
-      - redis
-    command: >
-      ./gradlew --no-daemon -g ./.gradle-cache jacocoTestReport
   postgres:
     restart: always
     image: "postgres:10.4-alpine"
@@ -18,8 +7,12 @@ services:
       POSTGRES_DB: fraud-rules-engine
       POSTGRES_USER: fraud-rules-engine
       POSTGRES_PASSWORD: fraud-rules-engine
+    ports:
+      - "5432:5432"
   redis:
     restart: always
     image: "redis:3-alpine3.8"
+    ports:
+      - "6379:6379"
     volumes:
       - ../data/redis:/data

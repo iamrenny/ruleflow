@@ -10,12 +10,11 @@ buildscript {
 plugins {
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.0.0'
-    id "io.gitlab.arturbosch.detekt" version '1.0.0.M11'
+    id 'jacoco'
 }
 
 apply plugin: 'application'
 apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'io.gitlab.arturbosch.detekt'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 repositories {
@@ -52,8 +51,21 @@ sourceSets {
     }
 }
 
+jacoco {
+    toolVersion = "0.8.5"
+}
+
+def baseFolder = 'com/rappi/fraud/rules'
+def jacocoExcludedDirs = [
+        "$baseFolder/config/**",
+        "$baseFolder/entities/**",
+        "$baseFolder/errors/**",
+        "$baseFolder/extensions/**",
+        "$baseFolder/module/**",
+        "$baseFolder/verticle/**"
+]
+
 dependencies {
-    compile group: 'io.gitlab.arturbosch.detekt', name: 'detekt-gradle-plugin', version: '1.0.0.M11'
 
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
@@ -132,6 +144,25 @@ test {
         showStandardStreams = true
         events = ["passed", "skipped", "failed"]
     }
+
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+        classDumpDir = file("$buildDir/jacoco/classpathdumps")
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled = true
+        html.enabled = true
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+    afterEvaluate {
+        getClassDirectories().setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExcludedDirs)
+        }))
+    }
 }
 
 task integrationTest(type: Test) {
@@ -179,9 +210,3 @@ task ktlintFormat(type: JavaExec, group: "formatting") {
 
 check.dependsOn ktlint
 ktlint.dependsOn ktlintFormat
-
-detekt {
-    config = files("$rootDir/detekt-config.yml")
-    filters = ".*build.*,.*/resources/.*,.*/tmp/.*"
-    baseline = file("detekt-baseline.xml")
-}

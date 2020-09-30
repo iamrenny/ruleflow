@@ -16,9 +16,13 @@ Esta API se encarga de administrar y evaluar flujos de trabajo.
 
 ## Pasos para correr en Local
 1. Crear la variable de entorno `ENV=dev` (E.g. usando `export ENV=dev` o seteandolo en IntelliJ)
-2. Ejecutar `docker-compose up` para correr la imagen de Dockerfile con PostgreSQL
-3. Ejecutar `./gradlew run`
-4. Para probar hacer una http GET request a <localhost:8080/api/fraud-rules-engine/health-check>
+2. Agregar las siguientes líneas de mapeo en archivo hosts:
+
+        127.0.0.1	postgres
+        127.0.0.1	redis
+3. Ejecutar `docker-compose -f docker-compose-local.yml up` para correr la imagen de Dockerfile con PostgreSQL
+4. Ejecutar `./gradlew run`
+5. Para probar hacer una http GET request a <localhost:8080/api/fraud-rules-engine/health-check>
 
 ## Pasos para ejecutar los tests
 1. Ejecutar `docker-compose up` para correr la imagen de Dockerfile con PostgreSQL 

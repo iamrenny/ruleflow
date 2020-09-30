@@ -16,7 +16,6 @@ pipeline {
         stage('CI_SONAR') {
             when {
                 anyOf {
-                    branch 'master'
                     branch 'develop'
                     buildingTag()
                     changeRequest()
@@ -39,6 +38,11 @@ pipeline {
                       sh 'docker-compose down -v'
                     })
                   
+                    flow.wstage("Coverage", {
+                        sh './gradlew jacocoTestCoverageVerification'
+                        jacoco(execPattern: 'build/jacoco/jacocoTest.exec')
+                        junit 'build/test-results/*.xml'
+                    })
 
                     flow.wstage("Sonar", {
                       flow.sonarAnalysis();

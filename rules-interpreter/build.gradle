@@ -10,6 +10,7 @@ buildscript {
 plugins {
     id "org.jetbrains.kotlin.jvm"
     id 'antlr'
+    id 'jacoco'
 }
 
 apply plugin: "kotlin"
@@ -32,6 +33,13 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.allWarningsAsErrors = false
 }
+
+jacoco {
+    toolVersion = "0.8.5"
+}
+
+def baseFolder = ''
+def jacocoExcludedDirs = []
 
 dependencies {
     antlr "org.antlr:antlr4:$antlr_version"
@@ -58,6 +66,25 @@ test {
         showStandardStreams = true
         events "passed", "skipped", "failed"
 
+    }
+
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+        classDumpDir = file("$buildDir/jacoco/classpathdumps")
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled = true
+        html.enabled = true
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+    afterEvaluate {
+        getClassDirectories().setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExcludedDirs)
+        }))
     }
 }
 
