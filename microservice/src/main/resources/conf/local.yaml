@@ -1,7 +1,7 @@
 settings:
   APP_RESPONSE_TIMEOUT: 1500
 database:
-  DB_URL: "jdbc:postgresql://postgres:5432/fraud-rules-engine"
+  DB_URL: "jdbc:postgresql://localhost:5432/fraud-rules-engine"
   DB_USER: "fraud-rules-engine"
   DB_PASSWORD: "fraud-rules-engine"
   DRIVER_CLASS: "org.postgresql.Driver"
@@ -13,5 +13,5 @@ database:
   MINIMUM_IDLE: "1"
   IDLE_TIMEOUT: "60000"
 redis:
-  REDIS_HOST: "redis"
+  REDIS_HOST: "localhost"
   REDIS_PORT: "6379"
