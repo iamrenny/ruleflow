@@ -101,32 +101,10 @@ class WorkflowService @Inject constructor(
         countryCode: String,
         name: String,
         version: Long?
-    ) = workflowCache.get(countryCode, name, version)
-        .switchIfEmpty(Single.defer {
-            if (version == null) {
-                fromDbWithoutVersion(countryCode, name)
-            } else {
-                fromDbWithVersion(countryCode, name, version)
-            }
-        })
-
-    private fun fromDb(countryCode: String, name: String, version: Long): Single<Workflow> {
-        logger.info("Getting value in db for $countryCode $name $version")
-        return fromDbWithVersion(countryCode, name, version)
-    }
-
-    private fun fromDbWithoutVersion(countryCode: String, name: String) =
-            activeWorkflowRepository
-                    .get(countryCode, name)
-                .flatMap {
-                    workflowCache.set(it)
-                }
-
-    private fun fromDbWithVersion(countryCode: String, name: String, version: Long) =
-            workflowRepository.getWorkflow(countryCode, name, version)
-                .flatMap {
-                    workflowCache.set(it)
-                }
+    ) = if (version == null)
+        activeWorkflowRepository.getActiveWorkflow(countryCode, name)
+    else
+        workflowRepository.getWorkflow(countryCode, name, version)
 
     fun activate(request: ActivateRequest): Single<Workflow> {
         return workflowRepository
