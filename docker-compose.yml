@@ -1,25 +1,19 @@
+# Environment samples to help you build your compose:
+
+# WORKSPACE_PATH=/devops-test_feature_cicd
+# MY_WORKSPACE=/home/ec2-user/workspace
+# NEXUS_URL=http://repo.ops.rappi.com
+
 version: '3'
 services:
   test:
-    image: openjdk:11.0-jdk-slim
+    build: .
     volumes:
-      - ${MY_WORKSPACE}:/ws
+    - ${MY_WORKSPACE}:/ws
     working_dir: /ws${WORKSPACE_PATH:-/}
     user: ${MY_USER:-root}
-    depends_on:
-      - postgres
-      - redis
-    command: >
-      ./gradlew --no-daemon -g ./.gradle-cache jacocoTestReport
-  postgres:
-    restart: always
-    image: "postgres:10.4-alpine"
     environment:
-      POSTGRES_DB: fraud-rules-engine
-      POSTGRES_USER: fraud-rules-engine
-      POSTGRES_PASSWORD: fraud-rules-engine
-  redis:
-    restart: always
-    image: "redis:3-alpine3.8"
-    volumes:
-      - ../data/redis:/data
+      NEXUS_USERNAME: ${NEXUS_USERNAME}
+      NEXUS_PASSWORD: ${NEXUS_PASSWORD}
+      NEXUS_URL: ${NEXUS_URL}
+    command: echo "your tests runner here"
