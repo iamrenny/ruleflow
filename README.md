@@ -220,7 +220,9 @@ will be rounded down to 2 decimals and the containing rule will be evaluated to 
 * Subtraction `-`. Returns the subtract 
 * Multiplication `*`. Multiplies the left value by the right value. 
 * Division `/`. Returns the division of the left value with the right value as the divisor. If the divisor is 0, 
-the condition will be evaluated as `false`. The result will be scaled down to 2 decimals.  
+the condition will be evaluated as `false`. The result will be scaled down to 2 decimals.
+
+* Absolute value `abs`. Returns the absolute value of a number.
 
 #### Logical Operators
 `AND` Evaluates to true if all operands are true and not NULL, to false if one or more operands are false or null. 

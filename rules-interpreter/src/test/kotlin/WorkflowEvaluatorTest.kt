@@ -849,4 +849,80 @@ class WorkflowEvaluatorTest {
             )
         )
     }
+
+    @Test
+    fun testAbsoluteValueNegativeNumber() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'absolute_value' abs(test) = 1 AND abs(test) <> -1 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "absolute_value",  risk = "block", workflowInfo = WorkflowInfo("", "")),
+            ruleEngine.evaluate(
+                mapOf("test" to -1)
+            )
+        )
+    }
+
+    @Test
+    fun testAbsoluteValueWithString() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'absolute_value' abs(test) = -1 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", workflowInfo = WorkflowInfo("", "")),
+            ruleEngine.evaluate(
+                mapOf("test" to "something")
+            )
+        )
+    }
+
+    @Test
+    fun testAbsoluteValueWithPlusOperation() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'absolute_value' abs(3+3) = 6 return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "absolute_value",  risk = "block", workflowInfo = WorkflowInfo("", "")),
+            ruleEngine.evaluate(
+                mapOf("test" to "something")
+            )
+        )
+    }
+
+    @Test
+    fun testAbsoluteValueWithExponential() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'absolute_value' abs(test) = 1e-7 return block
+                default allow
+            end
+        """
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "absolute_value",  risk = "block", workflowInfo = WorkflowInfo("", "")),
+            ruleEngine.evaluate(
+                mapOf("test" to -1e-7)
+            )
+        )
+    }
 }
+

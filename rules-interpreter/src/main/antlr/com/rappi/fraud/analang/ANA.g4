@@ -64,10 +64,11 @@
  : L_PAREN expr R_PAREN                                                                                     #parenthesis
  | left = expr op = (ADD | MINUS | MULTIPLY | DIVIDE) right = expr                                          #math
  | left = expr op = (LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right = expr                            #comparator
- | value = expr not = K_NOT? op = (K_CONTAINS | K_IN | K_STARTS_WITH) values = listElems                                    #list
+ | value = expr not = K_NOT? op = (K_CONTAINS | K_IN | K_STARTS_WITH) values = listElems                    #list
  | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
         (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #aggregation
  | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left = expr COMMA right = expr R_PAREN                     #dateDiff
+ | ABS L_PAREN left = expr R_PAREN                                                                          #absoluteValue
  | left = expr op = (K_AND | K_OR) right = expr                                                             #binary
  | validProperty                                                                                            #property
  | validValue                                                                                               #value
@@ -112,6 +113,7 @@
  CURRENT_DATE : 'currentDate' L_PAREN R_PAREN
  | 'currentdate' L_PAREN R_PAREN ;
  DATE_DIFF: 'dateDiff' | 'datediff' ;
+ ABS: 'abs' ;
  K_STARTS_WITH: 'starts_with' | 'startswith' | 'startsWith';
  K_LIST: 'list';
  L_BRACE : '{';
