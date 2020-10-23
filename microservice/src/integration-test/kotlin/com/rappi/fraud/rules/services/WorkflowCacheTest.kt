@@ -40,4 +40,15 @@ class WorkflowCacheTest : BaseTest() {
                 .assertValue { it.workflowAsString == SEED_ENGINE.workflow }
                 .dispose()
     }
+
+    @Test
+    @Order(3)
+    fun testExists() {
+        service.exists(countryCode = "MX", name = "Sample", version = 1)
+                .test()
+                .assertSubscribed()
+                .await()
+                .assertComplete()
+                .dispose()
+    }
 }

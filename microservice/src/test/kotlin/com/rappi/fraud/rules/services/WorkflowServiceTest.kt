@@ -191,6 +191,37 @@ class WorkflowServiceTest {
     }
 
     @Test
+    fun getAllWorkflowsByCountry() {
+        val base = Workflow(
+                id = 20,
+                name = "Sample",
+                countryCode = "mx",
+                workflowAsString = "workflow",
+                version = 10,
+                userId = UUID.randomUUID().toString(),
+                createdAt = LocalDateTime.now()
+        )
+
+        val expected = listOf(base,
+                base.copy(name = "Sample2"),
+                base.copy(name = "Sample3"))
+
+        val countryCode = "MX"
+
+        whenever(workflowRepository.getAllWorkflowsByCountry(countryCode))
+                .thenReturn(Observable.merge(expected.map { Observable.just(it) }))
+
+        service
+                .getAllWorkflowsByCountry(countryCode)
+                .test()
+                .assertSubscribed()
+                .await()
+                .assertComplete()
+                .assertValueSet(expected)
+                .dispose()
+    }
+
+    @Test
     fun testActivate() {
         val expected = baseWorkflow().activate()
 

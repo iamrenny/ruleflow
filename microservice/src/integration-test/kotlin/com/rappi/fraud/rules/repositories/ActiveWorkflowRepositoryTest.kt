@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.repositories
 
 import com.rappi.fraud.rules.BaseTest
+import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.entities.Workflow
 import io.vertx.core.json.JsonObject
 import org.junit.jupiter.api.MethodOrderer
@@ -12,6 +13,9 @@ import org.junit.jupiter.api.TestMethodOrder
 class ActiveWorkflowRepositoryTest : BaseTest() {
 
     private val repository = injector.getInstance(ActiveWorkflowRepository::class.java)
+
+    private val historyRepository = injector.getInstance(ListHistoryRepository::class.java)
+
 
     companion object {
         private val SEED = getSeedAsJsonArray("get_all_workflow.json")
@@ -80,5 +84,20 @@ class ActiveWorkflowRepositoryTest : BaseTest() {
                     lists = listOf()
                 )
             )
+    }
+
+    @Test
+    @Order(4)
+    fun testGetActiveWorkflow() {
+        repository.getActiveWorkflow(countryCode = SEED[0].countryCode!!, name = SEED[0].name)
+                .test()
+    }
+
+    @Test
+    fun testListHistoryRepository() {
+
+        historyRepository.save(1, ListModificationType.ADD_ITEMS, "", JsonObject())
+
+        historyRepository.getListHistory(1)
     }
 }

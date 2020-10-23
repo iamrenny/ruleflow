@@ -69,15 +69,6 @@ class ListRepository @Inject constructor(private val database: Database) {
             .doOnError { logger.error("error getting lists", it) }
     }
 
-    fun deleteList(listId: Long): Completable {
-        val query = "DELETE from lists WHERE id = $1"
-
-        return database.executeDelete(query, listOf(listId)).flatMapCompletable { deletedCount ->
-            if (deletedCount > 0) Completable.complete()
-            else Completable.error(NotFoundException("Error deleting. List not found", "error.not_found"))
-        }
-    }
-
     fun updateDescription(listId: Long, description: String, responsible: String): Single<RulesEngineList> {
         val params = listOf(description, responsible, listId)
         val query = """UPDATE lists SET description = $1, updated_at = NOW(), last_updated_by = $2 WHERE id = $3
@@ -86,16 +77,6 @@ class ListRepository @Inject constructor(private val database: Database) {
         return database.executeWithParams(query, params)
             .map { RulesEngineList(it) }
             .doOnError { logger.error("error updating description to list with id: $listId", it) }
-    }
-
-    fun rename(listId: Long, newName: String, responsible: String): Single<RulesEngineList> {
-        val params = listOf(newName, responsible, listId)
-        val query = """UPDATE lists SET list_name = $1, updated_at = NOW(), last_updated_by = $2 WHERE id = $3
-            RETURNING id, name, description, created_at, updated_at, created_by, last_updated_by, status"""
-
-        return database.executeWithParams(query, params)
-            .map { RulesEngineList(it) }
-            .doOnError { logger.error("error renaming list with id: $listId", it) }
     }
 
     fun updateStatus(listId: Long, status: ListStatus, responsible: String): Single<RulesEngineList> {
@@ -184,13 +165,6 @@ class ListRepository @Inject constructor(private val database: Database) {
 
         return database.executeBatchDelete(query, batchParams)
             .doOnError { logger.error("error deleting batch items from listId: $listId", it) }
-    }
-
-    fun deleteAllItemsFromList(listId: Long): Completable {
-
-        val query = "DELETE FROM list_items WHERE list_id = $1"
-        return database.executeDelete(query, listOf(listId)).ignoreElement()
-            .doOnError { logger.error("error deleting all items from listId: $listId", it) }
     }
 
 
