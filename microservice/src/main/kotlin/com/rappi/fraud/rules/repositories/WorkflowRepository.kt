@@ -3,6 +3,7 @@ package com.rappi.fraud.rules.repositories
 import com.google.inject.Inject
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
+import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.micrometer.backends.BackendRegistries
@@ -53,6 +54,23 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
                     BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowRepository.get")
                         .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
             }
+    }
+
+    fun exists(countryCode: String, name: String): Single<Boolean> {
+
+        val getWorkflow = """
+            SELECT w.*,
+                   CASE WHEN aw.workflow_id isnull THEN false ELSE true END AS is_active
+            FROM workflows w
+            left JOIN active_workflows aw ON w.id = aw.workflow_id
+            WHERE w.country_code = $1
+              AND w.name = $2
+            """
+        val params = listOf(
+            countryCode,
+            name
+        )
+        return database.get(getWorkflow, params).isEmpty.map { !it }
     }
 
     fun getWorkflowsByCountryAndName(workflowRequest: GetAllWorkflowRequest): Observable<Workflow> {

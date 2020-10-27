@@ -8,6 +8,7 @@ import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
+import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
@@ -27,7 +28,8 @@ class WorkflowService @Inject constructor(
     private val activeWorkflowHistoryRepository: ActiveWorkflowHistoryRepository,
     private val workflowCache: WorkflowCache,
     private val workflowRepository: WorkflowRepository,
-    private val listRepository: ListRepository
+    private val listRepository: ListRepository,
+    private val workFlowEditionService: WorkflowEditionService
 ) {
 
     private val logger by LoggerDelegate()
@@ -39,7 +41,27 @@ class WorkflowService @Inject constructor(
                 workflowAsString = request.workflow,
                 userId = request.userId
         )
-        return workflowRepository.save(workflow)
+
+        return workflowRepository.exists(workflow.countryCode!!, workflow.name).flatMap { exists ->
+            if (exists){
+                workFlowEditionService.getUserEditing(workflow.countryCode, workflow.name).flatMap { userEditing ->
+                    if (userEditing != "NOT FOUND") {
+                        if(userEditing == workflow.userId){
+                            workFlowEditionService.unlockWorkflowEdition(workflow.countryCode, workflow.name)
+                                .flatMap {
+                                    workflowRepository.save(workflow)
+                                }
+                        } else {
+                            throw ErrorRequestException("the workflow is being edited by $userEditing", "workflow.is.being.edited", 423)
+                        }
+                    } else {
+                        throw ErrorRequestException("no active workflow edition to save", "workflow.edition.not.active", 400)
+                    }
+                }
+            } else {
+                workflowRepository.save(workflow)
+            }
+        }
     }
 
     fun getWorkflow(countryCode: String, name: String, version: Long): Single<Workflow> {
@@ -147,4 +169,32 @@ class WorkflowService @Inject constructor(
                 SignalFx.noticeError(it)
         })
     }
+
+    fun getWorkflowForEdition(countryCode: String, workflowName: String, version: Long, user: String): Single<WorkflowEditionResponse> {
+        return workflowRepository.getWorkflow(countryCode, workflowName, version).flatMap { workflow ->
+            workFlowEditionService.lockWorkflowEdition(countryCode, workflowName, user).map { workflowEditionStatus ->
+                if(workflowEditionStatus.status == "OK")
+                    WorkflowEditionResponse(
+                        workflow,
+                        workflowEditionStatus
+                    )
+                else
+                    WorkflowEditionResponse(
+                        workflowEditionStatus = workflowEditionStatus
+                    )
+                }
+        }
+    }
+
+    data class WorkflowEditionResponse(
+        val workflow: Workflow? = null,
+        val workflowEditionStatus: WorkflowEditionService.WorkflowEditionStatus
+    )
+
+    data class LockWorkflowEditionRequest(
+        val countryCode: String,
+        val workflowName: String,
+        val version: Long,
+        val user: String
+    )
 }

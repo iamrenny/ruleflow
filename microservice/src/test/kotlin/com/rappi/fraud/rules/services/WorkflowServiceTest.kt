@@ -2,7 +2,6 @@ package com.rappi.fraud.rules.services
 
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.argumentCaptor
-import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.reset
 import com.nhaarman.mockito_kotlin.times
@@ -14,13 +13,13 @@ import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
-import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
@@ -41,8 +40,9 @@ class WorkflowServiceTest {
     private val cacheService = mock<WorkflowCache>()
     private val workflowRepository = mock<WorkflowRepository>()
     private val listRepository = mock<ListRepository>()
+    private val workFlowEditionService = mock<WorkflowEditionService>()
     private val service = WorkflowService(activeWorkflowRepository, activeWorkflowHistoryRepository,
-        cacheService, workflowRepository, listRepository)
+        cacheService, workflowRepository, listRepository, workFlowEditionService)
 
     @BeforeEach
     fun cleanUp() {
@@ -66,6 +66,21 @@ class WorkflowServiceTest {
                 userId = expected.userId)))
             .thenReturn(Single.just(expected))
 
+        whenever(workflowRepository
+            .exists(any(), any()))
+            .thenReturn(Single.just(true))
+
+        whenever(workFlowEditionService
+            .getUserEditing(any(), any()))
+            .thenReturn(Single.just(expected.userId))
+
+        whenever(workFlowEditionService
+            .unlockWorkflowEdition(any(), any()))
+            .thenReturn(Single.just(WorkflowEditionService.WorkflowEditionStatus(
+                "OK",
+                "workflow edition unlocked"
+            )))
+
         service
             .save(
                 CreateWorkflowRequest(
@@ -78,6 +93,85 @@ class WorkflowServiceTest {
             .assertComplete()
             .assertValue(expected)
             .dispose()
+    }
+
+    @Test
+    fun testSaveEditionLocked() {
+        val expected = baseWorkflow()
+
+        whenever(workflowRepository
+            .save(Workflow(
+                countryCode = expected.countryCode,
+                name = expected.name,
+                workflowAsString = expected.workflowAsString,
+                userId = expected.userId)))
+            .thenReturn(Single.just(expected))
+
+        whenever(workflowRepository
+            .exists(any(), any()))
+            .thenReturn(Single.just(true))
+
+        whenever(workFlowEditionService
+            .getUserEditing(any(), any()))
+            .thenReturn(Single.just("userEditing"))
+
+        whenever(workFlowEditionService
+            .unlockWorkflowEdition(any(), any()))
+            .thenReturn(Single.just(WorkflowEditionService.WorkflowEditionStatus(
+                "OK",
+                "workflow edition unlocked"
+            )))
+
+        service
+            .save(
+                CreateWorkflowRequest(
+                    countryCode = expected.countryCode!!,
+                    workflow = expected.workflowAsString!!,
+                    userId = expected.userId!!))
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertError {
+                it is ErrorRequestException &&
+                    it.statusCode == 423 &&
+                    it.message == """the workflow is being edited by userEditing"""
+            }
+    }
+
+    @Test
+    fun testSaveEditionNotLocked() {
+        val expected = baseWorkflow()
+
+        whenever(workflowRepository
+            .save(Workflow(
+                countryCode = expected.countryCode,
+                name = expected.name,
+                workflowAsString = expected.workflowAsString,
+                userId = expected.userId)))
+            .thenReturn(Single.just(expected))
+
+        whenever(workFlowEditionService
+            .getUserEditing(any(), any()))
+            .thenReturn(Single.just("NOT FOUND"))
+
+        whenever(workflowRepository
+            .exists(any(), any()))
+            .thenReturn(Single.just(true))
+
+        service
+            .save(
+                CreateWorkflowRequest(
+                    countryCode = expected.countryCode!!,
+                    workflow = expected.workflowAsString!!,
+                    userId = expected.userId!!))
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertError {
+                it is ErrorRequestException &&
+                    it.statusCode == 400 &&
+                    it.message == """no active workflow edition to save"""
+            }
     }
 
     @Test
@@ -133,6 +227,88 @@ class WorkflowServiceTest {
                 .assertComplete()
                 .assertValue(expected)
                 .dispose()
+    }
+
+    @Test
+    fun testGetForEdition() {
+        val workflow = baseWorkflow()
+
+        val expected = WorkflowService.WorkflowEditionResponse(
+            workflow,
+            WorkflowEditionService.WorkflowEditionStatus(
+                "OK"
+            )
+        )
+
+        val req = WorkflowService.LockWorkflowEditionRequest(
+            countryCode = workflow.countryCode!!,
+            workflowName = workflow.name,
+            version = workflow.version!!,
+            user = workflow.userId!!
+        )
+
+        whenever(workflowRepository.getWorkflow(
+            countryCode = workflow.countryCode!!,
+            name = workflow.name,
+            version = workflow.version!!)
+        )
+            .thenReturn(Single.just(workflow))
+
+        whenever(workFlowEditionService
+            .lockWorkflowEdition(any(), any(), any()))
+            .thenReturn(Single.just(
+                WorkflowEditionService.WorkflowEditionStatus("OK")
+            ))
+
+        service
+            .getWorkflowForEdition(req.countryCode, req.workflowName, req.version, req.user)
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValue(expected)
+            .dispose()
+    }
+
+    @Test
+    fun testFailGetForEdition() {
+        val workflow = baseWorkflow()
+
+        val expected = WorkflowService.WorkflowEditionResponse(
+            null,
+            WorkflowEditionService.WorkflowEditionStatus(
+                "NOT OK"
+            )
+        )
+
+        val req = WorkflowService.LockWorkflowEditionRequest(
+            countryCode = workflow.countryCode!!,
+            workflowName = workflow.name,
+            version = workflow.version!!,
+            user = workflow.userId!!
+        )
+
+        whenever(workflowRepository.getWorkflow(
+            countryCode = workflow.countryCode!!,
+            name = workflow.name,
+            version = workflow.version!!)
+        )
+            .thenReturn(Single.just(workflow))
+
+        whenever(workFlowEditionService
+            .lockWorkflowEdition(any(), any(), any()))
+            .thenReturn(Single.just(
+                WorkflowEditionService.WorkflowEditionStatus("NOT OK")
+            ))
+
+        service
+            .getWorkflowForEdition(req.countryCode, req.workflowName, req.version, req.user)
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValue(expected)
+            .dispose()
     }
 
     @Test

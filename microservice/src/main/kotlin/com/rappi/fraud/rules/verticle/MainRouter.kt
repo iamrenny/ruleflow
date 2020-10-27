@@ -11,9 +11,6 @@ import com.rappi.fraud.rules.errors.ErrorHandler
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.services.ListService
-import com.rappi.fraud.rules.services.WorkflowEditingService
-import com.rappi.fraud.rules.services.WorkflowEditingService.UnlockWorkflowEditingRequest
-import com.rappi.fraud.rules.services.WorkflowEditingService.LockWorkflowEditingRequest
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.reactivex.Single
@@ -34,7 +31,6 @@ class MainRouter @Inject constructor(
     private val vertx: Vertx,
     private val workflowService: WorkflowService,
     private val listService: ListService,
-    private val workFlowEditionService: WorkflowEditingService,
     val config: Config
 ) {
 
@@ -76,8 +72,7 @@ class MainRouter @Inject constructor(
         router.delete("/lists/:list_id/items").handler(::deleteItemsBatch)
         router.get("/lists/:list_id/items").handler(::getListItems)
         router.get("/lists/:list_id/history").handler(::getListHistory)
-        router.post("/workflow/editing/lock").handler(::lockWorkflowEditing)
-        router.delete("/workflow/editing/unlock").handler(::unlockWorkflowEditing)
+        router.get("/user/:userId/workflow/:countryCode/:name/:version/edit").handler(::getWorkflowForEdition)
 
         return router
     }
@@ -392,22 +387,19 @@ class MainRouter @Inject constructor(
         })
     }
 
-    private fun lockWorkflowEditing(ctx: RoutingContext) {
-        val lockWorkflowEditingRequest = ctx.bodyAs<LockWorkflowEditingRequest>(LockWorkflowEditingRequest::class)
-
-        workFlowEditionService.lockWorkflowEditing(lockWorkflowEditingRequest)
-            .subscribe({ ctx.response().end(Json.encode(it)) }, { err ->
-                logger.error("Could not lock workflow editing-${lockWorkflowEditingRequest}: ${err.message}", err)
-                ctx.fail(err)
-            })
-    }
-
-    private fun unlockWorkflowEditing(ctx: RoutingContext) {
-        val lockWorkflowEditingRequest = ctx.bodyAs<UnlockWorkflowEditingRequest>(UnlockWorkflowEditingRequest::class)
-
-        workFlowEditionService.unlockWorkflowEditing(lockWorkflowEditingRequest)
-            .subscribe({ ctx.response().end(Json.encode(it)) }, { err ->
-                logger.error("Could not unlock workflow editing-${lockWorkflowEditingRequest}: ${err.message}", err)
+    private fun getWorkflowForEdition(ctx: RoutingContext) {
+        Single.just(ctx.pathParams())
+            .flatMap {
+                validateCountry(it["countryCode"]!!)
+                workflowService.getWorkflowForEdition(
+                    it["countryCode"]!!,
+                    // TODO: FIX THIS ASAP. NAMES MUST BE URL COMPLIANT
+                    URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
+                    it["version"]!!.toLong(),
+                    it["userId"]!!
+                )
+            }.subscribe({ ctx.response().end(Json.encode(it)) }, { err ->
+                logger.error("Could not get workflow for edition: ${err.message}", err)
                 ctx.fail(err)
             })
     }
