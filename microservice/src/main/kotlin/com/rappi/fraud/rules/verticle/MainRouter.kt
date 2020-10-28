@@ -73,6 +73,7 @@ class MainRouter @Inject constructor(
         router.get("/lists/:list_id/items").handler(::getListItems)
         router.get("/lists/:list_id/history").handler(::getListHistory)
         router.get("/user/:userId/workflow/:countryCode/:name/:version/edit").handler(::getWorkflowForEdition)
+        router.put("/workflow/edit/cancel").handler(::cancelWorkflowEdition)
 
         return router
     }
@@ -402,6 +403,16 @@ class MainRouter @Inject constructor(
                 logger.error("Could not get workflow for edition: ${err.message}", err)
                 ctx.fail(err)
             })
+    }
+
+    private fun cancelWorkflowEdition(ctx: RoutingContext) {
+        val request = ctx.bodyAs<WorkflowService.UnlockWorkflowEditionRequest>(WorkflowService.UnlockWorkflowEditionRequest::class)
+
+        workflowService.cancelWorkflowEdition(request)
+            .subscribe({ ctx.response().end(Json.encode(it)) }, { err ->
+            logger.error("Could not cancel workflow edition: ${err.message}", err)
+            ctx.fail(err)
+        })
     }
 
     private fun RoutingContext.getUserId(): String {

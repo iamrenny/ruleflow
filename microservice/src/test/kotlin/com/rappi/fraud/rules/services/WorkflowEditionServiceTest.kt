@@ -94,4 +94,83 @@ class WorkflowEditionServiceTest {
             .assertComplete()
     }
 
+    @Test
+    fun `test unlock`() {
+        val countryCode =  "test"
+        val workflowName = "test"
+
+        val response = WorkflowEditionService.WorkflowEditionStatus(
+            "OK",
+            "workflow edition canceled"
+        )
+
+        whenever(redisClient.rxDel(any())).thenReturn(Single.just(0))
+
+        workflowEditingService.cancelWorkflowEditing(countryCode, workflowName)
+            .test()
+            .assertValue(response)
+            .assertComplete()
+    }
+
+    @Test
+    fun `test unlock workflow edition`() {
+        val countryCode =  "test"
+        val workflowName = "test"
+        val user = "test"
+
+        val response = WorkflowEditionService.WorkflowEditionStatus(
+            "OK",
+            "workflow edition canceled"
+        )
+
+        whenever(redisClient.rxExists(any())).thenReturn(Single.just(0))
+        whenever(redisClient.rxDel(any())).thenReturn(Single.just(1))
+
+        workflowEditingService.cancelWorkflowEdition(countryCode, workflowName, user)
+            .test()
+            .assertValue(response)
+            .assertComplete()
+    }
+
+    @Test
+    fun `when lock exists and is same user, let it be canceled`() {
+        val countryCode =  "test"
+        val workflowName = "test"
+        val user = "test"
+
+        val response = WorkflowEditionService.WorkflowEditionStatus(
+            "OK",
+            "workflow edition canceled"
+        )
+
+        whenever(redisClient.rxExists(any())).thenReturn(Single.just(1))
+        whenever(redisClient.rxGet(any())).thenReturn(Maybe.just("test"))
+        whenever(redisClient.rxDel(any())).thenReturn(Single.just(1))
+
+        workflowEditingService.cancelWorkflowEdition(countryCode, workflowName, user)
+            .test()
+            .assertValue(response)
+            .assertComplete()
+    }
+
+    @Test
+    fun `when lock exists and is not same user, do not let it be canceled`() {
+        val countryCode =  "test"
+        val workflowName = "test"
+        val user = "test"
+
+        val response = WorkflowEditionService.WorkflowEditionStatus(
+            "NOT OK",
+            "workflow is being edited by test1"
+        )
+
+        whenever(redisClient.rxExists(any())).thenReturn(Single.just(1))
+        whenever(redisClient.rxGet(any())).thenReturn(Maybe.just("test1"))
+        whenever(redisClient.rxDel(any())).thenReturn(Single.just(1))
+
+        workflowEditingService.cancelWorkflowEdition(countryCode, workflowName, user)
+            .test()
+            .assertValue(response)
+            .assertComplete()
+    }
 }

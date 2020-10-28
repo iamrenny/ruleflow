@@ -75,10 +75,10 @@ class WorkflowServiceTest {
             .thenReturn(Single.just(expected.userId))
 
         whenever(workFlowEditionService
-            .unlockWorkflowEdition(any(), any()))
+            .cancelWorkflowEditing(any(), any()))
             .thenReturn(Single.just(WorkflowEditionService.WorkflowEditionStatus(
                 "OK",
-                "workflow edition unlocked"
+                "workflow edition canceled"
             )))
 
         service
@@ -116,10 +116,10 @@ class WorkflowServiceTest {
             .thenReturn(Single.just("userEditing"))
 
         whenever(workFlowEditionService
-            .unlockWorkflowEdition(any(), any()))
+            .cancelWorkflowEditing(any(), any()))
             .thenReturn(Single.just(WorkflowEditionService.WorkflowEditionStatus(
                 "OK",
-                "workflow edition unlocked"
+                "workflow edition canceled"
             )))
 
         service

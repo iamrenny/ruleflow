@@ -12,14 +12,14 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
     private val prefix = "rules_engine_workflow_being_edited_"
 
     fun lockWorkflowEdition(countryCode: String, workflowName: String, user: String): Single<WorkflowEditionStatus> {
-        logger.info("locking workflow for edition $countryCode-$workflowName")
+        logger.info("locking workflow for edition $countryCode-$workflowName-$user")
 
         return isWorkflowBeingEdited(countryCode, workflowName)
             .flatMap { exists ->
                 if (exists)
                     getUserEditing(countryCode, workflowName).flatMap { userEditing ->
                         if (user == userEditing)
-                            lockWorkflowToEdit(countryCode, workflowName, user)
+                            lockWorkflowEditing(countryCode, workflowName, user)
                         else
                             Single.just(
                                 WorkflowEditionStatus(
@@ -29,7 +29,7 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
                             )
                     }
                 else
-                    lockWorkflowToEdit(
+                    lockWorkflowEditing(
                         countryCode,
                         workflowName,
                         user
@@ -37,7 +37,32 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
             }
     }
 
-    private fun lockWorkflowToEdit(countryCode: String, workflowName: String, user: String): Single<WorkflowEditionStatus> {
+    fun cancelWorkflowEdition(countryCode: String, workflowName: String, user: String): Single<WorkflowEditionStatus> {
+        logger.info("cancelling workflow edition $countryCode-$workflowName-$user")
+
+        return isWorkflowBeingEdited(countryCode, workflowName)
+            .flatMap { exists ->
+                if (exists)
+                    getUserEditing(countryCode, workflowName).flatMap { userEditing ->
+                        if (user == userEditing)
+                            cancelWorkflowEditing(countryCode, workflowName)
+                        else
+                            Single.just(
+                                WorkflowEditionStatus(
+                                    status = "NOT OK",
+                                    message = "workflow is being edited by $userEditing"
+                                )
+                            )
+                    }
+                else
+                    cancelWorkflowEditing(
+                        countryCode,
+                        workflowName
+                    )
+            }
+    }
+
+    private fun lockWorkflowEditing(countryCode: String, workflowName: String, user: String): Single<WorkflowEditionStatus> {
         return redisClient.rxSetex(buildKey(countryCode, workflowName), ttl, user)
             .map { result ->
                 if (result == "OK")
@@ -61,14 +86,12 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
             .map { it > 0 }
     }
 
-    fun unlockWorkflowEdition(countryCode: String, workflowName: String): Single<WorkflowEditionStatus> {
-        logger.info("unlocking workflow editing $countryCode-$workflowName")
-
+    fun cancelWorkflowEditing(countryCode: String, workflowName: String): Single<WorkflowEditionStatus> {
         return redisClient.rxDel(buildKey(countryCode, workflowName))
             .map {
                 WorkflowEditionStatus(
                     "OK",
-                    "workflow edition unlocked"
+                    "workflow edition canceled"
                 )
             }
     }

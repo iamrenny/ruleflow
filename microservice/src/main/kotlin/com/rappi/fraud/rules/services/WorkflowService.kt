@@ -43,11 +43,11 @@ class WorkflowService @Inject constructor(
         )
 
         return workflowRepository.exists(workflow.countryCode!!, workflow.name).flatMap { exists ->
-            if (exists){
+            if (exists) {
                 workFlowEditionService.getUserEditing(workflow.countryCode, workflow.name).flatMap { userEditing ->
                     if (userEditing != "NOT FOUND") {
                         if(userEditing == workflow.userId){
-                            workFlowEditionService.unlockWorkflowEdition(workflow.countryCode, workflow.name)
+                            workFlowEditionService.cancelWorkflowEditing(workflow.countryCode, workflow.name)
                                 .flatMap {
                                     workflowRepository.save(workflow)
                                 }
@@ -186,6 +186,10 @@ class WorkflowService @Inject constructor(
         }
     }
 
+    fun cancelWorkflowEdition(request: UnlockWorkflowEditionRequest): Single<WorkflowEditionService.WorkflowEditionStatus>{
+        return workFlowEditionService.cancelWorkflowEdition(request.countryCode, request.workflowName, request.user)
+    }
+
     data class WorkflowEditionResponse(
         val workflow: Workflow? = null,
         val workflowEditionStatus: WorkflowEditionService.WorkflowEditionStatus
@@ -195,6 +199,12 @@ class WorkflowService @Inject constructor(
         val countryCode: String,
         val workflowName: String,
         val version: Long,
+        val user: String
+    )
+
+    data class UnlockWorkflowEditionRequest(
+        val countryCode: String,
+        val workflowName: String,
         val user: String
     )
 }
