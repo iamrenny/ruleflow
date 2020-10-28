@@ -38,8 +38,12 @@ jacoco {
     toolVersion = "0.8.5"
 }
 
-def baseFolder = ''
-def jacocoExcludedDirs = []
+def baseFolder = 'com/rappi/fraud/rules/parser'
+def jacocoExcludedDirs = [
+        "$baseFolder/config/**",
+        "$baseFolder/vo/**",
+        "$baseFolder/errors/**"
+]
 
 dependencies {
     antlr "org.antlr:antlr4:$antlr_version"

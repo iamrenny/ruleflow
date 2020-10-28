@@ -1,16 +1,15 @@
 package com.rappi.fraud.rules.repositories
 
-import com.rappi.fraud.rules.BaseTest
+import com.nhaarman.mockito_kotlin.mock
 import com.rappi.fraud.rules.entities.ListStatus
 import org.junit.jupiter.api.Test
 
-class ListRepositoryTest : BaseTest() {
+class ListRepositoryTest {
 
-    private val repository = injector.getInstance(ListRepository::class.java)
+    private val repository:ListRepository = mock()
 
     @Test
     fun testSaveLists() {
-
 
         repository.getListByName("1")
 
@@ -36,6 +35,6 @@ class ListRepositoryTest : BaseTest() {
 
         repository.addItemsBatch(2, listOf(""))
 
-
     }
+
 }

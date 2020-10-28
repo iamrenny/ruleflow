@@ -1,11 +1,16 @@
 package com.rappi.fraud.rules.services
 
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.whenever
 import com.rappi.fraud.rules.BaseTest
 import com.rappi.fraud.rules.entities.BatchItemsRequest
+import com.rappi.fraud.rules.entities.ListStatus
 import com.rappi.fraud.rules.entities.RulesEngineList
 import com.rappi.fraud.rules.repositories.Database
 import com.rappi.fraud.rules.repositories.ListRepository
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.vertx.junit5.VertxTestContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -299,5 +304,33 @@ class ListServiceTest : BaseTest() {
         } catch (e: AssertionFailedError) {
             testContext.failNow(e)
         }
+    }
+
+    @Test
+    fun `test update`(testContext: VertxTestContext) {
+        listService.createList("", "","")
+        listService.updateDescription(1, "", "")
+        listService.updateStatus(1,ListStatus.DISABLED, "")
+        listService.getListItemsByListName("")
+        listService.getListHistory(1)
+        listService.deleteList(1)
+        listRepository.removeItemsBatch(1, listOf())
+        listRepository.removeItem(1, "")
+        listRepository.addItemsBatch(1, listOf())
+        listRepository.getListByName("")
+        listRepository.findAllWithEntries()
+        listRepository.getItems(1)
+        listRepository.getLists()
+        testContext.completeNow()
+    }
+
+    @Test
+    fun `database test OK`() {
+        database.get("", listOf())
+        database.executeWithParams("", listOf())
+        database.executeBatch("", listOf())
+        database.executeBatchDelete("", listOf())
+        database.executeDelete("", listOf())
+
     }
 }
