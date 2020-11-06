@@ -119,11 +119,7 @@ class MainRouter @Inject constructor(
                 data = it
             ).timeout(config.timeout, TimeUnit.MILLISECONDS)
         }.subscribe({
-            if (!ctx.response().closed() && !ctx.response().ended()) {
                 ctx.ok(JsonObject.mapFrom(it).toString())
-            } else {
-                logger.error("workflow evaluation took to much time, key: $it and data: ${ctx.bodyAsJson}")
-            }
         }, { cause ->
             logger.error("failed to evaluate workflow with request body ${ctx.bodyAsJson}", cause)
             when (cause) {

@@ -460,7 +460,7 @@ class WorkflowServiceTest {
     fun testEvaluateFromCache() {
         val workflow = baseWorkflow()
 
-        whenever(activeWorkflowRepository.getActiveWorkflow(workflow.countryCode!!, workflow.name))
+        whenever(activeWorkflowRepository.get(workflow.countryCode!!, workflow.name))
                 .thenReturn(Single.just(workflow))
 
         val evaluationResult = WorkflowResult(
@@ -482,7 +482,7 @@ class WorkflowServiceTest {
                 .assertValue(evaluationResult)
                 .dispose()
 
-        verify(activeWorkflowRepository, times(1)).getActiveWorkflow(any(), any())
+        verify(activeWorkflowRepository, times(1)).get(any(), any())
         verifyZeroInteractions(workflowRepository)
     }
 
@@ -490,7 +490,7 @@ class WorkflowServiceTest {
     fun testEvaluateFromDbWithoutVersion() {
         val workflow = baseWorkflow()
 
-        whenever(activeWorkflowRepository.getActiveWorkflow(countryCode = workflow.countryCode!!, name = workflow.name))
+        whenever(activeWorkflowRepository.get(countryCode = workflow.countryCode!!, name = workflow.name))
                 .thenReturn(Single.just(
                         Workflow(
                                 id = workflow.id!!,
@@ -519,7 +519,7 @@ class WorkflowServiceTest {
                 .assertValue(evaluationResult)
                 .dispose()
 
-        verify(activeWorkflowRepository, times(1)).getActiveWorkflow(any(), any())
+        verify(activeWorkflowRepository, times(1)).get(any(), any())
         verifyZeroInteractions(workflowRepository)
     }
 

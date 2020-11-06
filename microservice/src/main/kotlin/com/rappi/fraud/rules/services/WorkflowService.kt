@@ -85,8 +85,8 @@ class WorkflowService @Inject constructor(
         return getWorkflow(countryCode, name, version)
             .flatMap { workflow ->
                 listRepository.findAllWithEntries()
-                    .flatMap { lists ->
-                        Single.just(workflow.evaluator.evaluate(data.map, lists))
+                    .map { lists ->
+                        workflow.evaluator.evaluate(data.map, lists)
                     }
                     .map {  result ->
                         result.copy(workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name))
@@ -124,7 +124,7 @@ class WorkflowService @Inject constructor(
         name: String,
         version: Long?
     ) = if (version == null)
-        activeWorkflowRepository.getActiveWorkflow(countryCode, name)
+        activeWorkflowRepository.get(countryCode, name)
     else
         workflowRepository.getWorkflow(countryCode, name, version)
 

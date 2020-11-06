@@ -89,7 +89,7 @@ class ActiveWorkflowRepositoryTest : BaseTest() {
     @Test
     @Order(4)
     fun testGetActiveWorkflow() {
-        repository.getActiveWorkflow(countryCode = SEED[0].countryCode!!, name = SEED[0].name)
+        repository.get(countryCode = SEED[0].countryCode!!, name = SEED[0].name)
                 .test()
     }
 
