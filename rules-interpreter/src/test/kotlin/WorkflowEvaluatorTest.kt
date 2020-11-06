@@ -924,5 +924,23 @@ class WorkflowEvaluatorTest {
             )
         )
     }
+
+    @Test
+    fun testAbsoluteValueWithGreaterThan() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'absolute_value' abs(4>3) = 1 return block
+                default allow
+            end
+        """
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", workflowInfo = WorkflowInfo("", "")),
+            ruleEngine.evaluate(
+                mapOf("test" to 1)
+            )
+        )
+    }
 }
 
