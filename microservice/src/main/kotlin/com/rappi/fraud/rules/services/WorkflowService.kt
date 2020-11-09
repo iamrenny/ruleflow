@@ -84,7 +84,7 @@ class WorkflowService @Inject constructor(
         val startTimeInMillis = System.currentTimeMillis()
         return getWorkflow(countryCode, name, version)
             .flatMap { workflow ->
-                listRepository.findAllWithEntries()
+                listRepository.findAll()
                     .map { lists ->
                         workflow.evaluator.evaluate(data.map, lists)
                     }

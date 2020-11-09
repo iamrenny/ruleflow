@@ -1,16 +1,11 @@
 package com.rappi.fraud.rules.services
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.whenever
 import com.rappi.fraud.rules.BaseTest
 import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.ListStatus
-import com.rappi.fraud.rules.entities.RulesEngineList
 import com.rappi.fraud.rules.repositories.Database
 import com.rappi.fraud.rules.repositories.ListRepository
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.vertx.junit5.VertxTestContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -318,7 +313,7 @@ class ListServiceTest : BaseTest() {
         listRepository.removeItem(1, "")
         listRepository.addItemsBatch(1, listOf())
         listRepository.getListByName("")
-        listRepository.findAllWithEntries()
+        listRepository.findAll()
         listRepository.getItems(1)
         listRepository.getLists()
         testContext.completeNow()

@@ -49,7 +49,7 @@ class WorkflowServiceTest {
         reset(activeWorkflowRepository, activeWorkflowHistoryRepository, cacheService, workflowRepository, listRepository)
         whenever(cacheService.set(any()))
             .thenReturn(Single.just(baseWorkflow()))
-        whenever(listRepository.findAllWithEntries())
+        whenever(listRepository.findAll())
             .thenReturn(Single.just(mapOf()))
         BackendRegistries.setupBackend(MicrometerMetricsOptions())
     }

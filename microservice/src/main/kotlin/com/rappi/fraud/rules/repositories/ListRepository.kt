@@ -11,6 +11,7 @@ import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
+import org.apache.commons.collections4.map.PassiveExpiringMap
 import java.time.Duration
 import java.time.LocalDateTime
 import kotlin.streams.toList
@@ -18,7 +19,16 @@ import kotlin.streams.toList
 class ListRepository @Inject constructor(private val database: Database) {
 
     private val logger by LoggerDelegate()
-    private val listCache = ListCache(findAllWithEntriesWithoutCache())
+    private val listCache = PassiveExpiringMap<String, List<String>>(60000)
+
+
+    init {
+        findAll()
+            .ignoreElement()
+            .subscribe({},
+                { logger.error("Unable to preload lists", it )}
+            )
+    }
 
     fun createList(listName: String, description: String, createdBy: String): Single<RulesEngineList> {
         val insert = """INSERT INTO lists (list_name, description, created_by, status, last_updated_by) 
@@ -168,7 +178,8 @@ class ListRepository @Inject constructor(private val database: Database) {
     }
 
 
-    fun findAllWithEntries(): Single<Map<String, List<String>>> = listCache.get()
+    fun findAll(): Single<Map<String, List<String>>> = if(listCache.isNotEmpty())
+        Single.just(listCache) else findAllWithEntriesWithoutCache()
 
 
     private fun findAllWithEntriesWithoutCache(): Single<Map<String, List<String>>> {
@@ -188,19 +199,10 @@ class ListRepository @Inject constructor(private val database: Database) {
                         )
                     }.toMap()
             }
+            .doOnSuccess {
+                listCache.clear()
+                listCache.putAll(it)
+            }
             .doOnError { logger.error("error getting lists", it) }
-    }
-}
-
-class ListCache(val source: Single<Map<String, List<String>>>) {
-    private var cachedEntries = source
-    private var cacheUpdatedAt = LocalDateTime.now()
-    private val cacheTtl = 60000
-    fun get(): Single<Map<String, List<String>>> {
-        if(Duration.between(cacheUpdatedAt, LocalDateTime.now()).toMillis() > cacheTtl) {
-            cacheUpdatedAt = LocalDateTime.now()
-            cachedEntries = source.cache()
-        }
-        return cachedEntries
     }
 }
