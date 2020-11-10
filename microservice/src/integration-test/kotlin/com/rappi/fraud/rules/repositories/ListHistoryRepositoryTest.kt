@@ -6,10 +6,9 @@ import io.vertx.core.json.JsonObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class ListHistoryRepositoryTest: BaseTest() {
-    private val listRepository =  injector.getInstance(ListRepository::class.java)
+class ListHistoryRepositoryTest : BaseTest() {
+    private val listRepository = injector.getInstance(ListRepository::class.java)
     private val historyRepository = injector.getInstance(ListHistoryRepository::class.java)
-
 
     @Test
     fun testListHistoryRepository() {
@@ -31,6 +30,5 @@ class ListHistoryRepositoryTest: BaseTest() {
             }
             .assertNoErrors()
             .assertComplete()
-
     }
 }

@@ -87,7 +87,7 @@ class MainRouter @Inject constructor(
             ctx.ok(it.map { w ->
                 JsonObject.mapFrom(w).toString()
             }.toString())
-        }, {error ->
+        }, { error ->
             val message = "Error getting workflows for '${ctx.pathParam("countryCode")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -103,7 +103,7 @@ class MainRouter @Inject constructor(
             ctx.ok(it.map { w ->
                 JsonObject.mapFrom(w).toString()
             }.toString())
-        }, {error ->
+        }, { error ->
             val message = "Error getting active workflows for '${ctx.pathParam("countryCode")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -161,7 +161,7 @@ class MainRouter @Inject constructor(
             workflowService.save(it)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error processing ${ctx.request().path()} for request ${ctx.bodyAsJson}"
             val ex = RuntimeException(message, error)
             logger.error(message, ex)
@@ -181,7 +181,7 @@ class MainRouter @Inject constructor(
             )
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error getting workflow '${ctx.pathParam("name")}' for '${ctx.pathParam("countryCode")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -199,7 +199,7 @@ class MainRouter @Inject constructor(
             workflowService.getWorkflowsByCountryAndName(it).toList()
         }.subscribe({
             ctx.ok(it.map { w -> JsonObject.mapFrom(w).toString() }.toString())
-        }, {error ->
+        }, { error ->
             val message = "Error getting workflow '${ctx.pathParam("name")}' for '${ctx.pathParam("countryCode")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -219,7 +219,7 @@ class MainRouter @Inject constructor(
             workflowService.activate(it)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error activating workflow ${ctx.pathParam("name")} for '${ctx.pathParam("countryCode")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -233,7 +233,7 @@ class MainRouter @Inject constructor(
         val responsible = body.getString("responsible") ?: throw ErrorRequestException("responsible required", "validation.body.bad_request", 400)
         listService.createList(listName, description, responsible).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error evaluating request ${ctx.bodyAsJson} "
             logger.error(message, error)
             ctx.fail(error)
@@ -244,7 +244,7 @@ class MainRouter @Inject constructor(
 
         listService.getLists().subscribe({ lists ->
             ctx.ok(JsonObject().put("lists", lists.map { JsonObject.mapFrom(it) }).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error evaluating request for listing items"
             logger.error(message, error)
             ctx.fail(error)
@@ -255,7 +255,7 @@ class MainRouter @Inject constructor(
         val listId = ctx.pathParam("list_id")
         listService.deleteList(listId.toLong()).subscribe({
             ctx.ok("")
-        }, {error ->
+        }, { error ->
             val message = "Error deleting list '${ctx.pathParam("list_id")}' "
             logger.error(message, error)
             ctx.fail(error)
@@ -267,7 +267,7 @@ class MainRouter @Inject constructor(
 
         listService.getList(listId.toLong()).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error getting list '${ctx.pathParam("list_id")}' "
             logger.error(message, error)
             ctx.fail(error)
@@ -282,7 +282,7 @@ class MainRouter @Inject constructor(
 
         listService.updateDescription(listId.toLong(), description, responsible).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error updating list '${ctx.pathParam("list_id")}' with request ${ctx.bodyAsJson}"
             logger.error(message, error)
             ctx.fail(error)
@@ -299,7 +299,7 @@ class MainRouter @Inject constructor(
 
         listService.updateStatus(listId.toLong(), status, responsible).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error updating list status '${ctx.pathParam("list_id")}' with request ${ctx.bodyAsJson}"
             logger.error(message, error)
             ctx.fail(error)
@@ -310,7 +310,7 @@ class MainRouter @Inject constructor(
         val listId = ctx.pathParam("list_id")
         listService.getListItems(listId.toLong()).subscribe({ items ->
             ctx.ok(JsonObject().put("items", items).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error listing items from '${ctx.pathParam("list_id")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -321,7 +321,7 @@ class MainRouter @Inject constructor(
         val listId = ctx.pathParam("list_id")
         listService.getListHistory(listId.toLong()).subscribe({ listHistory ->
             ctx.ok(JsonObject().put("history", listHistory).toString())
-        },{error ->
+        }, { error ->
             val message = "Error getting list '${ctx.pathParam("list_id")}' history"
             logger.error(message, error)
             ctx.fail(error)
@@ -336,7 +336,7 @@ class MainRouter @Inject constructor(
 
         listService.addItem(listId.toLong(), itemValue, responsible).subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
-        }, {error ->
+        }, { error ->
             val message = "Error adding item ${ctx.bodyAsJson} to list '${ctx.pathParam("list_id")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -351,7 +351,7 @@ class MainRouter @Inject constructor(
 
         listService.removeItem(listId.toLong(), itemValue, responsible).subscribe({
             ctx.ok("")
-        }, {error ->
+        }, { error ->
             val message = "Error deleting item ${ctx.bodyAsJson} from list '${ctx.pathParam("list_id")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -364,7 +364,7 @@ class MainRouter @Inject constructor(
         val addItemsRequest = ctx.bodyAs<BatchItemsRequest>(BatchItemsRequest::class)
         listService.addItemsBatch(listId.toLong(), addItemsRequest).subscribe({
             ctx.ok("")
-        }, {error ->
+        }, { error ->
             val message = "Error adding items ${ctx.bodyAsJson} to list '${ctx.pathParam("list_id")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -377,7 +377,7 @@ class MainRouter @Inject constructor(
         val removeItemsRequest = ctx.bodyAs<BatchItemsRequest>(BatchItemsRequest::class)
         listService.removeItemsBatch(listId.toLong(), removeItemsRequest).subscribe({
             ctx.ok("")
-        }, {error ->
+        }, { error ->
             val message = "Error deleting items ${ctx.bodyAsJson} to list '${ctx.pathParam("list_id")}'"
             logger.error(message, error)
             ctx.fail(error)
@@ -432,7 +432,7 @@ class MainRouter @Inject constructor(
     }
 
     private fun validateCountry(country: String) {
-        if(!country.matches("[a-z]+".toRegex())){
+        if (!country.matches("[a-z]+".toRegex())) {
             throw ErrorRequestException(country, "Invalid country code", 400)
         }
     }

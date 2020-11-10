@@ -1,7 +1,6 @@
 package com.rappi.fraud.rules.services
 
 import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argumentCaptor
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.reset
 import com.nhaarman.mockito_kotlin.times
@@ -25,13 +24,12 @@ import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.micrometer.MicrometerMetricsOptions
 import io.vertx.micrometer.backends.BackendRegistries
+import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 import java.util.UUID
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.lang.IllegalArgumentException
 
 class WorkflowServiceTest {
 
@@ -41,7 +39,7 @@ class WorkflowServiceTest {
     private val listRepository = mock<ListRepository>()
     private val workFlowEditionService = mock<WorkflowEditionService>()
     private val service = WorkflowService(activeWorkflowRepository, activeWorkflowHistoryRepository,
-         workflowRepository, listRepository, workFlowEditionService)
+        workflowRepository, listRepository, workFlowEditionService)
 
     @BeforeEach
     fun cleanUp() {
@@ -182,7 +180,6 @@ class WorkflowServiceTest {
                                     countryCode = invalidWorkflow.countryCode!!,
                                     workflow = invalidWorkflow.workflowAsString!!,
                                     userId = invalidWorkflow.userId!!))
-
         }
 
         verifyZeroInteractions(workflowRepository)
@@ -199,7 +196,6 @@ class WorkflowServiceTest {
                                     countryCode = invalidWorkflow.countryCode!!,
                                     workflow = invalidWorkflow.workflowAsString!!,
                                     userId = invalidWorkflow.userId!!))
-
         }
 
         verifyZeroInteractions(workflowRepository)
@@ -459,7 +455,7 @@ class WorkflowServiceTest {
                 ruleSet = "Sample",
                 rule = "Deny",
                 risk = "allow",
-                workflowInfo = WorkflowInfo("1","Sample")
+                workflowInfo = WorkflowInfo("1", "Sample")
         )
 
         val data = JsonObject()
@@ -497,7 +493,7 @@ class WorkflowServiceTest {
                 ruleSet = "Sample",
                 rule = "Deny",
                 risk = "allow",
-                workflowInfo = WorkflowInfo("1","Sample")
+                workflowInfo = WorkflowInfo("1", "Sample")
         )
 
         val data = JsonObject()
@@ -526,7 +522,7 @@ class WorkflowServiceTest {
                 ruleSet = "Sample",
                 rule = "Deny",
                 risk = "allow",
-                workflowInfo = WorkflowInfo("1","Sample")
+                workflowInfo = WorkflowInfo("1", "Sample")
         )
 
         val data = JsonObject()

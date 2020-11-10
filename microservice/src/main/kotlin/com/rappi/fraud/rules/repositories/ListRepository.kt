@@ -11,22 +11,19 @@ import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
-import org.apache.commons.collections4.map.PassiveExpiringMap
-import java.time.Duration
-import java.time.LocalDateTime
 import kotlin.streams.toList
+import org.apache.commons.collections4.map.PassiveExpiringMap
 
 class ListRepository @Inject constructor(private val database: Database) {
 
     private val logger by LoggerDelegate()
     private val listCache = PassiveExpiringMap<String, List<String>>(60000)
 
-
     init {
         findAll()
             .ignoreElement()
             .subscribe({},
-                { logger.error("Unable to preload lists", it )}
+                { logger.error("Unable to preload lists", it) }
             )
     }
 
@@ -177,10 +174,8 @@ class ListRepository @Inject constructor(private val database: Database) {
             .doOnError { logger.error("error deleting batch items from listId: $listId", it) }
     }
 
-
-    fun findAll(): Single<Map<String, List<String>>> = if(listCache.isNotEmpty())
+    fun findAll(): Single<Map<String, List<String>>> = if (listCache.isNotEmpty())
         Single.just(listCache) else findAllWithEntriesWithoutCache()
-
 
     private fun findAllWithEntriesWithoutCache(): Single<Map<String, List<String>>> {
         val query = """SELECT list_name, id, value, description FROM lists JOIN list_items ON lists.id = list_items.list_id WHERE status = 'ENABLED'"""

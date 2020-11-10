@@ -96,8 +96,8 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
             }
     }
 
-    private fun buildKey(countryCode: String, workflowName: String)
-        = "$prefix$countryCode$workflowName"
+    private fun buildKey(countryCode: String, workflowName: String) =
+        "$prefix$countryCode$workflowName"
 
     data class WorkflowEditionStatus(
         val status: String? = "NOT OK",

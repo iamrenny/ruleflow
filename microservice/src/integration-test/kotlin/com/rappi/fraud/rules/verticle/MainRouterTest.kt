@@ -239,7 +239,7 @@ class MainRouterTest : BaseTest() {
                 ruleSet = "test",
                 rule = "test",
                 risk = "block",
-                workflowInfo = WorkflowInfo("1","Workflow 1"))
+                workflowInfo = WorkflowInfo("1", "Workflow 1"))
 
         whenever(workflowService
                 .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, version = workflow.version!!, data = data))
@@ -280,7 +280,7 @@ class MainRouterTest : BaseTest() {
                 ruleSet = "test",
                 rule = "test",
                 risk = "allow",
-                workflowInfo = WorkflowInfo("1","Workflow 1"))
+                workflowInfo = WorkflowInfo("1", "Workflow 1"))
 
         whenever(workflowService
                 .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, data = data))

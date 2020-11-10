@@ -1,9 +1,8 @@
 package com.rappi.fraud.rules.repositories
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.apm.SignalFx
-import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.entities.ListHistory
+import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Observable
 import io.reactivex.Single

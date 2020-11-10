@@ -1,7 +1,6 @@
 package com.rappi.fraud.rules.repositories
 
 import com.rappi.fraud.rules.BaseTest
-import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.entities.Workflow
 import io.vertx.core.json.JsonObject
 import org.junit.jupiter.api.Assertions
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.TestMethodOrder
 class ActiveWorkflowRepositoryTest : BaseTest() {
 
     private val activeWorkflowRepository = injector.getInstance(ActiveWorkflowRepository::class.java)
-
 
     companion object {
         private val SEED = getSeedAsJsonArray("get_all_workflow.json")
@@ -39,7 +37,7 @@ class ActiveWorkflowRepositoryTest : BaseTest() {
             .assertSubscribed()
             .await()
             .assertComplete()
-            .assertValue {  actual  ->
+            .assertValue { actual ->
                 Assertions.assertNotNull(actual.id)
                 Assertions.assertEquals(expected.countryCode, actual.countryCode)
                 Assertions.assertEquals(expected.name, actual.name)

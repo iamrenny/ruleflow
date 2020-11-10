@@ -4,9 +4,9 @@ import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Single
 import io.vertx.micrometer.backends.BackendRegistries
-import org.apache.commons.collections4.map.PassiveExpiringMap
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import org.apache.commons.collections4.map.PassiveExpiringMap
 
 class ActiveWorkflowRepository @Inject constructor(private val database: Database) {
 
@@ -37,7 +37,7 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
         )
         return database.executeWithParams(insert, params)
             .map { workflow.activate() }
-            .doOnSuccess { if(mustCache) activeWorkflowCache[it.cacheKey] = it }
+            .doOnSuccess { if (mustCache) activeWorkflowCache[it.cacheKey] = it }
     }
 
     fun get(countryCode: String, name: String): Single<Workflow> {
@@ -54,9 +54,9 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
             name
         )
 
-        val cached = activeWorkflowCache["workflow_${countryCode.toLowerCase()}_${name}"]
+        val cached = activeWorkflowCache["workflow_${countryCode.toLowerCase()}_$name"]
 
-        return  if(cached == null) {
+        return if (cached == null) {
             database.get(query, params)
                 .map(::Workflow)
                 .firstOrError()

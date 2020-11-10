@@ -23,7 +23,7 @@ class ListServiceTest : BaseTest() {
     @BeforeEach
     fun configure() {
         listRepository.getLists()
-            .filter{ list -> list.listName.endsWith("Test")}
+            .filter { list -> list.listName.endsWith("Test") }
             .flatMap { testList ->
                 database.executeDelete("DELETE from list_history WHERE list_id = $1", listOf(testList.id!!)).blockingGet()
                 database.executeDelete("DELETE from list_items WHERE list_id = $1", listOf(testList.id!!)).blockingGet()
@@ -303,9 +303,9 @@ class ListServiceTest : BaseTest() {
 
     @Test
     fun `test update`(testContext: VertxTestContext) {
-        listService.createList("", "","")
+        listService.createList("", "", "")
         listService.updateDescription(1, "", "")
-        listService.updateStatus(1,ListStatus.DISABLED, "")
+        listService.updateStatus(1, ListStatus.DISABLED, "")
         listService.getListItemsByListName("")
         listService.getListHistory(1)
         listService.deleteList(1)
@@ -326,6 +326,5 @@ class ListServiceTest : BaseTest() {
         database.executeBatch("", listOf())
         database.executeBatchDelete("", listOf())
         database.executeDelete("", listOf())
-
     }
 }

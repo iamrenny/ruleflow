@@ -45,7 +45,7 @@ class WorkflowService @Inject constructor(
             if (exists) {
                 workFlowEditionService.getUserEditing(workflow.countryCode, workflow.name).flatMap { userEditing ->
                     if (userEditing != "NOT FOUND") {
-                        if(userEditing == workflow.userId){
+                        if (userEditing == workflow.userId) {
                             workFlowEditionService.cancelWorkflowEditing(workflow.countryCode, workflow.name)
                                 .flatMap {
                                     workflowRepository.save(workflow)
@@ -87,17 +87,17 @@ class WorkflowService @Inject constructor(
                     .map { lists ->
                         workflow.evaluator.evaluate(data.map, lists)
                     }
-                    .map {  result ->
+                    .map { result ->
                         result.copy(workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name))
                     }
                     .doOnSuccess { result ->
-                        result.warnings.forEach {warning ->
+                        result.warnings.forEach { warning ->
                             BackendRegistries.getDefaultNow().counter(
                                 "fraud.rules.engine.workflows.warnings",
                                 listOf(
                                     Tag.of("workflow", result.workflow),
                                     Tag.of("workflow_country", workflow.countryCode),
-                                    Tag.of("workflow_version", workflow.version?.toString() ?: "active") ,
+                                    Tag.of("workflow_version", workflow.version?.toString() ?: "active"),
                                     Tag.of("warning", warning)
                                 )
                             ).increment()
@@ -143,7 +143,6 @@ class WorkflowService @Inject constructor(
                 }
     }
 
-
     private fun saveHistory(workflow: Workflow, request: ActivateRequest) {
         activeWorkflowHistoryRepository
             .save(
@@ -160,7 +159,7 @@ class WorkflowService @Inject constructor(
     fun getWorkflowForEdition(countryCode: String, workflowName: String, version: Long, user: String): Single<WorkflowEditionResponse> {
         return workflowRepository.getWorkflow(countryCode, workflowName, version).flatMap { workflow ->
             workFlowEditionService.lockWorkflowEdition(countryCode, workflowName, user).map { workflowEditionStatus ->
-                if(workflowEditionStatus.status == "OK")
+                if (workflowEditionStatus.status == "OK")
                     WorkflowEditionResponse(
                         workflow,
                         workflowEditionStatus
@@ -173,7 +172,7 @@ class WorkflowService @Inject constructor(
         }
     }
 
-    fun cancelWorkflowEdition(request: UnlockWorkflowEditionRequest): Single<WorkflowEditionService.WorkflowEditionStatus>{
+    fun cancelWorkflowEdition(request: UnlockWorkflowEditionRequest): Single<WorkflowEditionService.WorkflowEditionStatus> {
         return workFlowEditionService.cancelWorkflowEdition(request.countryCode, request.workflowName, request.user)
     }
 

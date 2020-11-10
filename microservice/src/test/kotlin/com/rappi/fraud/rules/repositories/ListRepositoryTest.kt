@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 
 class ListRepositoryTest {
 
-    private val repository:ListRepository = mock()
+    private val repository: ListRepository = mock()
 
     @Test
     fun testSaveLists() {
@@ -15,11 +15,11 @@ class ListRepositoryTest {
 
         repository.removeItem(2, "")
 
-        repository.createList("2","","")
+        repository.createList("2", "", "")
 
         repository.getList(2)
 
-        repository.updateDescription(2, "","")
+        repository.updateDescription(2, "", "")
 
         repository.updateLastUpdatedBy(2, "")
 
@@ -34,7 +34,5 @@ class ListRepositoryTest {
         repository.addItem(2, "")
 
         repository.addItemsBatch(2, listOf(""))
-
     }
-
 }

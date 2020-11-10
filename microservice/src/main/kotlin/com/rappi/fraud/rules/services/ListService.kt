@@ -3,28 +3,23 @@ package com.rappi.fraud.rules.services
 import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.BatchItemsRequest
+import com.rappi.fraud.rules.entities.ListHistory
 import com.rappi.fraud.rules.entities.ListItem
 import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.entities.ListStatus
 import com.rappi.fraud.rules.entities.RulesEngineList
-import com.rappi.fraud.rules.entities.ListHistory
 import com.rappi.fraud.rules.repositories.ListHistoryRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Completable
 import io.reactivex.Single
-import io.reactivex.SingleObserver
-import io.reactivex.SingleSource
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import java.time.Duration
-import java.time.LocalDateTime
 
 class ListService @Inject constructor(
     private val listRepository: ListRepository,
     private val listHistoryRepository: ListHistoryRepository
 ) {
-
 
     private val logger by LoggerDelegate()
 
@@ -156,5 +151,4 @@ class ListService @Inject constructor(
                 logger.error("error retrieving listHistory for listId: $listId", it)
             }
     }
-
 }

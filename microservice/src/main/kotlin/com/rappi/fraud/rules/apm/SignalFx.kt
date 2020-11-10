@@ -120,7 +120,7 @@ class SignalFx {
                 }
             }
                 .subscribeOn(Schedulers.io())
-                .subscribe({},{ex -> logger.error("Error notifying to signalfx", ex) })
+                .subscribe({}, { ex -> logger.error("Error notifying to signalfx", ex) })
         }
     }
 }

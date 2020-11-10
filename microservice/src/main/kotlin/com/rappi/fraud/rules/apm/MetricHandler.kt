@@ -55,8 +55,6 @@ class MetricHandler : Handler<RoutingContext> {
                     BackendRegistries.getDefaultNow().counter("fraud.rules-engine.requests",
                         metricMap.map { Tag.of(it.key, it.value.toString()) }
                     ).increment()
-
-
                 } catch (e: Throwable) {
                     SignalFx.noticeError(e)
                 }
@@ -82,7 +80,7 @@ class MetricHandler : Handler<RoutingContext> {
         BackendRegistries.getDefaultNow().counter(metricName, metricTag.key, metricTag.value).increment()
     }
 
-    fun increment(metricName: String, metricMap: MutableMap<String,Any>) {
+    fun increment(metricName: String, metricMap: MutableMap<String, Any>) {
         BackendRegistries.getDefaultNow().counter(metricName,
             metricMap.map { Tag.of(it.key, it.value.toString()) }).increment()
     }
@@ -92,5 +90,4 @@ class MetricHandler : Handler<RoutingContext> {
             return MetricHandler()
         }
     }
-
 }

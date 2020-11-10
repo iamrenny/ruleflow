@@ -8,9 +8,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.inject.Guice
 import com.rappi.fraud.rules.config.ConfigParser
 import com.rappi.fraud.rules.module.ResourcesModule
-import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.verticle.MainVerticle
-import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.VertxOptions
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.json.Json
@@ -18,11 +16,10 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory
 import io.vertx.micrometer.MicrometerMetricsOptions
 import io.vertx.micrometer.VertxPrometheusOptions
 import io.vertx.reactivex.core.Vertx
-import org.flywaydb.core.internal.exception.FlywaySqlException
 import kotlin.system.exitProcess
+import org.flywaydb.core.internal.exception.FlywaySqlException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory.getLogger
-import java.util.concurrent.TimeoutException
 
 private val log: Logger = getLogger("main")
 
@@ -36,7 +33,6 @@ fun main() {
     jsonConfig()
 
     val vertx = Vertx.vertx(options)
-
 
     val config = ConfigParser(vertx).read().blockingGet()
     val injector = Guice.createInjector(ResourcesModule(vertx, config))

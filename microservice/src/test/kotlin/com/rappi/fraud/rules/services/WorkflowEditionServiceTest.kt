@@ -14,7 +14,7 @@ class WorkflowEditionServiceTest {
 
     @Test
     fun `test lock workflow edition`() {
-        val countryCode =  "test"
+        val countryCode = "test"
         val workflowName = "test"
         val user = "test"
 
@@ -34,7 +34,7 @@ class WorkflowEditionServiceTest {
 
     @Test
     fun `when lock exists and is same user, let it be locked again`() {
-        val countryCode =  "test"
+        val countryCode = "test"
         val workflowName = "test"
         val user = "test"
 
@@ -55,7 +55,7 @@ class WorkflowEditionServiceTest {
 
     @Test
     fun `when lock exists and is not same user, do not let it be locked again`() {
-        val countryCode =  "test"
+        val countryCode = "test"
         val workflowName = "test"
         val user = "test"
 
@@ -76,7 +76,7 @@ class WorkflowEditionServiceTest {
 
     @Test
     fun `test lock when redis fail`() {
-        val countryCode =  "test"
+        val countryCode = "test"
         val workflowName = "test"
         val user = "test"
 
@@ -96,7 +96,7 @@ class WorkflowEditionServiceTest {
 
     @Test
     fun `test unlock`() {
-        val countryCode =  "test"
+        val countryCode = "test"
         val workflowName = "test"
 
         val response = WorkflowEditionService.WorkflowEditionStatus(
@@ -114,7 +114,7 @@ class WorkflowEditionServiceTest {
 
     @Test
     fun `test unlock workflow edition`() {
-        val countryCode =  "test"
+        val countryCode = "test"
         val workflowName = "test"
         val user = "test"
 
@@ -134,7 +134,7 @@ class WorkflowEditionServiceTest {
 
     @Test
     fun `when lock exists and is same user, let it be canceled`() {
-        val countryCode =  "test"
+        val countryCode = "test"
         val workflowName = "test"
         val user = "test"
 
@@ -155,7 +155,7 @@ class WorkflowEditionServiceTest {
 
     @Test
     fun `when lock exists and is not same user, do not let it be canceled`() {
-        val countryCode =  "test"
+        val countryCode = "test"
         val workflowName = "test"
         val user = "test"
 

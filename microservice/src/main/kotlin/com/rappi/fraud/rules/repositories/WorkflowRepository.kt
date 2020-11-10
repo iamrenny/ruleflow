@@ -3,7 +3,6 @@ package com.rappi.fraud.rules.repositories
 import com.google.inject.Inject
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
-import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.micrometer.backends.BackendRegistries
