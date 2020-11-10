@@ -65,7 +65,7 @@
  | left = expr op = (ADD | MINUS | MULTIPLY | DIVIDE) right = expr                                          #math
  | left = expr op = (LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right = expr                            #comparator
  | value = expr not = K_NOT? op = (K_CONTAINS | K_IN | K_STARTS_WITH) values = listElems                    #list
- | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT)
+ | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT | K_NONE)
         (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #aggregation
  | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left = expr COMMA right = expr R_PAREN                     #dateDiff
  | ABS L_PAREN left = expr R_PAREN                                                                          #absoluteValue
@@ -138,6 +138,7 @@
  K_IS_NOT: K_IS K_NOT;
  K_IN: I N;
  K_ANY: A N Y;
+ K_NONE: N O N E;
  K_ALL: A L L;
  K_COUNT: C O U N T;
  K_AVERAGE: A V E R A G E;

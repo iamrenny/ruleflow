@@ -138,6 +138,69 @@ class ListTest {
     }
 
     @Test
+    fun testListNone() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' items.none { type = '4' } return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+            ruleEngine.evaluate(
+                mapOf(
+                    "items" to listOf(
+                        mapOf("type" to "1"),
+                        mapOf("type" to "2"),
+                        mapOf("type" to "3")
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun testListNoneMissing() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' items.none { type = 'a' } return allow
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", workflowInfo = WorkflowInfo("", "")), ruleEngine.evaluate(
+            mapOf(
+                "items" to listOf(
+                    mapOf("type" to "a"),
+                    mapOf("type" to "b"),
+                    mapOf("type" to "c")
+                )
+            )
+        )
+        )
+    }
+
+    @Test
+    fun testListNoneNotCollection() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' order.items.none { type = 'a' } return block
+                default allow
+            end
+        """
+
+        val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to 1))
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("order field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+    }
+
+    @Test
     fun `given a list contains a value when evaluating must return block`() {
         val workflow = """
             workflow 'test'
@@ -428,6 +491,27 @@ class ListTest {
     }
 
     @Test
+    fun `given a collection and a existing stored list when evaluating a list with none must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' payment_methods.none { card_bin in list('card_bins')} return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "payment_methods" to listOf(
+                mapOf(
+                    "card_bin" to "123456"
+                )
+            )
+        )
+        val lists = mapOf("card_bins" to listOf("477213"))
+        val result = WorkflowEvaluator(workflow).evaluate(request, lists)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+    }
+
+    @Test
     fun `given a collection and a literal list when evaluating a list must return block`() {
         val workflow = """
             workflow 'test'
@@ -477,6 +561,46 @@ class ListTest {
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
         Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+    }
+
+    @Test
+    fun `given a string and a literal value when evaluating none with contains must return block`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' payment_methods.none { card_bin contains '477' } return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "payment_methods" to listOf(
+                mapOf(
+                    "card_bin" to "123456"
+                )
+            )
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+    }
+
+    @Test
+    fun `given a string and a literal value when evaluating none with contains must return allow`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' payment_methods.none { card_bin contains '477' } return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "payment_methods" to listOf(
+                mapOf(
+                    "card_bin" to "124776"
+                )
+            )
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", workflowInfo = WorkflowInfo("", "")), result)
     }
 
     @Test

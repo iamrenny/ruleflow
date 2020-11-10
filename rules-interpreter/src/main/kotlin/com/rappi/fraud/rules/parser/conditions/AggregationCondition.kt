@@ -11,8 +11,9 @@ class AggregationCondition : Condition<AggregationContext> {
         return when {
             value is List<*> -> {
                 when (ctx.op.type) {
-                    ANALexer.K_ALL -> value.all { data ->  evalPredicate(data, evaluator.lists, ctx.predicate) as Boolean }
+                    ANALexer.K_ALL -> value.all { data -> evalPredicate(data, evaluator.lists, ctx.predicate) as Boolean }
                     ANALexer.K_ANY -> value.any { data -> evalPredicate(data, evaluator.lists, ctx.predicate) as Boolean }
+                    ANALexer.K_NONE -> value.none { data -> evalPredicate(data, evaluator.lists, ctx.predicate) as Boolean }
                     ANALexer.K_AVERAGE -> average(value, ctx.predicate, evaluator.lists)
                     ANALexer.K_COUNT -> count(value, ctx.predicate, evaluator.lists)
                     ANALexer.K_DISTINCT -> distinctBy(value, ctx.predicate, evaluator.lists)
