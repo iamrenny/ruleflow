@@ -37,18 +37,15 @@ class WorkflowServiceTest {
 
     private val activeWorkflowRepository = mock<ActiveWorkflowRepository>()
     private val activeWorkflowHistoryRepository = mock<ActiveWorkflowHistoryRepository>()
-    private val cacheService = mock<WorkflowCache>()
     private val workflowRepository = mock<WorkflowRepository>()
     private val listRepository = mock<ListRepository>()
     private val workFlowEditionService = mock<WorkflowEditionService>()
     private val service = WorkflowService(activeWorkflowRepository, activeWorkflowHistoryRepository,
-        cacheService, workflowRepository, listRepository, workFlowEditionService)
+         workflowRepository, listRepository, workFlowEditionService)
 
     @BeforeEach
     fun cleanUp() {
-        reset(activeWorkflowRepository, activeWorkflowHistoryRepository, cacheService, workflowRepository, listRepository)
-        whenever(cacheService.set(any()))
-            .thenReturn(Single.just(baseWorkflow()))
+        reset(activeWorkflowRepository, activeWorkflowHistoryRepository, workflowRepository, listRepository)
         whenever(listRepository.findAll())
             .thenReturn(Single.just(mapOf()))
         BackendRegistries.setupBackend(MicrometerMetricsOptions())
@@ -446,12 +443,6 @@ class WorkflowServiceTest {
                                     userId = request.userId
                             )
                     )
-                    argumentCaptor<Workflow>().apply {
-                        verify(cacheService).set(
-                                capture()
-                        )
-                        Assertions.assertEquals(expected.workflowAsString, firstValue.workflowAsString)
-                    }
                 }
                 .dispose()
     }

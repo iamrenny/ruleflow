@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit
 class WorkflowService @Inject constructor(
     private val activeWorkflowRepository: ActiveWorkflowRepository,
     private val activeWorkflowHistoryRepository: ActiveWorkflowHistoryRepository,
-    private val workflowCache: WorkflowCache,
     private val workflowRepository: WorkflowRepository,
     private val listRepository: ListRepository,
     private val workFlowEditionService: WorkflowEditionService
@@ -133,14 +132,10 @@ class WorkflowService @Inject constructor(
                 .getWorkflow(request.countryCode, request.name, request.version)
                 .flatMap { toActivate ->
                     activeWorkflowRepository
-                            .save(toActivate)
-                            .flatMap {
-                                Single.just(it)
-                            }
+                        .save(toActivate)
                 }
                 .doOnSuccess {
                     saveHistory(it, request)
-                    saveActiveInCache(it)
                 }
                 .doOnError {
                     logger.error("Activate of workflow $request could not be completed", it)
@@ -148,14 +143,6 @@ class WorkflowService @Inject constructor(
                 }
     }
 
-    private fun saveActiveInCache(workflow: Workflow) {
-        workflowCache
-                .set(workflow)
-                .doOnError {
-                    logger.error("Workflow ${workflow.id} could not be saved in cache", it)
-                    SignalFx.noticeError(it)
-                }
-    }
 
     private fun saveHistory(workflow: Workflow, request: ActivateRequest) {
         activeWorkflowHistoryRepository

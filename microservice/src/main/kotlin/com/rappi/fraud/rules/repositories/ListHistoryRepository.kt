@@ -6,13 +6,14 @@ import com.rappi.fraud.rules.entities.ListModificationType
 import com.rappi.fraud.rules.entities.ListHistory
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 
 class ListHistoryRepository @Inject constructor(private val database: Database) {
 
     private val logger by LoggerDelegate()
 
-    fun save(listId: Long, modificationType: ListModificationType, responsible: String, changeLog: JsonObject) {
+    fun save(listId: Long, modificationType: ListModificationType, responsible: String, changeLog: JsonObject): Single<ListHistory> {
         val insert = """INSERT INTO list_history (list_id, modification_type, responsible, change_log) 
                         VALUES ($1, $2, $3, $4::JSON) 
                         RETURNING id, list_id, modification_type, created_at, responsible, change_log"""
@@ -24,12 +25,8 @@ class ListHistoryRepository @Inject constructor(private val database: Database) 
             changeLog
         )
 
-        database.executeWithParams(insert, params)
-            .map { ListHistory(it) }
-            .subscribe({}, {
-                logger.error("error saving list history for listId: $listId, modificationType: $modificationType, responsible: $responsible", it)
-                SignalFx.noticeError(it)
-            })
+        return database.executeWithParams(insert, params)
+            .map(::ListHistory)
     }
 
     fun getListHistory(listId: Long): Observable<ListHistory> {

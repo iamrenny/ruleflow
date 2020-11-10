@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.services
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.ListItem
 import com.rappi.fraud.rules.entities.ListModificationType
@@ -33,6 +34,10 @@ class ListService @Inject constructor(
             .doOnSuccess {
                 val changeLog = JsonObject.mapFrom(it)
                 listHistoryRepository.save(it.id!!, ListModificationType.CREATE, it.createdBy, changeLog)
+                    .subscribe({}, {
+                        logger.error("error saving list history for list $listName", it)
+                        SignalFx.noticeError(it)
+                    })
             }
     }
 

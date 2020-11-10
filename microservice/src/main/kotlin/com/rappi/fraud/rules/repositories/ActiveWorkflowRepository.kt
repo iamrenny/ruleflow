@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.repositories
 
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Single
 import io.vertx.micrometer.backends.BackendRegistries
 import org.apache.commons.collections4.map.PassiveExpiringMap
@@ -9,9 +10,17 @@ import javax.inject.Inject
 
 class ActiveWorkflowRepository @Inject constructor(private val database: Database) {
 
+    val logger by LoggerDelegate()
+
     private var activeWorkflowCache = PassiveExpiringMap<String, Workflow>(90000)
 
-    fun save(workflow: Workflow): Single<Workflow> {
+    init {
+        getActiveWorkflows()
+            .ignoreElement()
+            .subscribe({}, { logger.error("Unable to preload active workflows", it) })
+    }
+
+    fun save(workflow: Workflow, mustCache: Boolean = true): Single<Workflow> {
 
         val insert = """
             INSERT INTO active_workflows 
@@ -28,11 +37,11 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
         )
         return database.executeWithParams(insert, params)
             .map { workflow.activate() }
-            .doOnSuccess { activeWorkflowCache["${workflow.countryCode}_${workflow.name}"] }
+            .doOnSuccess { if(mustCache) activeWorkflowCache[it.cacheKey] = it }
     }
 
     fun get(countryCode: String, name: String): Single<Workflow> {
-        val GET_BY_KEY = """
+        val query = """
             SELECT w.id, w.country_code, w.name, w.version, w.workflow, w.user_id, w.created_at, true  
               FROM active_workflows aw, workflows w
              WHERE aw.workflow_id = w.id
@@ -44,22 +53,42 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
             countryCode,
             name
         )
-        val cached = activeWorkflowCache["${countryCode}_${name}"]
+
+        val cached = activeWorkflowCache["workflow_${countryCode.toLowerCase()}_${name}"]
 
         return  if(cached == null) {
-            database.get(GET_BY_KEY, params)
-                .map {
-                    Workflow(it).activate()
-                }
+            database.get(query, params)
+                .map(::Workflow)
                 .firstOrError()
-                .doOnSuccess { activeWorkflowCache["${countryCode}_${name}"] = it }
+                .doOnSuccess(::cache)
                 .doAfterTerminate {
                     BackendRegistries.getDefaultNow().timer("fraud.rules.engine.activeWorkflowRepository.get")
                         .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
                 }
-        }
-        else {
+        } else {
             Single.just(cached)
         }
     }
+
+    private fun getActiveWorkflows(): Single<Map<String, Workflow>> {
+        val getActiveWorkflows = """
+            SELECT w.id, w.country_code, w.name, w.version, w.workflow, w.user_id, w.created_at, true  
+              FROM active_workflows aw, workflows w
+             WHERE aw.workflow_id = w.id
+             """
+        return database.get(getActiveWorkflows, listOf())
+            .map(::Workflow)
+            .toMap { it.cacheKey }
+            .doOnSuccess {
+                activeWorkflowCache.clear()
+                activeWorkflowCache.putAll(it)
+            }
+    }
+
+    fun cache(workflow: Workflow) {
+        activeWorkflowCache.put("workflow_${workflow.countryCode?.toLowerCase()}_${workflow.name}", workflow)
+    }
+
+    private val Workflow.cacheKey: String
+            get() = "workflow_${this.countryCode?.toLowerCase()}_${this.name}"
 }

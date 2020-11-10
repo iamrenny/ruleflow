@@ -24,6 +24,7 @@ import io.vertx.micrometer.backends.BackendRegistries
 import io.vertx.reactivex.core.http.HttpClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(VertxExtension::class)
@@ -63,10 +64,12 @@ abstract class BaseTest {
         fun tearDown() {
             injector.getInstance(Database::class.java)
                     .connectionPool
-                    .rxQuery(""""
+                    .rxQuery("""
                         TRUNCATE active_workflows;
+                        TRUNCATE list_history,  list_items, lists_workflows, lists RESTART IDENTITY;
                         TRUNCATE active_workflows_history;
                     """)
+                .blockingGet()
         }
 
         @Suppress("all")

@@ -76,6 +76,5 @@ class WorkflowRepositoryTest : BaseTest() {
                 .assertSubscribed()
                 .await()
                 .assertValueSequence(expected.sortedByDescending { it.id })
-                .dispose()
     }
 }
