@@ -881,7 +881,8 @@ class WorkflowEvaluatorTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow",
+                warnings = setOf("parameter value not supported: something"), workflowInfo = WorkflowInfo("", "")),
             ruleEngine.evaluate(
                 mapOf("test" to "something")
             )
@@ -936,7 +937,8 @@ class WorkflowEvaluatorTest {
         """
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow",
+                warnings = setOf("parameter value not supported: true"), workflowInfo = WorkflowInfo("", "")),
             ruleEngine.evaluate(
                 mapOf("test" to 1)
             )

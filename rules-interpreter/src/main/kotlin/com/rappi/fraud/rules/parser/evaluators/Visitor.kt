@@ -20,7 +20,7 @@ class Visitor(val data: Map<String, *>, val lists:  Map<String, List<String>> = 
             is ANAParser.PropertyContext -> PropertyCondition()
             is ANAParser.DateDiffContext -> DateDiffCondition()
             is ANAParser.ListContext -> ListCondition()
-            is ANAParser.AbsoluteValueContext -> AbsoluteValueCondition()
+            is ANAParser.UnaryContext -> UnaryCondition()
             else -> throw IllegalArgumentException("Context not supported: ${ctx.javaClass}")
         } as Condition< ANAParser.ExprContext>
 
