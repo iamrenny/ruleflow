@@ -2,12 +2,16 @@ package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANAParser
+import com.rappi.fraud.rules.parser.errors.PropertyNotFoundException
 import com.rappi.fraud.rules.parser.removeSingleQuote
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import org.slf4j.LoggerFactory
 import java.lang.Exception
 
 class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map<String, List<String>>) : ANABaseVisitor<WorkflowResult>() {
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     companion object {
         val EMPTY_SET = emptySet<String>()
     }
@@ -49,7 +53,16 @@ class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map
                                     }
                             }
                         } catch (ex: Exception){
-                            warnings.add(ex.message ?: "Unexpected Exception at ${rule.text}")
+                            val message = ex.message ?: "Unexpected Exception at ${rule.text}"
+                            when(ex) {
+                                is PropertyNotFoundException -> {
+                                    logger.warn(message)
+                                }
+                                else -> {
+                                    logger.error("Error while evaluating rule ${ctx.workflow_name().text} ${rule.name().text}", ex)
+                                }
+                            }
+                            warnings.add(message)
                         }
                     }
             }

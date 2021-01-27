@@ -24,7 +24,7 @@ class ListCondition : Condition<ANAParser.ListContext> {
 
 
     private fun evalIn(ctx: ANAParser.ListContext, visitor: Visitor): Any {
-        val value = visitor.visit(ctx.value) as String?
+        val value = visitor.visit(ctx.value)
         return when {
             (ctx.values.literalList != null) -> {
                 ctx.values.string_literal()
@@ -45,9 +45,10 @@ class ListCondition : Condition<ANAParser.ListContext> {
                         value
                     )
             ctx.values.validProperty() != null && ctx.values.validProperty().nestedProperty != null ->
-                getFromProperty(ctx.values.validProperty(), visitor.data).contains(value)
+                (visitor.visit(ctx.values.validProperty()) as List<*>)
+                    .contains(value)
 
-            else -> error("Cannot find symbol ${ctx.values.toString()}")
+            else -> error("Cannot find symbol ${ctx.values}")
         }
     }
 
@@ -82,16 +83,13 @@ class ListCondition : Condition<ANAParser.ListContext> {
                     .map{it.text.replace("'", "", true)}
             }
             ctx.values.storedList != null -> {
-                val value = value.toString()
                 // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                visitor.lists[ctx.values.string_literal()[0].text.replace("\'", "")]
             }
             ctx.values.validProperty() != null && ctx.values.validProperty().property != null -> (visitor.data[ctx.values.validProperty().property.text] as List<*>)
 
             ctx.values.validProperty() != null && ctx.values.validProperty().nestedProperty != null ->
-                getFromProperty(ctx.values.validProperty(), visitor.data)
-
-
+                (visitor.visit(ctx.values.validProperty()) as List<*>)
             else -> error("Unexpected symbol ${ctx.values}")
         }
         return list?.map { elem -> value.startsWith(elem.toString(), true) }
@@ -99,17 +97,4 @@ class ListCondition : Condition<ANAParser.ListContext> {
     }
 
 
-    //TODO: CHECK IF THIS IS FROM PROPERTY CONDITION
-    @Suppress("UNCHECKED_CAST")
-    private fun getFromProperty(ctx: ANAParser.ValidPropertyContext, data: Map<String, *>): List<Any?> {
-        var r = data
-        ctx.ID().forEach { id ->
-            when {
-                r[id.text] is List<Any?> -> return r[id.text] as List<Any?>
-                r[id.text] is Map<*, *> -> r = r[id.text] as Map<String, Any?>
-                else -> error("${id.text} field cannot be found")
-            }
-        }
-        return error("${ctx.ID().joinToString(".")} field cannot be found")
-    }
 }

@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.services
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
@@ -105,10 +106,8 @@ class WorkflowService @Inject constructor(
                     }
             }
             .doOnError {
-                "Workflow not active for key: $countryCode $name $version".let {
-                    logger.error(it)
-                    SignalFx.noticeError(it)
-                }
+                    logger.error("Error Evaluating workflow:  $countryCode $name $version", it)
+                    Grafana.noticeError(it)
             }
             .doAfterTerminate {
                 BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate",
