@@ -142,6 +142,10 @@ class ListService @Inject constructor(
         listRepository.updateLastUpdatedBy(listId, responsible)
             .subscribe({}, { logger.error("error updating lastUpdatedBy field", it) })
         listHistoryRepository.save(listId, modificationType, responsible, changeLog)
+            .subscribe({}, {
+                logger.error("error saving list history for listId $listId", it)
+                SignalFx.noticeError(it)
+            })
     }
 
     fun getListHistory(listId: Long): Single<List<ListHistory>> {
