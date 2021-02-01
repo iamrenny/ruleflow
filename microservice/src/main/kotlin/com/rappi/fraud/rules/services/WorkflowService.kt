@@ -2,7 +2,6 @@ package com.rappi.fraud.rules.services
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.Grafana
-import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
@@ -138,7 +137,7 @@ class WorkflowService @Inject constructor(
                 }
                 .doOnError {
                     logger.error("Activate of workflow $request could not be completed", it)
-                    SignalFx.noticeError(it)
+                    Grafana.noticeError(it)
                 }
     }
 
@@ -151,7 +150,7 @@ class WorkflowService @Inject constructor(
                 )
             ).subscribe({}, { it ->
                 logger.error("Activate of workflow ${workflow.id} could not be saved in the history", it)
-                SignalFx.noticeError(it)
+                Grafana.noticeError(it)
         })
     }
 

@@ -56,11 +56,11 @@ class MetricHandler : Handler<RoutingContext> {
                         metricMap.map { Tag.of(it.key, it.value.toString()) }
                     ).increment()
                 } catch (e: Throwable) {
-                    SignalFx.noticeError(e)
+                    Grafana.noticeError(e)
                 }
             }
         } catch (e: Throwable) {
-            SignalFx.noticeError(e)
+            Grafana.noticeError(e)
             logger.error("Error tying to log apm custom event {}", e.message)
         } finally {
             event.next()

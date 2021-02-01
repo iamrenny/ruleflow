@@ -1,7 +1,7 @@
 package com.rappi.fraud.rules.services
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.apm.SignalFx
+import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.ListHistory
 import com.rappi.fraud.rules.entities.ListItem
@@ -31,7 +31,7 @@ class ListService @Inject constructor(
                 listHistoryRepository.save(it.id!!, ListModificationType.CREATE, it.createdBy, changeLog)
                     .subscribe({}, {
                         logger.error("error saving list history for list $listName", it)
-                        SignalFx.noticeError(it)
+                        Grafana.noticeError(it)
                     })
             }
     }
@@ -144,7 +144,7 @@ class ListService @Inject constructor(
         listHistoryRepository.save(listId, modificationType, responsible, changeLog)
             .subscribe({}, {
                 logger.error("error saving list history for listId $listId", it)
-                SignalFx.noticeError(it)
+                Grafana.noticeError(it)
             })
     }
 
