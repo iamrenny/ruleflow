@@ -16,3 +16,12 @@ services:
       - "6379:6379"
     volumes:
       - ../data/redis:/data
+  mongodb:
+    image: 'bitnami/mongodb:4.2.8'
+    environment:
+      - MONGODB_USERNAME=fraud_rules_engine
+      - MONGODB_PASSWORD=fraud_rules_engine
+      - MONGODB_DATABASE=fraud_rules_engine
+      - MONGODB_PORT_NUMBER=27018
+    ports:
+      - "27018:27018"

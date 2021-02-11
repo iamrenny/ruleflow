@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.documentdb.DocumentDbInit
 import com.rappi.fraud.rules.repositories.Database
 import io.reactivex.Completable
 import io.vertx.core.Promise
@@ -13,13 +14,16 @@ import org.flywaydb.core.Flyway
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MainVerticle @Inject constructor(private val router: MainRouter, private val migration: FlywayMigration) :
+class MainVerticle @Inject constructor(private val router: MainRouter, private val migration: FlywayMigration,
+                                       private val documentDbInit: DocumentDbInit
+) :
     AbstractVerticle() {
 
     private val logger by LoggerDelegate()
 
     override fun start(promise: Promise<Void>) {
         migration.migrateDB()
+            .andThen(documentDbInit.createIndexes())
             .andThen(startServer())
             .subscribe(CompletableHelper.toObserver(promise))
     }

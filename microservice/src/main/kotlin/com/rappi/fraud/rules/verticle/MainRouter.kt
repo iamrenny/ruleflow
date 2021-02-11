@@ -1,12 +1,16 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.MetricHandler
-import com.rappi.fraud.rules.entities.ActivateRequest
-import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.ActivateRequest
+import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.ListStatus
+import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
+import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
+import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.errors.ErrorHandler
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.errors.NotFoundException
@@ -23,6 +27,8 @@ import io.vertx.reactivex.ext.web.RoutingContext
 import io.vertx.reactivex.ext.web.handler.BodyHandler
 import io.vertx.reactivex.ext.web.handler.LoggerHandler
 import java.net.URLDecoder
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.reflect.KClass
@@ -74,8 +80,23 @@ class MainRouter @Inject constructor(
         router.get("/lists/:list_id/history").handler(::getListHistory)
         router.get("/user/:userId/workflow/:countryCode/:name/:version/edit").handler(::getWorkflowForEdition)
         router.put("/workflow/edit/cancel").handler(::cancelWorkflowEdition)
+        router.get("/request-data/:requestId/data").handler(::getRequestData)
+        router.get("/evaluation-history/:date_from/:date_to/:country/:workflow").handler(::getEvaluationHistory)
+        router.post("/evaluation-history/request-history-order-list").handler(::getEvaluationOrderListHistory)
+
 
         return router
+    }
+
+    private fun getRequestData(ctx: RoutingContext) {
+        val requestId = ctx.request().getParam("requestId").toString()
+
+        workflowService.getRequestIdData(requestId).subscribe({
+            ctx.response().putHeader("content-type", "application/json; charset=utf-8").end(Json.encode(it).toString())
+        }, { ex ->
+            logger.error("Error retrieving risk detail data for $requestId", ex)
+            ctx.fail(ex)
+        })
     }
 
     private fun getAllWorkflowsByCountry(ctx: RoutingContext) {
@@ -136,7 +157,8 @@ class MainRouter @Inject constructor(
         workflowService.evaluate(
                 ctx.pathParam("countryCode"),
                 URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
-                ctx.pathParam("version").toLong(), it).timeout(config.timeout, TimeUnit.MILLISECONDS)
+                ctx.pathParam("version").toLong(), it, isSimulation(ctx)
+        ).timeout(config.timeout, TimeUnit.MILLISECONDS)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, { cause ->
@@ -147,6 +169,11 @@ class MainRouter @Inject constructor(
                 else -> ctx.fail(cause)
             }
         })
+    }
+
+    private fun isSimulation(ctx: RoutingContext): Boolean {
+        val runRulesParam = ctx.request().getParam("simulation")
+        return runRulesParam == "true"
     }
 
     private fun createWorkflow(ctx: RoutingContext) {
@@ -402,12 +429,49 @@ class MainRouter @Inject constructor(
     }
 
     private fun cancelWorkflowEdition(ctx: RoutingContext) {
-        val request = ctx.bodyAs<WorkflowService.UnlockWorkflowEditionRequest>(WorkflowService.UnlockWorkflowEditionRequest::class)
+        val request = ctx.bodyAs<UnlockWorkflowEditionRequest>(UnlockWorkflowEditionRequest::class)
 
         workflowService.cancelWorkflowEdition(request)
             .subscribe({ ctx.response().end(Json.encode(it)) }, { err ->
             logger.error("Could not cancel workflow edition: ${err.message}", err)
             ctx.fail(err)
+        })
+    }
+
+    private fun getEvaluationHistory(ctx: RoutingContext) {
+        val dateFrom = ctx.request().getParam("date_from")
+        val dateTo = ctx.request().getParam("date_to")
+        val country = ctx.request().getParam("country")
+        val workflow = ctx.request().getParam("workflow")
+
+        val from = if (dateFrom.isEmpty()) LocalDateTime.now() else LocalDateTime.parse(dateFrom, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        val to = if (dateTo.isEmpty()) LocalDateTime.now() else LocalDateTime.parse(dateTo, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+
+        val request = RulesEngineHistoryRequest(from, to, workflow, country)
+
+        workflowService.getEvaluationHistory(request).subscribe({
+            ctx.response().putHeader("content-type", "application/json; charset=utf-8")
+                .end(JsonObject().put("result", it).toString())
+        }, { ex ->
+            logger.error("Error processing /evaluation-history", ex)
+            ctx.fail(ex)
+        })
+    }
+
+    private fun getEvaluationOrderListHistory(ctx: RoutingContext) {
+        var request = ctx.bodyAs<RulesEngineOrderListHistoryRequest>(RulesEngineOrderListHistoryRequest::class)
+
+        val country = ctx.request().getParam("country")
+        val workflow = ctx.request().getParam("workflow")
+
+        request = request.copy(workflowName = workflow, countryCode = country)
+
+        workflowService.getEvaluationOrderListHistory(request).subscribe({
+            ctx.response().putHeader("content-type", "application/json; charset=utf-8")
+                .end(JsonObject().put("result", it).toString())
+        }, { ex ->
+            logger.error("Error processing /evaluation-history", ex)
+            ctx.fail(ex)
         })
     }
 

@@ -7,10 +7,6 @@ import io.vertx.reactivex.ext.jdbc.JDBCClient
 import javax.inject.Inject
 import javax.inject.Provider
 
-/**
- * Provider object that creates a JDBCClient instance.
- * TODO Add more properties for connection pool configuration.
- */
 class JdbcClientProvider @Inject constructor(private val vertx: Vertx, private val config: Database.Config) :
     Provider<JDBCClient> {
 

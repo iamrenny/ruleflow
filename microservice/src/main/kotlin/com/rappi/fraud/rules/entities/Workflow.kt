@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.rappi.fraud.rules.entities.serializers.LocalDateTimeDeserializer
 import com.rappi.fraud.rules.entities.serializers.LocalDateTimeSerializer
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
+import com.rappi.fraud.rules.services.WorkflowEditionService
 import io.reactiverse.reactivex.pgclient.Row
 import java.time.LocalDateTime
 
@@ -58,3 +59,35 @@ data class Workflow(
 
     fun activate(): Workflow = this.copy(active = true)
 }
+
+data class UnlockWorkflowEditionRequest(
+    val countryCode: String,
+    val workflowName: String,
+    val user: String
+)
+
+data class RulesEngineHistoryRequest(
+    val startDate: LocalDateTime,
+    val endDate: LocalDateTime,
+    val workflowName: String,
+    val countryCode: String
+)
+
+data class RulesEngineOrderListHistoryRequest(
+    val orders: List<String>,
+    val workflowName: String,
+    val countryCode: String? = "dev"
+)
+
+data class WorkflowEditionResponse(
+    val workflow: Workflow? = null,
+    val workflowEditionStatus: WorkflowEditionService.WorkflowEditionStatus
+)
+
+data class LockWorkflowEditionRequest(
+    val countryCode: String,
+    val workflowName: String,
+    val version: Long,
+    val user: String
+)
+

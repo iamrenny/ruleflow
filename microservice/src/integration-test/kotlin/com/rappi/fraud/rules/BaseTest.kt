@@ -6,6 +6,7 @@ import com.google.inject.Injector
 import com.google.inject.Singleton
 import com.nhaarman.mockito_kotlin.mock
 import com.rappi.fraud.rules.config.ConfigParser
+import com.rappi.fraud.rules.documentdb.DocumentDb
 import com.rappi.fraud.rules.module.AbstractModule
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
@@ -52,7 +53,6 @@ abstract class BaseTest {
             vertx.deployVerticle(main, testContext.succeeding {
                 testContext.completeNow()
             })
-
             httpClient = rxVertx.createHttpClient()
 
             BackendRegistries.setupBackend(MicrometerMetricsOptions())

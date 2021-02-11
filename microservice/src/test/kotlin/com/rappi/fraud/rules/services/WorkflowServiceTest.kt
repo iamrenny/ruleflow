@@ -3,15 +3,23 @@ package com.rappi.fraud.rules.services
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.reset
-import com.nhaarman.mockito_kotlin.times
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
-import com.rappi.fraud.rules.entities.ActivateRequest
-import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.times
+import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
+import com.rappi.fraud.rules.documentdb.EventData
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.ActivateRequest
+import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
+import com.rappi.fraud.rules.entities.LockWorkflowEditionRequest
+import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
+import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
+import com.rappi.fraud.rules.entities.NoRiskDetailDataWasFound
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.entities.WorkflowEditionResponse
+import com.rappi.fraud.rules.exceptions.BadRequestException
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
@@ -19,17 +27,18 @@ import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
+import io.netty.handler.codec.http.HttpResponseStatus
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.micrometer.MicrometerMetricsOptions
 import io.vertx.micrometer.backends.BackendRegistries
-import java.lang.IllegalArgumentException
-import java.time.LocalDateTime
-import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.lang.Exception
+import java.time.LocalDateTime
+import java.util.UUID
 
 class WorkflowServiceTest {
 
@@ -38,8 +47,9 @@ class WorkflowServiceTest {
     private val workflowRepository = mock<WorkflowRepository>()
     private val listRepository = mock<ListRepository>()
     private val workFlowEditionService = mock<WorkflowEditionService>()
+    private val documentDbDataRepository= mock<DocumentDbDataRepository>()
     private val service = WorkflowService(activeWorkflowRepository, activeWorkflowHistoryRepository,
-        workflowRepository, listRepository, workFlowEditionService)
+        workflowRepository, listRepository, workFlowEditionService, documentDbDataRepository)
 
     @BeforeEach
     fun cleanUp() {
@@ -47,6 +57,9 @@ class WorkflowServiceTest {
         whenever(listRepository.findAll())
             .thenReturn(Single.just(mapOf()))
         BackendRegistries.setupBackend(MicrometerMetricsOptions())
+        whenever(documentDbDataRepository.saveEventData(any())).then{
+            Single.just(it.arguments[0] as EventData)
+        }
     }
 
     @Test
@@ -54,11 +67,13 @@ class WorkflowServiceTest {
         val expected = baseWorkflow()
 
         whenever(workflowRepository
-            .save(Workflow(
+            .save(
+                Workflow(
                 countryCode = expected.countryCode,
                 name = expected.name,
                 workflowAsString = expected.workflowAsString,
-                userId = expected.userId)))
+                userId = expected.userId)
+            ))
             .thenReturn(Single.just(expected))
 
         whenever(workflowRepository
@@ -81,7 +96,8 @@ class WorkflowServiceTest {
                 CreateWorkflowRequest(
                     countryCode = expected.countryCode!!,
                     workflow = expected.workflowAsString!!,
-                    userId = expected.userId!!))
+                    userId = expected.userId!!)
+            )
             .test()
             .assertSubscribed()
             .await()
@@ -226,14 +242,14 @@ class WorkflowServiceTest {
     fun testGetForEdition() {
         val workflow = baseWorkflow()
 
-        val expected = WorkflowService.WorkflowEditionResponse(
+        val expected = WorkflowEditionResponse(
             workflow,
             WorkflowEditionService.WorkflowEditionStatus(
                 "OK"
             )
         )
 
-        val req = WorkflowService.LockWorkflowEditionRequest(
+        val req = LockWorkflowEditionRequest(
             countryCode = workflow.countryCode!!,
             workflowName = workflow.name,
             version = workflow.version!!,
@@ -267,14 +283,14 @@ class WorkflowServiceTest {
     fun testFailGetForEdition() {
         val workflow = baseWorkflow()
 
-        val expected = WorkflowService.WorkflowEditionResponse(
+        val expected = WorkflowEditionResponse(
             null,
             WorkflowEditionService.WorkflowEditionStatus(
                 "NOT OK"
             )
         )
 
-        val req = WorkflowService.LockWorkflowEditionRequest(
+        val req = LockWorkflowEditionRequest(
             countryCode = workflow.countryCode!!,
             workflowName = workflow.name,
             version = workflow.version!!,
@@ -414,10 +430,12 @@ class WorkflowServiceTest {
             .thenReturn(Single.just(expected.activate()))
 
         whenever(activeWorkflowHistoryRepository
-            .save(ActiveWorkflowHistory(
+            .save(
+                ActiveWorkflowHistory(
                     workflowId = expected.id!!,
                     userId = request.userId
-                )))
+                )
+            ))
             .thenReturn(Single.just(ActiveWorkflowHistory(
                 id = 1,
                 workflowId = expected.id!!,
@@ -538,6 +556,184 @@ class WorkflowServiceTest {
 
         verify(workflowRepository, times(1)).getWorkflow(any(), any(), any())
         verifyZeroInteractions(activeWorkflowRepository)
+        verify(documentDbDataRepository, times(1)).saveEventData(any())
+    }
+
+    @Test
+    fun testSimulateWorkflowWithVersion() {
+        val workflow = baseWorkflow()
+
+        whenever(workflowRepository.getWorkflow(workflow.countryCode!!, workflow.name, workflow.version!!))
+            .thenReturn(Single.just(workflow))
+
+        val evaluationResult = WorkflowResult(
+            workflow = "Sample",
+            ruleSet = "Sample",
+            rule = "Deny",
+            risk = "allow",
+            workflowInfo = WorkflowInfo("1", "Sample")
+        )
+
+        val data = JsonObject()
+            .put("d", 101)
+
+        service.evaluate(countryCode = workflow.countryCode!!, name = workflow.name, version = workflow.version, data = data, isSimulation = true)
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValue(evaluationResult)
+            .dispose()
+
+        verify(workflowRepository, times(1)).getWorkflow(any(), any(), any())
+        verifyZeroInteractions(activeWorkflowRepository)
+        verify(documentDbDataRepository, times(0)).saveEventData(any())
+    }
+
+    @Test
+    fun `get data - getEventData`() {
+        val request = EventData(
+            request = JsonObject().put("pepe", "test"),
+            response = JsonObject().put("response", "OK"),
+            receivedAt = LocalDateTime.now().toString(),
+            countryCode = "co",
+            workflowName = "login",
+            id = "601c0a4bd103cb30b67bb19f"
+        )
+
+        documentDbDataRepository.saveEventData(request)
+
+        whenever(documentDbDataRepository.find(request.id!!))
+            .then { Single.just(request) }
+
+        service.getRequestIdData(request.id!!)
+            .test()
+            .await()
+            .assertValue { it.id.equals("601c0a4bd103cb30b67bb19f") }
+            .assertComplete()
+            .assertNoErrors()
+
+        whenever(documentDbDataRepository.find(any()))
+            .then { Single.error<Exception>(DocumentDbDataRepository.NoRequestIdDataWasFound()) }
+
+        service.getRequestIdData("601c0a4bd103cb30b67bb191")
+            .test()
+            .await()
+            .assertError {
+                it.message.equals("601c0a4bd103cb30b67bb191 was not found")
+            }
+
+        whenever(documentDbDataRepository.find(any()))
+            .then {
+                Single.error<Exception>(
+                    ErrorRequestException(
+                        "timeout", ErrorRequestException.ErrorCode.TIMEOUT.toString(),
+                        HttpResponseStatus.REQUEST_TIMEOUT.code()
+                    )
+                )
+            }
+
+        service.getRequestIdData("601c0a4bd103cb30b67bb197")
+            .test()
+            .await()
+            .assertError {
+                it.message.equals("timeout")
+            }
+    }
+
+    fun testGetHistoryFromDb() {
+        val request = RulesEngineHistoryRequest(LocalDateTime.now(),
+            LocalDateTime.now(),
+            "create_order",
+            "dev")
+
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+            .thenReturn(Single.just(listOf()))
+
+        service.getEvaluationHistory(request)
+            .test()
+            .assertComplete()
+            .dispose()
+    }
+
+    @Test
+    fun testGetHistoryFromDbThrowsException() {
+        val request = RulesEngineHistoryRequest(LocalDateTime.now(),
+            LocalDateTime.now(),
+            "create_order",
+            "dev")
+
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+            .then { Single.error<Exception>(RuntimeException()) }
+
+        service.getEvaluationHistory(request)
+            .test().await()
+            .assertFailure(RuntimeException::class.java)
+            .dispose()
+    }
+
+    @Test
+    fun testGetHistoryFromDbThrowsNoRiskDetailDataWasFound() {
+        val request = RulesEngineHistoryRequest(LocalDateTime.now(),
+            LocalDateTime.now(),
+            "create_order",
+            "dev")
+
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+            .then { Single.error<Exception>(NoRiskDetailDataWasFound()) }
+
+        service.getEvaluationHistory(request)
+            .test()
+            .assertFailure(BadRequestException::class.java)
+            .dispose()
+    }
+
+    @Test
+    fun testGetOrdersHistory() {
+        val request = RulesEngineOrderListHistoryRequest(
+            listOf("3"),
+            "create_order",
+            "dev")
+
+        whenever(documentDbDataRepository.findInList(any()))
+            .thenReturn(Single.just(listOf()))
+
+        service.getEvaluationOrderListHistory(request)
+            .test()
+            .assertComplete()
+            .dispose()
+    }
+
+    @Test
+    fun testGetOrdersHistoryThrowsException() {
+        val request = RulesEngineOrderListHistoryRequest(
+            listOf("3"),
+            "create_order",
+            "dev")
+
+        whenever(documentDbDataRepository.findInList(any()))
+            .then { Single.error<Exception>(RuntimeException()) }
+
+        service.getEvaluationOrderListHistory(request)
+            .test().await()
+            .assertFailure(RuntimeException::class.java)
+            .dispose()
+    }
+
+    @Test
+    fun testGetOrdersHistoryThrowsNoRiskDetailDataWasFound() {
+        val request = RulesEngineOrderListHistoryRequest(
+            listOf("3"),
+            "create_order",
+            "dev")
+
+        whenever(documentDbDataRepository.findInList(any()))
+            .then { Single.error<Exception>(NoRiskDetailDataWasFound()) }
+
+        service.getEvaluationOrderListHistory(request)
+            .test()
+            .assertFailure(BadRequestException::class.java)
+            .dispose()
     }
 
     private fun baseWorkflow(): Workflow {

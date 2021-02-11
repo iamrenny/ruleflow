@@ -9,6 +9,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - mongodb
     command: >
       ./gradlew --no-daemon -g ./.gradle-cache jacocoTestReport
   postgres:
@@ -23,3 +24,10 @@ services:
     image: "redis:3-alpine3.8"
     volumes:
       - ../data/redis:/data
+  mongodb:
+    image: 'bitnami/mongodb:4.2.8'
+    environment:
+      - MONGODB_USERNAME=fraud_rules_engine
+      - MONGODB_PASSWORD=fraud_rules_engine
+      - MONGODB_DATABASE=fraud_rules_engine
+      - MONGODB_PORT_NUMBER=27018

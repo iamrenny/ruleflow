@@ -3,6 +3,11 @@ package com.rappi.fraud.rules.module
 import com.google.inject.AbstractModule
 import com.google.inject.Provides
 import com.google.inject.Singleton
+import com.google.inject.multibindings.Multibinder
+import com.rappi.fraud.rules.documentdb.DocumentDb
+import com.rappi.fraud.rules.documentdb.DocumentDbProvider
+import com.rappi.fraud.rules.entities.DocumentDbRepository
+import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.repositories.Database
 import com.rappi.fraud.rules.verticle.JdbcClientProvider
 import com.rappi.fraud.rules.verticle.MainRouter
@@ -21,6 +26,33 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
         bind(JDBCClient::class.java)
             .toProvider(JdbcClientProvider::class.java)
             .`in`(Singleton::class.java)
+        bind(DocumentDb::class.java).toProvider(DocumentDbProvider::class.java).`in`(Singleton::class.java)
+
+        val documentDbRepositories = Multibinder.newSetBinder(binder(), DocumentDbRepository::class.java)
+        documentDbRepositories.addBinding().to(DocumentDbDataRepository::class.java)
+    }
+
+    @Provides
+    fun documentDbProviderConfig(): DocumentDbProvider.Config {
+        return config.getJsonObject("documentdb").let { documentDb ->
+            DocumentDbProvider.Config(
+                connectionStringWrite = documentDb.getString("CONNECTION_STRING_WRITE").split("?")[0],
+                connectionStringRead = documentDb.getString("CONNECTION_STRING_READ").split("?")[0],
+                maxPoolConnections = documentDb.getString("MAX_CONNECTION_POOL").toInt(),
+                connectTimeout = documentDb.getString("CONNECT_TIMEOUT").toInt()
+            )
+        }
+    }
+
+    @Provides
+    fun documentDbDataRepositoryConfig(): DocumentDbDataRepository.Config {
+        return config.getJsonObject("documentdb").let { documentDb ->
+            documentDb.getJsonObject("COLLECTIONS").let { collections ->
+                DocumentDbDataRepository.Config(
+                    collection = collections.getString("REQUEST_DATA")
+                )
+            }
+        }
     }
 
     @Provides
