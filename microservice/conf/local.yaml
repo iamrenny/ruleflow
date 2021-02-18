@@ -1,5 +1,6 @@
 settings:
   APP_RESPONSE_TIMEOUT: 1500
+  ADDED_REQUEST_AUTH_TOKEN: "8FAC54A0EE1203E6B81833875F8D6064E65C249796ACD13B05BC8D49A65495DA"
 database:
   DB_URL: "jdbc:postgresql://postgres:5432/fraud-rules-engine"
   DB_USER: "fraud-rules-engine"
