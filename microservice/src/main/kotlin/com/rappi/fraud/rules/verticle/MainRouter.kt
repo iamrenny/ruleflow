@@ -1,8 +1,9 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.MetricHandler
+import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
+import com.rappi.fraud.rules.documentdb.EventData
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.ActivateRequest
@@ -37,6 +38,7 @@ class MainRouter @Inject constructor(
     private val vertx: Vertx,
     private val workflowService: WorkflowService,
     private val listService: ListService,
+    private val documentDbDataRepository: DocumentDbDataRepository,
     val config: Config
 ) {
 
@@ -83,9 +85,20 @@ class MainRouter @Inject constructor(
         router.get("/request-data/:requestId/data").handler(::getRequestData)
         router.get("/evaluation-history/:date_from/:date_to/:country/:workflow").handler(::getEvaluationHistory)
         router.post("/evaluation-history/request-history-order-list").handler(::getEvaluationOrderListHistory)
-
+        router.post("/admin/save-request").handler(::saveRequest)
 
         return router
+    }
+
+    private fun saveRequest(ctx: RoutingContext) {
+        validateAddedRequestAuthToken(ctx)
+        documentDbDataRepository.saveEventData(buildEventDataFromContext(ctx.bodyAsJson)).subscribe({
+            ctx.ok(JsonObject().put("request_id", it.id).toString())
+        }, { error ->
+            val message = "Error adding event_data ${ctx.bodyAsJson} into DocDB"
+            logger.error(message, error)
+            ctx.fail(error)
+        })
     }
 
     private fun getRequestData(ctx: RoutingContext) {
@@ -501,7 +514,30 @@ class MainRouter @Inject constructor(
         }
     }
 
+    private fun buildEventDataFromContext(body: JsonObject): EventData {
+        return EventData(
+            "",
+            body.getJsonObject("request"),
+            body.getJsonObject("response"),
+            body.getString("received_at"),
+            body.getString("country_code"),
+            body.getString("workflow_name")
+        )
+    }
+
+    private fun validateAddedRequestAuthToken(ctx: RoutingContext) {
+        val authToken = ctx.request().getHeader("X-Auth-Token")
+        val authenticationKey = config.addRequestToken
+        if (authToken != authenticationKey) {
+            logger.warn("Unauthorized attempt to access to fraud-rules-engine save request to DocDB.")
+            throw ErrorRequestException(
+                "Unauthorized", "error.unauthorized",
+                HttpResponseStatus.UNAUTHORIZED.code())
+        }
+    }
+
     data class Config(
-        val timeout: Long
+        val timeout: Long,
+        val addRequestToken: String
     )
 }

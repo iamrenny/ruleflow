@@ -89,7 +89,8 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
     @Provides
     fun mainRouterConfig(): MainRouter.Config {
         return MainRouter.Config(
-            timeout = config.getJsonObject("settings").getLong("APP_RESPONSE_TIMEOUT")
+            timeout = config.getJsonObject("settings").getLong("APP_RESPONSE_TIMEOUT"),
+            addRequestToken = config.getJsonObject("settings").getString("ADDED_REQUEST_AUTH_TOKEN")
         )
     }
 }
