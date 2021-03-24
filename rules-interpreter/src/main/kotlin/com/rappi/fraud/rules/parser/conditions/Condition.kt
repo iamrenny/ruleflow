@@ -5,5 +5,5 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 interface Condition<T: ParserRuleContext> {
 
-    fun eval(ctx: T, evaluator: Visitor): Any?
+    fun eval(ctx: T, visitor: Visitor): Any?
 }

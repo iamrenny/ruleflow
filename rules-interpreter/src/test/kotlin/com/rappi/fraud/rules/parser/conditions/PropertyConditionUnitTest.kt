@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 
 internal class PropertyConditionUnitTest {
     @Test
-    fun `given a workflow with undefined conditions when evaluating must return exception`() {
+    fun `given a workflow with undefined property when evaluating must return exception`() {
         val workflow = """
             workflow 'test'
                 ruleset 'dummy'
@@ -28,6 +28,139 @@ internal class PropertyConditionUnitTest {
                 actionsWithParams = mapOf(),
                 workflowInfo = WorkflowInfo("", ""),
                 warnings = setOf("user_id field cannot be found")
+            ), result)
+    }
+
+    @Test
+    fun `given a workflow with a property when evaluating must return root value`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' user_id = 15 return block
+                default allow
+            end
+        """
+        val request = mapOf("user_id" to 15)
+        val result = WorkflowEvaluator(workflow).evaluate(request)
+        assertEquals(
+            WorkflowResult(
+                workflow = "test",
+                ruleSet = "dummy",
+                rule = "rule_a",
+                risk = "block",
+                actions = setOf(),
+                actionsWithParams = mapOf(),
+                workflowInfo = WorkflowInfo("", ""),
+                warnings = setOf()
+            ), result)
+    }
+
+    @Test
+    fun `given a workflow with existing root and inner field with exact name must compare with root value`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' request.orders.any { compare_order_id = .request.order_id } return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "request" to mapOf(
+                "order_id" to "A",
+                "orders" to
+                        listOf(
+                            mapOf(
+                                "order_id" to "B",
+                                "compare_order_id" to "A"
+                            )
+                        )
+            )
+
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request)
+        assertEquals(
+            WorkflowResult(
+                workflow = "test",
+                ruleSet = "dummy",
+                rule = "rule_a",
+                risk = "block",
+                actions = setOf(),
+                actionsWithParams = mapOf(),
+                workflowInfo = WorkflowInfo("", ""),
+                warnings = setOf()
+            ), result)
+    }
+
+    @Test
+    fun `given a workflow with existing root and inner field with exact name when not accessing from root must take inner field `() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' request.orders.any { compare_order_id = order_id } return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "order_id" to "A",
+            "request" to mapOf(
+                "orders" to
+                        listOf(
+                            mapOf(
+                                "order_id" to "B",
+                                "compare_order_id" to "A"
+                            )
+                        )
+            )
+
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request)
+        assertEquals(
+            WorkflowResult(
+                workflow = "test",
+                ruleSet = "default",
+                rule = "default",
+                risk = "allow",
+                actions = setOf(),
+                actionsWithParams = mapOf(),
+                workflowInfo = WorkflowInfo("", ""),
+                warnings = setOf()
+            ), result)
+    }
+
+
+    @Test
+    fun `given a workflow with non existing root value when accessing with root accessor must fail`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' request.orders.any { compare_order_id = .request.order_id } return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "request" to mapOf(
+                "orders" to
+                        listOf(
+                            mapOf(
+                                "order_id" to "B",
+                                "compare_order_id" to "A"
+                            )
+                        )
+            )
+
+        )
+        val result = WorkflowEvaluator(workflow).evaluate(request)
+
+        assertEquals(
+            WorkflowResult(
+                workflow = "test",
+                ruleSet = "default",
+                rule = "default",
+                risk = "allow",
+                actions = setOf(),
+                actionsWithParams = mapOf(),
+                workflowInfo = WorkflowInfo("", ""),
+                warnings = setOf("order_id field cannot be found")
             ), result)
     }
 }

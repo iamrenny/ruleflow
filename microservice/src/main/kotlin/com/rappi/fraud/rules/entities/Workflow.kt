@@ -90,4 +90,3 @@ data class LockWorkflowEditionRequest(
     val version: Long,
     val user: String
 )
-

@@ -4,18 +4,18 @@ import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.EventData
+import com.rappi.fraud.rules.entities.ActivateRequest
+import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
+import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.NoRiskDetailDataWasFound
+import com.rappi.fraud.rules.entities.RiskDetail
+import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
+import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
+import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.exceptions.BadRequestException
-import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
-import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
-import com.rappi.fraud.rules.entities.ActivateRequest
-import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
-import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
-import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
-import com.rappi.fraud.rules.entities.RiskDetail
-import com.rappi.fraud.rules.entities.NoRiskDetailDataWasFound
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
@@ -99,7 +99,7 @@ class WorkflowService @Inject constructor(
                         workflow.evaluator.evaluate(data.map, lists)
                     }
                     .flatMap { result ->
-                        if(isSimulation!!) {
+                        if (isSimulation!!) {
                             Single.just(result.copy(
                                 workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name)
                             ))
@@ -213,7 +213,7 @@ class WorkflowService @Inject constructor(
 
     fun getRequestIdData(requestId: String): Single<EventData> {
         return documentDbDataRepository.find(requestId).onErrorResumeNext {
-            if(it is DocumentDbDataRepository.NoRequestIdDataWasFound) {
+            if (it is DocumentDbDataRepository.NoRequestIdDataWasFound) {
                 Single.error(BadRequestException("$requestId was not found", "bad.request"))
             } else {
                 Single.error(it)
@@ -224,7 +224,7 @@ class WorkflowService @Inject constructor(
     fun getEvaluationHistory(request: RulesEngineHistoryRequest): Single<List<RiskDetail>> {
         return documentDbDataRepository.getRiskDetailHistoryFromDocDb(request)
             .onErrorResumeNext {
-                if(it is NoRiskDetailDataWasFound) {
+                if (it is NoRiskDetailDataWasFound) {
                     Single.error(BadRequestException("$request was not found", "bad.request"))
                 } else {
                     Single.error(it)
@@ -235,7 +235,7 @@ class WorkflowService @Inject constructor(
     fun getEvaluationOrderListHistory(request: RulesEngineOrderListHistoryRequest): Single<List<RiskDetail>> {
         return documentDbDataRepository.findInList(request.orders)
             .onErrorResumeNext {
-                if(it is NoRiskDetailDataWasFound) {
+                if (it is NoRiskDetailDataWasFound) {
                     Single.error(BadRequestException("$request was not found", "bad.request"))
                 } else {
                     Single.error(it)

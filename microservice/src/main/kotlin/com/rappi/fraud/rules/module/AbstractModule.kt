@@ -5,9 +5,9 @@ import com.google.inject.Provides
 import com.google.inject.Singleton
 import com.google.inject.multibindings.Multibinder
 import com.rappi.fraud.rules.documentdb.DocumentDb
+import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.DocumentDbProvider
 import com.rappi.fraud.rules.entities.DocumentDbRepository
-import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.repositories.Database
 import com.rappi.fraud.rules.verticle.JdbcClientProvider
 import com.rappi.fraud.rules.verticle.MainRouter

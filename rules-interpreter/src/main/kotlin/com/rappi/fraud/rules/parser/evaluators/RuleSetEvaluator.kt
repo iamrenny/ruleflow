@@ -12,16 +12,12 @@ import java.lang.Exception
 class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map<String, List<String>>) : ANABaseVisitor<WorkflowResult>() {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    companion object {
-        val EMPTY_SET = emptySet<String>()
-    }
-
     override fun visitParse(ctx: ANAParser.ParseContext): WorkflowResult {
         return visitWorkflow(ctx.workflow())
     }
 
     override fun visitWorkflow(ctx: ANAParser.WorkflowContext): WorkflowResult {
-        val ruleEvaluator = Visitor(data, lists)
+        val ruleEvaluator = Visitor(data, lists, data)
         val warnings: MutableSet<String> = mutableSetOf()
 
         ctx.rulesets()

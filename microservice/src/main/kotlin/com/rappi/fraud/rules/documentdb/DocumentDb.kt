@@ -26,7 +26,7 @@ class DocumentDb @Inject constructor(
 
         val mongoOptions = io.vertx.ext.mongo.FindOptions().apply {
             setLimit(options.limit)
-            if(options.sort != null) {
+            if (options.sort != null) {
                 setSort(JsonObject().put(options.sort.fieldName, options.sort.sortOrder.order))
             }
         }
@@ -36,7 +36,7 @@ class DocumentDb @Inject constructor(
     /**
      * Indexes adminstration only needs to be done on the write instance. Since all changes are replicated to the read instance
      */
-    fun listIndexes(collection: String) : Observable<JsonObject> {
+    fun listIndexes(collection: String): Observable<JsonObject> {
         return delegateWrite.rxListIndexes(collection).toObservable().map {
             it.asIterable().map { it as JsonObject }
         }.flatMapIterable {
@@ -47,7 +47,7 @@ class DocumentDb @Inject constructor(
     /**
      * Indexes adminstration only needs to be done on the write instance. Since all changes are replicated to the read instance
      */
-    fun createIndexWithOptions(collection: String, documentDbIndex: DocumentDbIndex) : Completable {
+    fun createIndexWithOptions(collection: String, documentDbIndex: DocumentDbIndex): Completable {
         val mongoIndexOptions = IndexOptions().apply {
             background(documentDbIndex.background)
             name(documentDbIndex.name)
@@ -62,7 +62,7 @@ class DocumentDb @Inject constructor(
         val mongoOptions = io.vertx.ext.mongo.FindOptions().apply {
             batchSize = options.batch!!
             limit = options.limit
-            if(options.sort != null) {
+            if (options.sort != null) {
                 sort = JsonObject().put(options.sort.fieldName, options.sort.sortOrder.order)
             }
         }
@@ -71,7 +71,6 @@ class DocumentDb @Inject constructor(
 
     @VisibleForTesting
     fun getDelegate() = delegateWrite
-
 }
 
 data class FindOptions(

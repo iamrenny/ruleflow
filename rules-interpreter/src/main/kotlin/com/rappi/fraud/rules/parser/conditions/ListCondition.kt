@@ -3,20 +3,18 @@ package com.rappi.fraud.rules.parser.conditions
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.evaluators.Visitor
-import com.rappi.fraud.rules.parser.removeSingleQuote
-import org.antlr.v4.runtime.tree.TerminalNode
 
 class ListCondition : Condition<ANAParser.ListContext> {
 
-    override fun eval(ctx: ANAParser.ListContext, evaluator: Visitor): Any {
+    override fun eval(ctx: ANAParser.ListContext, visitor: Visitor): Any {
 
         return when {
-            ctx.not == null && ctx.op.type == ANALexer.K_CONTAINS -> evalContains(ctx, evaluator)
-            ctx.not != null && ctx.op.type == ANALexer.K_CONTAINS -> evalContains(ctx, evaluator) == false
-            ctx.not == null && ctx.op.type == ANALexer.K_IN -> evalIn(ctx, evaluator)
-            ctx.not != null && ctx.op.type == ANALexer.K_IN -> evalIn(ctx, evaluator) == false
-            ctx.not == null && ctx.op.type == ANALexer.K_STARTS_WITH -> evalStartsWith(ctx, evaluator)
-            ctx.not != null && ctx.op.type == ANALexer.K_STARTS_WITH -> evalStartsWith(ctx, evaluator) == false
+            ctx.not == null && ctx.op.type == ANALexer.K_CONTAINS -> evalContains(ctx, visitor)
+            ctx.not != null && ctx.op.type == ANALexer.K_CONTAINS -> evalContains(ctx, visitor) == false
+            ctx.not == null && ctx.op.type == ANALexer.K_IN -> evalIn(ctx, visitor)
+            ctx.not != null && ctx.op.type == ANALexer.K_IN -> evalIn(ctx, visitor) == false
+            ctx.not == null && ctx.op.type == ANALexer.K_STARTS_WITH -> evalStartsWith(ctx, visitor)
+            ctx.not != null && ctx.op.type == ANALexer.K_STARTS_WITH -> evalStartsWith(ctx, visitor) == false
             else -> throw RuntimeException("Unexpected token near ${ctx.value.text}")
         }
 
@@ -33,21 +31,15 @@ class ListCondition : Condition<ANAParser.ListContext> {
                     .contains(value)
             }
             ctx.values.storedList != null -> {
-                val value = value.toString()
+
                 // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                 val list = visitor.lists[ctx.values.string_literal()[0].text.replace("\'", "")]
 
-                list?.contains(value) ?: false
+                list?.contains(value.toString()) ?: false
             }
-            ctx.values.validProperty() != null && ctx.values.validProperty().property != null ->
-                (visitor.data[ctx.values.validProperty().property.text] as List<*>)
-                    .contains(
-                        value
-                    )
-            ctx.values.validProperty() != null && ctx.values.validProperty().nestedProperty != null ->
-                (visitor.visit(ctx.values.validProperty()) as List<*>)
+            ctx.values.validProperty() != null ->
+                (ValidPropertyCondition().eval(ctx.values.validProperty(), visitor) as List<*>)
                     .contains(value)
-
             else -> error("Cannot find symbol ${ctx.values}")
         }
     }
@@ -86,10 +78,8 @@ class ListCondition : Condition<ANAParser.ListContext> {
                 // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                visitor.lists[ctx.values.string_literal()[0].text.replace("\'", "")]
             }
-            ctx.values.validProperty() != null && ctx.values.validProperty().property != null -> (visitor.data[ctx.values.validProperty().property.text] as List<*>)
+            ctx.values.validProperty() != null -> (ValidPropertyCondition().eval(ctx.values.validProperty(), visitor) as List<*>)
 
-            ctx.values.validProperty() != null && ctx.values.validProperty().nestedProperty != null ->
-                (visitor.visit(ctx.values.validProperty()) as List<*>)
             else -> error("Unexpected symbol ${ctx.values}")
         }
         return list?.map { elem -> value.startsWith(elem.toString(), true) }

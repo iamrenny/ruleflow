@@ -5,15 +5,22 @@ import com.rappi.fraud.rules.parser.errors.PropertyNotFoundException
 import com.rappi.fraud.rules.parser.evaluators.Visitor
 
 class ValidPropertyCondition: Condition<ANAParser.ValidPropertyContext> {
-    override fun eval(ctx: ANAParser.ValidPropertyContext, evaluator: Visitor): Any? {
+    override fun eval(ctx: ANAParser.ValidPropertyContext, visitor: Visitor): Any? {
         return when {
-            ctx.property != null -> evaluator.data[ctx.property.text]
-                ?: throw PropertyNotFoundException("${ctx.property.text} field cannot be found")
-            ctx.nestedProperty != null ->
+            ctx.property != null -> visitor.data[ctx.ID(0).text]
+                ?: throw PropertyNotFoundException("${ctx.ID(0).text} field cannot be found")
+            ctx.nestedProperty != null -> {
+                val data = if(ctx.root != null) {
+                    visitor.root
+                } else {
+                    visitor.data
+                }
                 getNestedValue(
                     ctx,
-                    evaluator.data
+                    data
                 )
+            }
+
             else -> throw PropertyNotFoundException("${ctx.text} field cannot be found")
         }
     }

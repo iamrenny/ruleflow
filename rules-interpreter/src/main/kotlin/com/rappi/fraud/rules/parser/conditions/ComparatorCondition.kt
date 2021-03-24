@@ -15,9 +15,9 @@ import java.math.RoundingMode
 
 class ComparatorCondition : Condition<ComparatorContext> {
 
-    override fun eval(ctx: ComparatorContext, evaluator: Visitor): Boolean {
-        val left = evaluator.visit(ctx.left)
-        val right = evaluator.visit(ctx.right)
+    override fun eval(ctx: ComparatorContext, visitor: Visitor): Boolean {
+        val left = visitor.visit(ctx.left)
+        val right = visitor.visit(ctx.right)
         return when {
             left is Number && right is Number? -> compareNumbers(
                 operator = ctx.op,

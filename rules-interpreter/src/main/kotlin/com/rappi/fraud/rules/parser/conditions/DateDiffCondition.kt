@@ -9,9 +9,9 @@ import kotlin.math.absoluteValue
 
 class DateDiffCondition : Condition<DateDiffContext> {
 
-    override fun eval(ctx: DateDiffContext, evaluator: Visitor): Any? {
-        val valLeft = evaluator.visit(ctx.left)
-        val valRight = evaluator.visit(ctx.right)
+    override fun eval(ctx: DateDiffContext, visitor: Visitor): Any? {
+        val valLeft = visitor.visit(ctx.left)
+        val valRight = visitor.visit(ctx.right)
         if (valLeft == null || valRight == null)
             return null
         val left =  LocalDateTime.parse(valLeft.toString())

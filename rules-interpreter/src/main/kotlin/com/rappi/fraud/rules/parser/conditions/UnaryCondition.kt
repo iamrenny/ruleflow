@@ -7,8 +7,8 @@ import kotlin.math.absoluteValue
 
 class UnaryCondition : Condition<ANAParser.UnaryContext> {
 
-    override fun eval(ctx: ANAParser.UnaryContext, evaluator: Visitor): Any? {
-        val valLeft = evaluator.visit(ctx.left)
+    override fun eval(ctx: ANAParser.UnaryContext, visitor: Visitor): Any? {
+        val valLeft = visitor.visit(ctx.left)
         val left = valLeft?.toString()?.toDoubleOrNull()
 
         if(left == null)

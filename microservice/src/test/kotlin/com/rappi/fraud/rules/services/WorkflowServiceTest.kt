@@ -3,20 +3,20 @@ package com.rappi.fraud.rules.services
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.reset
-import com.nhaarman.mockito_kotlin.whenever
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
-import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.times
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
+import com.nhaarman.mockito_kotlin.whenever
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.EventData
-import com.rappi.fraud.rules.entities.CreateWorkflowRequest
-import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
+import com.rappi.fraud.rules.entities.CreateWorkflowRequest
+import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.LockWorkflowEditionRequest
+import com.rappi.fraud.rules.entities.NoRiskDetailDataWasFound
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
-import com.rappi.fraud.rules.entities.NoRiskDetailDataWasFound
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.exceptions.BadRequestException
@@ -33,12 +33,12 @@ import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.micrometer.MicrometerMetricsOptions
 import io.vertx.micrometer.backends.BackendRegistries
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.lang.Exception
 import java.time.LocalDateTime
 import java.util.UUID
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class WorkflowServiceTest {
 
@@ -47,7 +47,7 @@ class WorkflowServiceTest {
     private val workflowRepository = mock<WorkflowRepository>()
     private val listRepository = mock<ListRepository>()
     private val workFlowEditionService = mock<WorkflowEditionService>()
-    private val documentDbDataRepository= mock<DocumentDbDataRepository>()
+    private val documentDbDataRepository = mock<DocumentDbDataRepository>()
     private val service = WorkflowService(activeWorkflowRepository, activeWorkflowHistoryRepository,
         workflowRepository, listRepository, workFlowEditionService, documentDbDataRepository)
 
@@ -57,7 +57,7 @@ class WorkflowServiceTest {
         whenever(listRepository.findAll())
             .thenReturn(Single.just(mapOf()))
         BackendRegistries.setupBackend(MicrometerMetricsOptions())
-        whenever(documentDbDataRepository.saveEventData(any())).then{
+        whenever(documentDbDataRepository.saveEventData(any())).then {
             Single.just(it.arguments[0] as EventData)
         }
     }

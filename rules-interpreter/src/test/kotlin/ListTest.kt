@@ -1,3 +1,6 @@
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import com.google.gson.stream.JsonReader
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
@@ -745,5 +748,46 @@ class ListTest {
                         workflowInfo = WorkflowInfo("", ""))
                 , result
         )
+    }
+
+    @Test
+    fun `given two nested lists when evaluating an expression must go ok`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' order.itinerary.reservations.any { sectors.any { flights.any { datediff(day, departure_date, .order.created_at) < 3 }}} return block
+                default allow
+            end
+        """
+        val request = mapOf(
+            "order" to mapOf(
+                "created_at" to "2021-08-10T22:30:00",
+                "itinerary" to mapOf(
+                    "reservations" to
+                            listOf(
+                                mapOf("sectors" to
+                                        listOf(
+                                            mapOf("flights" to
+                                                    listOf(
+                                                        mapOf(
+                                                            "departure_airport" to "MEX",
+                                                            "arrival_airport" to "EZE",
+                                                            "departure_date" to "2021-08-10T22:30:00",
+                                                            "arrival_date" to "2021-08-11T09:45:00",
+                                                            "airline_code" to "AM",
+                                                            "baggage_restrictions" to "1 Pieza(s)",
+                                                            "number" to "28"
+                                                        )
+                                                    )
+                                            )
+                                        )
+                                )
+                            )
+                )
+            )
+        )
+
+        val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
     }
 }

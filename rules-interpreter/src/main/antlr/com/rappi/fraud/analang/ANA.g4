@@ -88,10 +88,9 @@
  ;
 
  validProperty
- : property = ID
- | nestedProperty = ID (DOT ID)+
+ : root = DOT? property = ID
+ | root = DOT? nestedProperty = ID (DOT ID)+
  ;
-
 
  DOT : '.';
  COMMA : ',';
@@ -122,7 +121,6 @@
  R_PAREN: ')';
  K_COLON: ':';
  K_ACTION: 'action';
-
  K_WORKFLOW: W O R K F L O W;
  K_RULESET: R U L E S E T;
  K_RETURN: R E T U R N;

@@ -1,10 +1,10 @@
 package com.rappi.fraud.rules.documentdb
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
-import com.rappi.fraud.rules.entities.RiskDetail
 import com.rappi.fraud.rules.entities.DocumentDbIndex
 import com.rappi.fraud.rules.entities.DocumentDbRepository
+import com.rappi.fraud.rules.entities.RiskDetail
+import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
@@ -126,7 +126,7 @@ class DocumentDbDataRepository @Inject constructor(
 
         return documentDb.findBatch(
             config.collection,
-            JsonObject(startQuery + receiveAtQuery + workflowNameQuery + countryCodeQuery + endQuery ), options
+            JsonObject(startQuery + receiveAtQuery + workflowNameQuery + countryCodeQuery + endQuery), options
         )
             .map {
                 it.map {
@@ -161,7 +161,7 @@ class DocumentDbDataRepository @Inject constructor(
                         RiskDetail(
                             id = it.getString(ID),
                             request = JsonObject(it.getString(REQUEST))
-                        )}}
+                        ) } }
             }.first()
     }
 
@@ -201,7 +201,7 @@ class DocumentDbDataRepository @Inject constructor(
         val collection: String
     )
 
-    class NoRequestIdDataWasFound: RuntimeException()
+    class NoRequestIdDataWasFound : RuntimeException()
 }
 
 enum class EntityType(val description: String? = null) {

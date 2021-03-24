@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 
 class ValueCondition : Condition<ValueContext> {
 
-    override fun eval(ctx: ValueContext, evaluator: Visitor): Any? {
+    override fun eval(ctx: ValueContext, visitor: Visitor): Any? {
         return when {
             ctx.validValue().string != null -> ctx.validValue().string.text.removeSingleQuote()
             ctx.validValue().number != null -> ctx.validValue().number.text.toBigDecimal()

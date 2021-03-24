@@ -14,8 +14,10 @@ import org.flywaydb.core.Flyway
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MainVerticle @Inject constructor(private val router: MainRouter, private val migration: FlywayMigration,
-                                       private val documentDbInit: DocumentDbInit
+class MainVerticle @Inject constructor(
+    private val router: MainRouter,
+    private val migration: FlywayMigration,
+    private val documentDbInit: DocumentDbInit
 ) :
     AbstractVerticle() {
 

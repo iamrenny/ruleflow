@@ -6,10 +6,10 @@ import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.EventData
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import io.vertx.core.json.JsonObject
+import java.time.LocalDateTime
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
 
 class DocumentDbDataRepositoryTests : BaseTest() {
 
@@ -60,11 +60,10 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             .await()
             .assertComplete()
             .assertValue {
-                data.request == it.request
-                        && data.response == it.response
-                        && "101000004184" == it.referenceId
+                data.request == it.request &&
+                        data.response == it.response &&
+                        "101000004184" == it.referenceId
             }
-
     }
 
     @Test
@@ -116,5 +115,4 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             .await()
             .assertError(DocumentDbDataRepository.NoRequestIdDataWasFound::class.java)
     }
-
 }

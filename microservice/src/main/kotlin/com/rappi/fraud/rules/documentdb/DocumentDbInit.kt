@@ -16,7 +16,7 @@ class DocumentDbInit @Inject constructor(
     private val logger by LoggerDelegate()
 
     fun createIndexes(): Completable {
-        return Completable.create {compl->
+        return Completable.create { compl ->
             createIndexesForDb().subscribe({
                 logger.info("ALL INDEXES WERE CREATED")
                 compl.onComplete()
@@ -27,7 +27,7 @@ class DocumentDbInit @Inject constructor(
         }
     }
 
-    private fun createIndexesForDb() : Completable {
+    private fun createIndexesForDb(): Completable {
         return Observable.fromIterable(documentDbRepos).flatMapCompletable { repository ->
             createIndexesForRepository(repository)
         }
@@ -39,7 +39,7 @@ class DocumentDbInit @Inject constructor(
         }
     }
 
-    private fun getIndexesToApply(collectionName: String, collectionIndexes: Set<DocumentDbIndex>) : Observable<DocumentDbIndex> {
+    private fun getIndexesToApply(collectionName: String, collectionIndexes: Set<DocumentDbIndex>): Observable<DocumentDbIndex> {
         return getIndexesAppliedInDb(collectionName).map { currentIndexes ->
             collectionIndexes.filter { !currentIndexes.contains(it.name) }
         }.flatMapObservable {
@@ -47,7 +47,7 @@ class DocumentDbInit @Inject constructor(
         }
     }
 
-    private fun createIndex(collection: String, index: DocumentDbIndex) : Completable {
+    private fun createIndex(collection: String, index: DocumentDbIndex): Completable {
         logger.info("CREATING INDEX ${index.name} FOR COLLECTION $collection")
         return documentDb.createIndexWithOptions(collection, index)
     }
@@ -58,6 +58,4 @@ class DocumentDbInit @Inject constructor(
             it.getString("name")
         }.toList().cache()
     }
-
-
 }
