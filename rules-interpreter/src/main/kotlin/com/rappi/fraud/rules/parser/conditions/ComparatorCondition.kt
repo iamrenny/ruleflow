@@ -19,10 +19,10 @@ class ComparatorCondition : Condition<ComparatorContext> {
         val left = visitor.visit(ctx.left)
         val right = visitor.visit(ctx.right)
         return when {
-            left is Number && right is Number? -> compareNumbers(
+            left is Number && right is Number -> compareNumbers(
                 operator = ctx.op,
                 left = left.toString().toBigDecimal().setScale(10, RoundingMode.DOWN),
-                right = right?.toString()?.toBigDecimal()?.setScale(10, RoundingMode.DOWN)
+                right = right.toString().toBigDecimal().setScale(10, RoundingMode.DOWN)
             )
             else -> compareAny(
                 operator = ctx.op,

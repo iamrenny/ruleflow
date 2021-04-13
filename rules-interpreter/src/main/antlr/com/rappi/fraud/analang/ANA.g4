@@ -62,7 +62,8 @@
 
  expr
  : L_PAREN expr R_PAREN                                                                                     #parenthesis
- | left = expr op = (ADD | MINUS | MULTIPLY | DIVIDE) right = expr                                          #math
+ | left = expr op = (MULTIPLY | DIVIDE) right = expr                                                        #mathMul
+ | left = expr op = (ADD | MINUS) right = expr                                                              #mathAdd
  | left = expr op = (LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right = expr                            #comparator
  | value = expr not = K_NOT? op = (K_CONTAINS | K_IN | K_STARTS_WITH) values = listElems                    #list
  | value = expr DOT op = (K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT | K_NONE)

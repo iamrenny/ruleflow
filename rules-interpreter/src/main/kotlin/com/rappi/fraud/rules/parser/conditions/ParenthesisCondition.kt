@@ -5,7 +5,7 @@ import com.rappi.fraud.rules.parser.evaluators.Visitor
 
 class ParenthesisCondition : Condition<ParenthesisContext> {
 
-    override fun eval(ctx: ParenthesisContext, visitor: Visitor): Any? {
+    override fun eval(ctx: ParenthesisContext, visitor: Visitor): Any {
         return visitor.visit(ctx.expr())
     }
 }

@@ -6,7 +6,7 @@ import com.rappi.fraud.rules.parser.evaluators.Visitor
 import java.math.RoundingMode
 
 class AggregationCondition : Condition<AggregationContext> {
-    override fun eval(ctx: AggregationContext, visitor: Visitor): Any? {
+    override fun eval(ctx: AggregationContext, visitor: Visitor): Any {
         val value = visitor.visit(ctx.value)
         return when {
             value is List<*> -> {
@@ -20,7 +20,6 @@ class AggregationCondition : Condition<AggregationContext> {
                     else -> throw RuntimeException("Operation not supported: ${ctx.op.text}")
                 }
             }
-            value == null -> null
             else ->  {
                 throw RuntimeException("${ctx.value.text} is not a Collection")
             }
@@ -33,7 +32,7 @@ class AggregationCondition : Condition<AggregationContext> {
         predicate: ANAParser.ExprContext?,
         lists: Map<String, List<String>>,
         root: Any?
-    ): Any? {
+    ): Any {
         return when (predicate) {
             null -> list
             is ANAParser.ValueContext -> list.distinctBy { (it as Map<String, Any>)[predicate.text] }
@@ -47,7 +46,7 @@ class AggregationCondition : Condition<AggregationContext> {
         predicate: ANAParser.ExprContext,
         lists: Map<String, List<String>>,
         root: Any?
-    ): Any? {
+    ): Any {
         val count = count(list, predicate, lists, root).toString().toBigDecimal()
         return count.divide(list.size.toBigDecimal(), 3, RoundingMode.DOWN)
     }
@@ -58,7 +57,7 @@ class AggregationCondition : Condition<AggregationContext> {
         predicate: ANAParser.ExprContext?,
         lists: Map<String, List<String>>,
         root: Any?
-    ): Any? {
+    ): Any {
         return if (predicate == null) {
             list.count().toBigDecimal()
         } else {

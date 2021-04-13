@@ -7,11 +7,11 @@ import java.time.LocalDateTime
 
 class ValueCondition : Condition<ValueContext> {
 
-    override fun eval(ctx: ValueContext, visitor: Visitor): Any? {
+    override fun eval(ctx: ValueContext, visitor: Visitor): Any {
         return when {
             ctx.validValue().string != null -> ctx.validValue().string.text.removeSingleQuote()
             ctx.validValue().number != null -> ctx.validValue().number.text.toBigDecimal()
-            ctx.validValue().nullValue != null -> null
+            ctx.validValue().nullValue != null -> ctx.validValue().nullValue
             ctx.validValue().currentDate != null -> LocalDateTime.now()
             else -> throw IllegalArgumentException("Value not supported: ${ctx.text}")
         }

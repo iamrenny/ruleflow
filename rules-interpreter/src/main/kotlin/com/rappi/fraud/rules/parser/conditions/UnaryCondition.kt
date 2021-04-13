@@ -7,9 +7,9 @@ import kotlin.math.absoluteValue
 
 class UnaryCondition : Condition<ANAParser.UnaryContext> {
 
-    override fun eval(ctx: ANAParser.UnaryContext, visitor: Visitor): Any? {
+    override fun eval(ctx: ANAParser.UnaryContext, visitor: Visitor): Any {
         val valLeft = visitor.visit(ctx.left)
-        val left = valLeft?.toString()?.toDoubleOrNull()
+        val left = valLeft.toString().toDoubleOrNull()
 
         if(left == null)
             throw IllegalArgumentException("parameter value not supported: $valLeft")
