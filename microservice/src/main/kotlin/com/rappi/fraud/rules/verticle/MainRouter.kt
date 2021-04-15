@@ -1,7 +1,9 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.MetricHandler
+import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.EventData
 import com.rappi.fraud.rules.entities.ActivateRequest
@@ -176,6 +178,8 @@ class MainRouter @Inject constructor(
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, { cause ->
             logger.error("failed to evaluate workflow with request body ${ctx.bodyAsJson}", cause)
+            Grafana.noticeError("failed to evaluate workflow", cause)
+            SignalFx.noticeError("failed to evaluate workflow", cause)
             when (cause) {
                 is NotFoundException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
                 is TimeoutException -> ctx.response().setStatusCode(503).end()
@@ -262,6 +266,9 @@ class MainRouter @Inject constructor(
         }, { error ->
             val message = "Error activating workflow ${ctx.pathParam("name")} for '${ctx.pathParam("countryCode")}'"
             logger.error(message, error)
+            Grafana.noticeError(message, error)
+            SignalFx.noticeError(message, error)
+
             ctx.fail(error)
         })
     }

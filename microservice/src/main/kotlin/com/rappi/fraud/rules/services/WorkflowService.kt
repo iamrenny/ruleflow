@@ -121,10 +121,6 @@ class WorkflowService @Inject constructor(
                         }
                     }
             }
-            .doOnError {
-                    logger.error("Error Evaluating workflow:  $countryCode $name $version", it)
-                    Grafana.noticeError(it)
-            }
             .doAfterTerminate {
                 BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate",
                     "countryCode", countryCode,
@@ -168,7 +164,7 @@ class WorkflowService @Inject constructor(
             ).subscribe({}, { it ->
                 logger.error("Activate of workflow ${workflow.id} could not be saved in the history", it)
                 Grafana.noticeError(it)
-        })
+            })
     }
 
     fun getWorkflowForEdition(countryCode: String, workflowName: String, version: Long, user: String): Single<WorkflowEditionResponse> {

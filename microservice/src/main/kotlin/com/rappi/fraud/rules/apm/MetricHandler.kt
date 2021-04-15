@@ -57,11 +57,13 @@ class MetricHandler : Handler<RoutingContext> {
                     ).increment()
                 } catch (e: Throwable) {
                     Grafana.noticeError(e)
+                    SignalFx.noticeError(e)
                 }
             }
         } catch (e: Throwable) {
             Grafana.noticeError(e)
-            logger.error("Error tying to log apm custom event {}", e.message)
+            SignalFx.noticeError(e)
+            logger.error("Error handling route {}", e.message)
         } finally {
             event.next()
         }

@@ -40,16 +40,6 @@ configurations {
     ktlint
 }
 
-sourceSets {
-    integrationTest {
-        kotlin {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/integration-test/kotlin')
-        }
-        resources.srcDir file('src/integration-test/resources')
-    }
-}
 
 jacoco {
     toolVersion = "0.8.5"
@@ -104,9 +94,11 @@ dependencies {
 
     compile group: "com.hubrick.vertx", name: "vertx-s3-client", version: "3.3.3"
 
-    implementation group: 'com.signalfx.public', name: 'signalfx-trace-api', version: '0.36.0-sfx8'
-    compile group: 'com.signalfx.public', name: 'signalfx-java-agent', version: '0.36.0-sfx8'
-    compile group: 'com.signalfx.public', name: 'signalfx-trace-ot', version: '0.36.0-sfx8'
+    compile group: 'com.signalfx.public', name: 'signalfx-codahale', version: '1.0.11'
+    compile group: 'com.signalfx.public', name: 'signalfx-java', version: '1.0.11'
+    compile group: 'io.opentelemetry', name: 'opentelemetry-api', version: '1.0.1'
+    compile group: 'io.opentelemetry', name: 'opentelemetry-extension-annotations', version: '1.0.1'
+    implementation group: 'com.signalfx.public', name: 'signalfx-trace-api', version: '0.48.0-sfx6'
 
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.2.4'
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.2.3-1'
@@ -124,18 +116,18 @@ dependencies {
     testCompile group: "org.junit.jupiter", name: "junit-jupiter-engine", version: "5.3.2"
     testCompile group: "org.junit.jupiter", name: "junit-jupiter-params", version: "5.3.2"
     testCompile group: 'org.mockito', name: 'mockito-junit-jupiter', version: '2.27.0'
-    testCompile group: "org.mockito", name: "mockito-core", version: "2.27.0"
+    testCompile group: "org.mockito", name: "mockito-inline", version: "3.4.0"
     testCompile group: 'com.nhaarman', name: 'mockito-kotlin', version: '1.6.0'
-    integrationTestCompile 'com.jayway.restassured:rest-assured:2.4.0'
-    integrationTestCompile 'org.assertj:assertj-core:2.0.0'
+    testCompile group: 'org.mockito.kotlin', name: 'mockito-kotlin', version: '3.1.0'
+    testImplementation "io.mockk:mockk:1.9.3"
+
+    testCompile 'com.jayway.restassured:rest-assured:2.4.0'
+    testCompile 'org.assertj:assertj-core:2.0.0'
 
     implementation project(':rules-interpreter')
 
     ktlint "com.pinterest:ktlint:0.34.2"
 
-    integrationTestCompile configurations.testCompile
-    integrationTestRuntime configurations.testRuntime
-    integrationTestImplementation configurations.implementation
 }
 
 test {
@@ -168,29 +160,6 @@ jacocoTestReport {
     }
 }
 
-task integrationTest(type: Test) {
-    environment "ENV", "test"
-
-    useJUnitPlatform()
-
-    group = LifecycleBasePlugin.VERIFICATION_GROUP
-    description = 'Runs integration tests'
-    setTestClassesDirs sourceSets.integrationTest.output
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    testLogging {
-        events = ["passed", "failed", "skipped"]
-    }
-    failFast = true
-    outputs.upToDateWhen { false }
-
-    jacoco {
-        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
-        classDumpDir = file("$buildDir/jacoco/classpathdumps")
-    }
-}
-
-test.dependsOn(integrationTest)
-
 shadowJar {
     setArchiveBaseName('fraud-rules-engine')
     setArchiveClassifier('shadow')
@@ -204,9 +173,6 @@ task ktlint(type: JavaExec, group: "verification") {
     main = "com.pinterest.ktlint.Main"
     classpath = configurations.ktlint
     args "src/**/*.kt"
-    // to generate report in checkstyle format prepend following args:
-    // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
-    // see https://github.com/pinterest/ktlint#usage for more
 }
 
 task ktlintFormat(type: JavaExec, group: "formatting") {

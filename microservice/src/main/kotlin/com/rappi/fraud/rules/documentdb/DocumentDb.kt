@@ -9,7 +9,6 @@ import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.mongo.IndexOptions
 import io.vertx.reactivex.ext.mongo.MongoClient
-import org.msgpack.core.annotations.VisibleForTesting
 
 class DocumentDb @Inject constructor(
     private val delegateWrite: MongoClient,
@@ -69,7 +68,6 @@ class DocumentDb @Inject constructor(
         return delegateRead.rxFindWithOptions(collection, query, mongoOptions)
     }
 
-    @VisibleForTesting
     fun getDelegate() = delegateWrite
 }
 

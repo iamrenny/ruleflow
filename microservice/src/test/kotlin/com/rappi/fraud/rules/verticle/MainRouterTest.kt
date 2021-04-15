@@ -19,7 +19,6 @@ import io.vertx.junit5.VertxTestContext
 import io.vertx.reactivex.core.http.HttpClientRequest
 import java.net.URLEncoder
 import java.time.LocalDateTime
-import java.util.UUID
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -43,14 +42,14 @@ class MainRouterTest : BaseTest() {
             countryCode = data.getString("country_code"),
             workflowAsString = data.getString("workflow"),
             version = 10,
-            userId = UUID.randomUUID().toString(),
+            userId = "13",
             createdAt = LocalDateTime.now(),
             active = false
         )
 
         whenever(
-                workflowService
-                        .save(CreateWorkflowRequest(expected.countryCode!!, expected.workflowAsString!!, expected.userId!!))
+            workflowService
+                .save(CreateWorkflowRequest(expected.countryCode!!, expected.workflowAsString!!, expected.userId!!))
         )
                 .thenReturn(Single.just(expected))
 
@@ -79,14 +78,14 @@ class MainRouterTest : BaseTest() {
         val data = getSeedAsJsonObject("create_workflow.json")
 
         whenever(
-                workflowService
-                        .save(
-                                CreateWorkflowRequest(
-                                        countryCode = data.getString("country_code"),
-                                        workflow = data.getString("workflow"),
-                                        userId = data.getString("userId")
-                                )
-                        )
+            workflowService
+                .save(
+                    CreateWorkflowRequest(
+                        countryCode = data.getString("country_code"),
+                        workflow = data.getString("workflow"),
+                        userId = data.getString("userId")
+                    )
+                )
         )
                 .thenThrow(RuntimeException())
 
@@ -124,10 +123,12 @@ class MainRouterTest : BaseTest() {
 
             val request = httpClient
                 .getAbs(
-                    "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${URLEncoder.encode(
-                        workflow.name,
-                        "UTF-8"
-                    )}/${workflow.version}"
+                    "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${
+                        URLEncoder.encode(
+                            workflow.name,
+                            "UTF-8"
+                        )
+                    }/${workflow.version}"
                 )
             request
                 .toObservable()
@@ -156,19 +157,25 @@ class MainRouterTest : BaseTest() {
                 .mapTo(mutableListOf(), { x -> (x as JsonObject).mapTo(Workflow::class.java) })
                 .toList()
 
-        whenever(workflowService
-                .getWorkflowsByCountryAndName(GetAllWorkflowRequest(
+        whenever(
+            workflowService
+                .getWorkflowsByCountryAndName(
+                    GetAllWorkflowRequest(
                         countryCode = workflows[0].countryCode!!,
                         name = workflows[0].name
-                )))
+                    )
+                )
+        )
                 .thenReturn(Observable.merge(workflows.map { Observable.just(it) }))
 
         val request = httpClient
                 .getAbs(
-                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflows[0].countryCode}/${URLEncoder.encode(
+                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflows[0].countryCode}/${
+                            URLEncoder.encode(
                                 workflows[0].name,
                                 "UTF-8"
-                        )}"
+                            )
+                        }"
                 )
         request
                 .toObservable()
@@ -194,22 +201,26 @@ class MainRouterTest : BaseTest() {
         val expected = getSeedAsJsonObject("get_workflow.json").mapTo(Workflow::class.java)
 
         val activateRequest = ActivateRequest(
-                countryCode = expected.countryCode!!,
-                name = expected.name,
-                version = expected.version!!,
-                userId = UUID.randomUUID().toString()
+            countryCode = expected.countryCode!!,
+            name = expected.name,
+            version = expected.version!!,
+            userId = "15"
         )
 
-        whenever(workflowService
-                .activate(activateRequest))
+        whenever(
+            workflowService
+                .activate(activateRequest)
+        )
                 .thenReturn(Single.just(expected))
 
         val request = httpClient
                 .postAbs(
-                        "http://localhost:8080/api/fraud-rules-engine/workflow/${expected.countryCode}/${URLEncoder.encode(
+                        "http://localhost:8080/api/fraud-rules-engine/workflow/${expected.countryCode}/${
+                            URLEncoder.encode(
                                 expected.name,
                                 "UTF-8"
-                        )}/${expected.version}/activate"
+                            )
+                        }/${expected.version}/activate"
                 )
                 .putAuthUserHeader(activateRequest.userId)
         request
@@ -235,22 +246,32 @@ class MainRouterTest : BaseTest() {
         val data = JsonObject()
 
         val expected = WorkflowResult(
-                workflow = "Workflow 1",
-                ruleSet = "test",
-                rule = "test",
-                risk = "block",
-                workflowInfo = WorkflowInfo("1", "Workflow 1"))
+            workflow = "Workflow 1",
+            ruleSet = "test",
+            rule = "test",
+            risk = "block",
+            workflowInfo = WorkflowInfo("1", "Workflow 1")
+        )
 
-        whenever(workflowService
-                .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, version = workflow.version!!, data = data))
+        whenever(
+            workflowService
+                .evaluate(
+                    countryCode = workflow.countryCode!!,
+                    name = workflow.name,
+                    version = workflow.version!!,
+                    data = data
+                )
+        )
                 .thenReturn(Single.just(expected))
 
         val request = httpClient
                 .postAbs(
-                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${URLEncoder.encode(
+                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${
+                            URLEncoder.encode(
                                 workflow.name,
                                 "UTF-8"
-                        )}/${workflow.version}/evaluate"
+                            )
+                        }/${workflow.version}/evaluate"
                 )
         request
                 .toObservable()
@@ -276,22 +297,27 @@ class MainRouterTest : BaseTest() {
         val data = JsonObject()
 
         val expected = WorkflowResult(
-                workflow = "Workflow 1",
-                ruleSet = "test",
-                rule = "test",
-                risk = "allow",
-                workflowInfo = WorkflowInfo("1", "Workflow 1"))
+            workflow = "Workflow 1",
+            ruleSet = "test",
+            rule = "test",
+            risk = "allow",
+            workflowInfo = WorkflowInfo("1", "Workflow 1")
+        )
 
-        whenever(workflowService
-                .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, data = data))
+        whenever(
+            workflowService
+                .evaluate(countryCode = workflow.countryCode!!, name = workflow.name, data = data)
+        )
                 .thenReturn(Single.just(expected))
 
         val request = httpClient
                 .postAbs(
-                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${URLEncoder.encode(
+                        "http://localhost:8080/api/fraud-rules-engine/workflow/${workflow.countryCode}/${
+                            URLEncoder.encode(
                                 workflow.name,
                                 "UTF-8"
-                        )}/evaluate"
+                            )
+                        }/evaluate"
                 )
         request
                 .toObservable()

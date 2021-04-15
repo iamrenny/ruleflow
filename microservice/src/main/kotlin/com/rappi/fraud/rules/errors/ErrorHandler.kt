@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.errors
 
 import com.rappi.fraud.rules.apm.Grafana
+import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -40,6 +41,7 @@ class ErrorHandler : Handler<RoutingContext> {
         }
 
         Grafana.noticeError(event.failure())
+        SignalFx.noticeError(event.failure())
 
         logger.error("Error processing request ${event.request().method()} ${event.request().path()} - ${event.failure().message}")
         response.setStatusCode(statusCode).putHeader("content-type", "application/json; charset=utf-8")
