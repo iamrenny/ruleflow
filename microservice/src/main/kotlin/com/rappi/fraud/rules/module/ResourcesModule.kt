@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.module
 
 import com.google.inject.Singleton
+import com.rappi.fraud.rules.lists.cache.EventsListener
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListHistoryRepository
@@ -20,5 +21,6 @@ class ResourcesModule(vertx: Vertx, config: JsonObject) : AbstractModule(vertx, 
         bind(WorkflowService::class.java).`in`(Singleton::class.java)
         bind(ListRepository::class.java).`in`(Singleton::class.java)
         bind(ListHistoryRepository::class.java).`in`(Singleton::class.java)
+        bind(EventsListener::class.java).asEagerSingleton()
     }
 }

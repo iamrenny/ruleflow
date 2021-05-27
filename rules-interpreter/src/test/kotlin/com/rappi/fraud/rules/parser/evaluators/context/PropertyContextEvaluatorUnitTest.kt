@@ -1,4 +1,4 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators.context
 
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
@@ -6,7 +6,7 @@ import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class PropertyConditionUnitTest {
+internal class PropertyContextEvaluatorUnitTest {
     @Test
     fun `given a workflow with undefined property when evaluating must return exception`() {
         val workflow = """

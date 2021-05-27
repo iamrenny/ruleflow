@@ -1,15 +1,15 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANAParser.DateDiffContext
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.absoluteValue
 
-class DateDiffCondition : Condition<DateDiffContext> {
+class DateDiffContextEvaluator : ContextEvaluator<DateDiffContext> {
 
-    override fun eval(ctx: DateDiffContext, visitor: Visitor): Any {
+    override fun evaluate(ctx: DateDiffContext, visitor: Visitor): Any {
         val valLeft = visitor.visit(ctx.left)
         val valRight = visitor.visit(ctx.right)
         val left =  LocalDateTime.parse(valLeft.toString())

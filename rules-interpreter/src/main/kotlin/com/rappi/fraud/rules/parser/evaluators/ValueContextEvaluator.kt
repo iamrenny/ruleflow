@@ -1,13 +1,13 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANAParser.ValueContext
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 import com.rappi.fraud.rules.parser.removeSingleQuote
 import java.time.LocalDateTime
 
-class ValueCondition : Condition<ValueContext> {
+class ValueContextEvaluator : ContextEvaluator<ValueContext> {
 
-    override fun eval(ctx: ValueContext, visitor: Visitor): Any {
+    override fun evaluate(ctx: ValueContext, visitor: Visitor): Any {
         return when {
             ctx.validValue().string != null -> ctx.validValue().string.text.removeSingleQuote()
             ctx.validValue().number != null -> ctx.validValue().number.text.toBigDecimal()

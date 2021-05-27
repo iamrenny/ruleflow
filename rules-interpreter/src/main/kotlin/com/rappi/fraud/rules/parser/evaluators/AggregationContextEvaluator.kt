@@ -1,12 +1,12 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.analang.ANAParser.AggregationContext
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 import java.math.RoundingMode
 
-class AggregationCondition : Condition<AggregationContext> {
-    override fun eval(ctx: AggregationContext, visitor: Visitor): Any {
+class AggregationContextEvaluator : ContextEvaluator<AggregationContext> {
+    override fun evaluate(ctx: AggregationContext, visitor: Visitor): Any {
         val value = visitor.visit(ctx.value)
         return when {
             value is List<*> -> {
@@ -30,7 +30,7 @@ class AggregationCondition : Condition<AggregationContext> {
     private fun distinctBy(
         list: List<*>,
         predicate: ANAParser.ExprContext?,
-        lists: Map<String, List<String>>,
+        lists: Map<String, Set<String>>,
         root: Any?
     ): Any {
         return when (predicate) {
@@ -44,7 +44,7 @@ class AggregationCondition : Condition<AggregationContext> {
     private fun average(
         list: List<*>,
         predicate: ANAParser.ExprContext,
-        lists: Map<String, List<String>>,
+        lists: Map<String, Set<String>>,
         root: Any?
     ): Any {
         val count = count(list, predicate, lists, root).toString().toBigDecimal()
@@ -55,7 +55,7 @@ class AggregationCondition : Condition<AggregationContext> {
     private fun count(
         list: List<*>,
         predicate: ANAParser.ExprContext?,
-        lists: Map<String, List<String>>,
+        lists: Map<String, Set<String>>,
         root: Any?
     ): Any {
         return if (predicate == null) {
@@ -72,6 +72,6 @@ class AggregationCondition : Condition<AggregationContext> {
 
     @Suppress("UNCHECKED_CAST")
     //TODO: Both data and root might be Map<String, Any>
-    private fun evalPredicate(data: Any?, root: Any?, lists: Map<String, List<String>>, ctx: ANAParser.ExprContext) =
+    private fun evalPredicate(data: Any?, root: Any?, lists: Map<String, Set<String>>, ctx: ANAParser.ExprContext) =
         Visitor(data as Map<String, Any>, lists, root as Map<String, Any>).visit(ctx)
 }

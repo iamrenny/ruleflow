@@ -1,4 +1,4 @@
-package com.rappi.fraud.rules.parser.evaluators
+package com.rappi.fraud.rules.parser.visitors
 
 import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANAParser
@@ -9,7 +9,7 @@ import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 
-class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map<String, List<String>>) : ANABaseVisitor<WorkflowResult>() {
+class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<String, Set<String>>) : ANABaseVisitor<WorkflowResult>() {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     override fun visitParse(ctx: ANAParser.ParseContext): WorkflowResult {
@@ -37,7 +37,7 @@ class RuleSetEvaluator(private val data: Map<String, *>, private val lists:  Map
                                         workflowInfo = WorkflowInfo("","")
                                     ).let {
                                         if(rule.actions() != null) {
-                                            val actions = ActionsEvaluator().evaluate(rule.actions())
+                                            val actions = ActionsVisitor().visit(rule.actions())
                                             it.copy(
                                                 actions = actions.keys,
                                                 actionsWithParams = actions

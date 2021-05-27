@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.repositories
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ListItem
 import com.rappi.fraud.rules.entities.ListStatus
 import com.rappi.fraud.rules.entities.RulesEngineList
@@ -11,20 +12,20 @@ import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
-import kotlin.streams.toList
-import org.apache.commons.collections4.map.PassiveExpiringMap
+import io.vertx.reactivex.redis.client.Command
+import io.vertx.reactivex.redis.client.Redis
+import io.vertx.reactivex.redis.client.Request
 
-class ListRepository @Inject constructor(private val database: Database) {
+class ListRepository @Inject constructor(
+    private val database: Database,
+    private val redisClient: Redis
+) {
 
     private val logger by LoggerDelegate()
-    private val listCache = PassiveExpiringMap<String, List<String>>(60000)
+    private val enabledListCache: MutableMap<String, Set<String>> = mutableMapOf()
 
     init {
-        findAll()
-            .ignoreElement()
-            .subscribe({},
-                { logger.error("Unable to preload lists", it) }
-            )
+        cacheUpdateAll()
     }
 
     fun createList(listName: String, description: String, createdBy: String): Single<RulesEngineList> {
@@ -93,6 +94,7 @@ class ListRepository @Inject constructor(private val database: Database) {
 
         return database.executeWithParams(query, params)
             .map { RulesEngineList(it) }
+            .doOnSuccess { publishStatus(status, it.id!!, it.listName) }
             .doOnError { logger.error("error updating status to list with id: $listId", it) }
     }
 
@@ -118,6 +120,7 @@ class ListRepository @Inject constructor(private val database: Database) {
             .map {
                 ListItem(listId, itemValue)
             }
+            .doOnSuccess { publishUpdate(it.listId) }
             .doOnError {
                 logger.error("error adding item to list with id: $listId", it)
             }
@@ -129,16 +132,19 @@ class ListRepository @Inject constructor(private val database: Database) {
             itemValue)
         val query = """DELETE FROM list_items WHERE list_id = $1 AND value = $2"""
 
-        return database.executeDelete(query, params).flatMapCompletable {
-            deletedItemsCount ->
-            if (deletedItemsCount > 0) Completable.complete()
-            else Completable.error(ErrorRequestException("Error deleting. Item not found", "error.not_found", 404))
-        }
+        return database.executeDelete(query, params)
+            .flatMapCompletable {
+                    deletedItemsCount ->
+                if (deletedItemsCount > 0)
+                    Completable.complete()
+                else
+                    Completable.error(ErrorRequestException("Error deleting. Item not found", "error.not_found", 404))
+            }
+            .doOnComplete { publishUpdate(listId) }
             .doOnError { logger.error("error removing item with value: $itemValue", it) }
     }
 
     fun getItems(listId: Long): Observable<ListItem> {
-
         val query = """SELECT list_id, value FROM list_items WHERE list_id = $1"""
         return database.get(query, listOf(listId))
             .map { ListItem(it) }
@@ -161,6 +167,7 @@ class ListRepository @Inject constructor(private val database: Database) {
         val batchParams = itemValues.map { Tuple.of(listId, it) }
 
         return database.executeBatch(query, batchParams)
+            .doOnSuccess { publishUpdate(listId) }
             .doOnError { logger.error("error adding batch items to listId: $listId", it) }
             .ignoreElement()
     }
@@ -170,34 +177,82 @@ class ListRepository @Inject constructor(private val database: Database) {
         val query = """DELETE FROM list_items where list_id = $1 and value = $2"""
         val batchParams = itemValues.map { Tuple.of(listId, it) }
 
-        return database.executeBatchDelete(query, batchParams)
+        return database
+            .executeBatchDelete(query, batchParams)
+            .doOnSuccess { publishUpdate(listId) }
             .doOnError { logger.error("error deleting batch items from listId: $listId", it) }
     }
 
-    fun findAll(): Single<Map<String, List<String>>> = if (listCache.isNotEmpty())
-        Single.just(listCache) else findAllWithEntriesWithoutCache()
+    private fun publishUpdate(listId: Long) {
+        redisClient.rxSend(Request.cmd(Command.PUBLISH).arg("fraud_rules_engine_list_modifications").arg("UPDATE $listId"))
+            .subscribe({}, {
+                logger.error("Could not publish to Redis", it)
+                SignalFx.noticeError("Could not publish to Redis", it)
+            }, {})
+    }
 
-    private fun findAllWithEntriesWithoutCache(): Single<Map<String, List<String>>> {
-        val query = """SELECT list_name, id, value, description FROM lists JOIN list_items ON lists.id = list_items.list_id WHERE status = 'ENABLED'"""
+    private fun publishStatus(status: ListStatus, listId: Long, listName: String) {
+        val publishStatus = when (status) {
+            ListStatus.ENABLED -> "ENABLED"
+            ListStatus.DISABLED -> "DISABLED"
+        }
+        redisClient.rxSend(Request.cmd(Command.PUBLISH).arg("fraud_rules_engine_list_modifications").arg("$publishStatus $listId $listName"))
+            .subscribe(
+                {},
+                {
+                    logger.error("Could not publish to Redis", it)
+                    SignalFx.noticeError("Could not publish to Redis", it)
+                },
+                {}
+            )
+    }
+
+    private fun findAll(cache: Boolean = true): Single<MutableMap<String, MutableSet<String>>> {
+        val query = """SELECT list_name, id, value, description, status, created_by FROM lists JOIN list_items ON lists.id = list_items.list_id WHERE status = 'ENABLED'"""
         return database.get(query, listOf())
-            .map { it ->
-                Pair(it.getString("list_name"), it.getString("value"))
-            }
-            .toList()
-            // TODO: SIMPLIFY ASAP
-            .map { pair ->
-                pair.groupBy { pair2 -> pair2.first }
-                    .map { entry ->
-                        Pair(entry.key,
-                            entry.value.stream().map { it -> it.second }
-                                .toList()
-                        )
-                    }.toMap()
+            .collectInto(mutableMapOf<String, MutableSet<String>>()) {
+                    acc, it ->
+
+                val set = acc.getOrDefault(it.getString("list_name"), mutableSetOf())
+
+                set.add(it.getString("value"))
+
+                acc[it.getString("list_name")] = set
             }
             .doOnSuccess {
-                listCache.clear()
-                listCache.putAll(it)
+                if (cache) {
+                    enabledListCache.clear()
+                    enabledListCache.putAll(it)
+                }
             }
             .doOnError { logger.error("error getting lists", it) }
+    }
+
+    fun cacheGet(): Map<String, Set<String>> {
+        return enabledListCache
+    }
+
+    fun cachePut(listId: Long) {
+        val query = """SELECT l.list_name, i.list_id, i.value FROM lists l JOIN list_items i on l.id = i.list_id WHERE l.id = $1 AND l.status = 'ENABLED'"""
+        database.get(query, listOf(listId))
+            .collectInto(mutableMapOf<String, MutableSet<String>>()) { acc, item ->
+                val set = acc.getOrDefault(item.getString("list_name"), mutableSetOf())
+                set.add(item.getString("value"))
+                acc[item.getString("list_name")] = set
+            }
+            .subscribe({
+                enabledListCache.putAll(it)
+            }, {
+                logger.error("error getting list item for list: $listId", it)
+            })
+    }
+
+    fun cacheUpdateAll() {
+        findAll(true)
+            .subscribe()
+    }
+
+    fun cacheRemove(listName: String) {
+        enabledListCache.remove(listName)
     }
 }

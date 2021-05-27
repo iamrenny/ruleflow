@@ -54,8 +54,6 @@ class WorkflowServiceTest {
     @BeforeEach
     fun cleanUp() {
         reset(activeWorkflowRepository, activeWorkflowHistoryRepository, workflowRepository, listRepository)
-        whenever(listRepository.findAll())
-            .thenReturn(Single.just(mapOf()))
         BackendRegistries.setupBackend(MicrometerMetricsOptions())
         whenever(documentDbDataRepository.saveEventData(any())).then {
             Single.just(it.arguments[0] as EventData)

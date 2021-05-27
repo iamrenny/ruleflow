@@ -81,7 +81,6 @@ class ListServiceUnitTest {
             .assertNoErrors()
     }
 
-
     @Test
     fun `given list tracking update when error must return ok`() {
 

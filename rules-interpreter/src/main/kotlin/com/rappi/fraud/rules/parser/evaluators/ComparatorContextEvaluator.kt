@@ -1,4 +1,4 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANAParser.ComparatorContext
 import com.rappi.fraud.analang.ANAParser.EQ
@@ -8,14 +8,14 @@ import com.rappi.fraud.analang.ANAParser.GT_EQ
 import com.rappi.fraud.analang.ANAParser.LT
 import com.rappi.fraud.analang.ANAParser.LT_EQ
 import com.rappi.fraud.analang.ANAParser.NOT_EQ
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 import org.antlr.v4.runtime.Token
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class ComparatorCondition : Condition<ComparatorContext> {
+class ComparatorContextEvaluator : ContextEvaluator<ComparatorContext> {
 
-    override fun eval(ctx: ComparatorContext, visitor: Visitor): Boolean {
+    override fun evaluate(ctx: ComparatorContext, visitor: Visitor): Boolean {
         val left = visitor.visit(ctx.left)
         val right = visitor.visit(ctx.right)
         return when {

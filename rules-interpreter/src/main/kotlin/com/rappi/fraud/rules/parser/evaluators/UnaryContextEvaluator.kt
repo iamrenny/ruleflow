@@ -1,13 +1,13 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 import kotlin.math.absoluteValue
 
-class UnaryCondition : Condition<ANAParser.UnaryContext> {
+class UnaryContextEvaluator : ContextEvaluator<ANAParser.UnaryContext> {
 
-    override fun eval(ctx: ANAParser.UnaryContext, visitor: Visitor): Any {
+    override fun evaluate(ctx: ANAParser.UnaryContext, visitor: Visitor): Any {
         val valLeft = visitor.visit(ctx.left)
         val left = valLeft.toString().toDoubleOrNull()
 

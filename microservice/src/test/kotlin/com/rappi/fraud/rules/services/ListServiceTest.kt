@@ -313,8 +313,6 @@ class ListServiceTest : BaseTest() {
         listRepository.removeItem(1, "")
         listRepository.addItemsBatch(1, listOf())
         listRepository.getListByName("")
-        listRepository.findAll()
-        listRepository.getItems(1)
         listRepository.getLists()
         testContext.completeNow()
     }

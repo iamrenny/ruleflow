@@ -1,11 +1,11 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.errors.PropertyNotFoundException
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 
-class ValidPropertyCondition: Condition<ANAParser.ValidPropertyContext> {
-    override fun eval(ctx: ANAParser.ValidPropertyContext, visitor: Visitor): Any {
+class ValidPropertyContextEvaluator: ContextEvaluator<ANAParser.ValidPropertyContext> {
+    override fun evaluate(ctx: ANAParser.ValidPropertyContext, visitor: Visitor): Any {
         return when {
             ctx.property != null -> visitor.data[ctx.ID(0).text]
                 ?: throw PropertyNotFoundException("${ctx.ID(0).text} field cannot be found")

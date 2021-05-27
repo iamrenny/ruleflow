@@ -4,18 +4,20 @@ import com.google.inject.AbstractModule
 import com.google.inject.Provides
 import com.google.inject.Singleton
 import com.google.inject.multibindings.Multibinder
+import com.rappi.fraud.rules.db.JdbcClientProvider
 import com.rappi.fraud.rules.documentdb.DocumentDb
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.DocumentDbProvider
 import com.rappi.fraud.rules.entities.DocumentDbRepository
 import com.rappi.fraud.rules.repositories.Database
-import com.rappi.fraud.rules.verticle.JdbcClientProvider
 import com.rappi.fraud.rules.verticle.MainRouter
 import com.rappi.fraud.rules.verticle.MainVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.jdbc.JDBCClient
 import io.vertx.reactivex.redis.RedisClient
+import io.vertx.reactivex.redis.client.Redis
+import io.vertx.redis.client.RedisOptions
 
 abstract class AbstractModule(private val vertx: Vertx, private val config: JsonObject) : AbstractModule() {
 
@@ -84,6 +86,18 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
             .put("host", config.getJsonObject("redis").getString("REDIS_HOST"))
             .put("port", config.getJsonObject("redis").getString("REDIS_PORT").toInt())
         return RedisClient.create(vertx, redisConfig)
+    }
+
+    @Provides
+    fun redis(): Redis {
+
+        val options = RedisOptions()
+            .setConnectionString("redis://${
+                config.getJsonObject("redis").getString("REDIS_HOST")
+            }:${config.getJsonObject("redis").getString("REDIS_PORT").toInt()}")
+        return Redis.createClient(
+            vertx,
+            options)
     }
 
     @Provides

@@ -46,10 +46,10 @@ class WorkflowService @Inject constructor(
 
     fun save(request: CreateWorkflowRequest): Single<Workflow> {
         val workflow = Workflow(
-                countryCode = request.countryCode,
-                name = WorkflowEvaluator(request.workflow).validateAndGetWorkflowName(),
-                workflowAsString = request.workflow,
-                userId = request.userId
+            countryCode = request.countryCode,
+            name = WorkflowEvaluator(request.workflow).validateAndGetWorkflowName(),
+            workflowAsString = request.workflow,
+            userId = request.userId
         )
 
         return workflowRepository.exists(workflow.countryCode!!, workflow.name).flatMap { exists ->
@@ -94,10 +94,7 @@ class WorkflowService @Inject constructor(
         val startTimeInMillis = System.currentTimeMillis()
         return getWorkflow(countryCode, name, version)
             .flatMap { workflow ->
-                listRepository.findAll()
-                    .map { lists ->
-                        workflow.evaluator.evaluate(data.map, lists)
-                    }
+                Single.just(workflow.evaluator.evaluate(data.map, listRepository.cacheGet()))
                     .flatMap { result ->
                         if (isSimulation!!) {
                             Single.just(result.copy(
@@ -121,6 +118,7 @@ class WorkflowService @Inject constructor(
                         }
                     }
             }
+            .timeout(1000, TimeUnit.MILLISECONDS)
             .doAfterTerminate {
                 BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate",
                     "countryCode", countryCode,
@@ -140,18 +138,18 @@ class WorkflowService @Inject constructor(
 
     fun activate(request: ActivateRequest): Single<Workflow> {
         return workflowRepository
-                .getWorkflow(request.countryCode, request.name, request.version)
-                .flatMap { toActivate ->
-                    activeWorkflowRepository
-                        .save(toActivate)
-                }
-                .doOnSuccess {
-                    saveHistory(it, request)
-                }
-                .doOnError {
-                    logger.error("Activate of workflow $request could not be completed", it)
-                    Grafana.noticeError(it)
-                }
+            .getWorkflow(request.countryCode, request.name, request.version)
+            .flatMap { toActivate ->
+                activeWorkflowRepository
+                    .save(toActivate)
+            }
+            .doOnSuccess {
+                saveHistory(it, request)
+            }
+            .doOnError {
+                logger.error("Activate of workflow $request could not be completed", it)
+                Grafana.noticeError(it)
+            }
     }
 
     private fun saveHistory(workflow: Workflow, request: ActivateRequest) {
@@ -179,7 +177,7 @@ class WorkflowService @Inject constructor(
                     WorkflowEditionResponse(
                         workflowEditionStatus = workflowEditionStatus
                     )
-                }
+            }
         }
     }
 

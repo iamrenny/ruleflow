@@ -1,22 +1,21 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANALexer
-import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.analang.ANAParser.MathAddContext
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 import java.math.RoundingMode
 
-class MathMulCondition : Condition<ANAParser.MathMulContext> {
+class MathAddContextEvaluator : ContextEvaluator<MathAddContext> {
 
-    override fun eval(ctx: ANAParser.MathMulContext, visitor: Visitor): Any {
+    override fun evaluate(ctx: MathAddContext, visitor: Visitor): Any {
         val leftVal = visitor.visit(ctx.left)
         val rightVal = visitor.visit(ctx.right)
 
         val left = leftVal.toString().toBigDecimal().setScale(2, RoundingMode.DOWN)
         val right = rightVal.toString().toBigDecimal().setScale(2, RoundingMode.DOWN)
         return when (ctx.op.type) {
-                ANALexer.MULTIPLY -> left.multiply(right)
-                ANALexer.DIVIDE -> left.divide(right, 2, RoundingMode.DOWN)
+                ANALexer.ADD -> left.add(right)
+                ANALexer.MINUS -> left.subtract(right)
                 else -> throw IllegalArgumentException("Operation not supported: ${ctx.op.text}")
             }
     }

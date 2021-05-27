@@ -1,12 +1,12 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser.BinaryContext
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 
-class BinaryCondition : Condition<BinaryContext> {
+class BinaryContextEvaluator : ContextEvaluator<BinaryContext> {
 
-    override fun eval(ctx: BinaryContext, visitor: Visitor): Boolean {
+    override fun evaluate(ctx: BinaryContext, visitor: Visitor): Boolean {
         return when (ctx.op.type) {
             ANALexer.K_AND -> visitor.visit(ctx.left) as Boolean && visitor.visit(ctx.right) as Boolean
             ANALexer.K_OR -> visitor.visit(ctx.left) as Boolean || visitor.visit(ctx.right) as Boolean

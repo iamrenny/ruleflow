@@ -1,4 +1,4 @@
-package com.rappi.fraud.rules.verticle
+package com.rappi.fraud.rules.db
 
 import com.rappi.fraud.rules.repositories.Database
 import io.vertx.core.json.JsonObject

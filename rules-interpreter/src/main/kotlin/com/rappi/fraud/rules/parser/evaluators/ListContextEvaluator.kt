@@ -1,12 +1,13 @@
-package com.rappi.fraud.rules.parser.conditions
+package com.rappi.fraud.rules.parser.evaluators
 
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.fraud.rules.parser.evaluators.Visitor
+import com.rappi.fraud.rules.parser.visitors.Visitor
 
-class ListCondition : Condition<ANAParser.ListContext> {
 
-    override fun eval(ctx: ANAParser.ListContext, visitor: Visitor): Any {
+class ListContextEvaluator : ContextEvaluator<ANAParser.ListContext> {
+
+    override fun evaluate(ctx: ANAParser.ListContext, visitor: Visitor): Any {
 
         return when {
             ctx.not == null && ctx.op.type == ANALexer.K_CONTAINS -> evalContains(ctx, visitor)
@@ -26,7 +27,7 @@ class ListCondition : Condition<ANAParser.ListContext> {
         return when {
             (ctx.values.literalList != null) -> {
                 ctx.values.string_literal()
-                    .map{it.text.replace("'", "", true)}
+                    .map{ it.text.replace("'", "", true) }
                     .map{ it.replace("'", "") }
                     .contains(value)
             }
@@ -38,7 +39,7 @@ class ListCondition : Condition<ANAParser.ListContext> {
                 list?.contains(value.toString()) ?: false
             }
             ctx.values.validProperty() != null ->
-                (ValidPropertyCondition().eval(ctx.values.validProperty(), visitor) as List<*>)
+                (ValidPropertyContextEvaluator().evaluate(ctx.values.validProperty(), visitor) as List<*>)
                     .contains(value)
             else -> error("Cannot find symbol ${ctx.values}")
         }
@@ -78,7 +79,7 @@ class ListCondition : Condition<ANAParser.ListContext> {
                 // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                visitor.lists[ctx.values.string_literal()[0].text.replace("\'", "")]
             }
-            ctx.values.validProperty() != null -> (ValidPropertyCondition().eval(ctx.values.validProperty(), visitor) as List<*>)
+            ctx.values.validProperty() != null -> (ValidPropertyContextEvaluator().evaluate(ctx.values.validProperty(), visitor) as List<*>)
 
             else -> error("Unexpected symbol ${ctx.values}")
         }

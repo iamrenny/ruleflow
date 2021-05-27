@@ -1,10 +1,10 @@
-package com.rappi.fraud.rules.parser.evaluators
+package com.rappi.fraud.rules.parser.visitors
 
 import com.rappi.fraud.analang.ANAParser
 import kotlin.streams.toList
 
-class ActionsEvaluator {
-    fun evaluate(context: ANAParser.ActionsContext): Map<String, Map<String, String>> {
+class ActionsVisitor {
+    fun visit(context: ANAParser.ActionsContext): Map<String, Map<String, String>> {
         return context.action()
             .stream()
             .map { action ->
@@ -14,7 +14,7 @@ class ActionsEvaluator {
                     action.action_id.text == "apply_restriction" -> action.action_id.text.replace("'", "")
                     else -> error("Cannot find action name or identifier in ${action.text}")
                 }
-                Pair(name, ActionEvaluator().evaluate(action))
+                Pair(name, ActionVisitor().visit(action))
             }
             .toList()
             .toMap()
@@ -22,9 +22,9 @@ class ActionsEvaluator {
     }
 }
 
-class ActionEvaluator {
+class ActionVisitor {
 
-    fun evaluate(action: ANAParser.ActionContext): Map<String, String> {
+    fun visit(action: ANAParser.ActionContext): Map<String, String> {
 
         return if (action.action_params() != null)
             action.action_params().string_literal().asSequence().withIndex()
