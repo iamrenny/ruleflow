@@ -48,11 +48,11 @@ class MainRouter @Inject constructor(
 
     companion object {
         const val HEADER_AUTH_USER = "X-Auth-User"
-        private val X_APP_ID = System.getenv("x_application_id")
     }
 
     fun create(): Router {
-        val router = Router.router(vertx)
+        val router = Router
+            .router(vertx)
 
         router.routeWithRegex("(?!/health-check).*").handler(LoggerHandler.create())
         router.routeWithRegex("(?!/health-check).*").handler(MetricHandler.create())

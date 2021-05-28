@@ -41,7 +41,7 @@ class ErrorHandler : Handler<RoutingContext> {
         }
 
         Grafana.noticeError(event.failure())
-        SignalFx.noticeError(event.failure())
+        SignalFx.noticeError("Error processing request ${event.request().method()} ${event.request().path()}", event.failure())
 
         logger.error("Error processing request ${event.request().method()} ${event.request().path()} - ${event.failure().message}")
         response.setStatusCode(statusCode).putHeader("content-type", "application/json; charset=utf-8")

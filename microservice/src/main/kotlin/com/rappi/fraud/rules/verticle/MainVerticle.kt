@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.documentdb.DocumentDbInit
 import com.rappi.fraud.rules.repositories.Database
 import io.reactivex.Completable
@@ -31,13 +32,14 @@ class MainVerticle @Inject constructor(
     }
 
     private fun startServer(): Completable {
-        val router = Router.router(vertx).mountSubRouter("/api/fraud-rules-engine", router.create())
+        val router = Router
+            .router(vertx)
+            .mountSubRouter("/api/fraud-rules-engine", router.create())
 
         val server = vertx.createHttpServer()
         server.requestStream()
             .toFlowable()
             .onBackpressureBuffer(512)
-            .onBackpressureDrop { it.response().setStatusCode(503).end() }
             .subscribe(router::handle, ::logError)
 
         val port = config().getInteger("http.port", 8080)
@@ -50,6 +52,7 @@ class MainVerticle @Inject constructor(
 
     private fun logError(t: Throwable) {
         logger.error("Error handling request: ", t)
+        SignalFx.noticeError("Error handling request", t)
     }
 }
 
