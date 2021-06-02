@@ -118,7 +118,6 @@ class WorkflowService @Inject constructor(
                         }
                     }
             }
-            .timeout(1000, TimeUnit.MILLISECONDS)
             .doAfterTerminate {
                 BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate",
                     "countryCode", countryCode,

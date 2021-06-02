@@ -158,6 +158,8 @@ class MainRouter @Inject constructor(
                 ctx.ok(JsonObject.mapFrom(it).toString())
         }, { cause ->
             logger.error("failed to evaluate workflow with request body ${ctx.bodyAsJson}", cause)
+            Grafana.noticeError("failed to evaluate active workflow", cause)
+            SignalFx.noticeError("failed to evaluate active workflow", cause)
             when (cause) {
                 is NoSuchElementException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
                 is TimeoutException -> ctx.response().setStatusCode(503).end()
