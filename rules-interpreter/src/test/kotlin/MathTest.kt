@@ -151,7 +151,7 @@ class MathTest {
         """
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "default", "default", "allow", warnings = setOf("/ by zero"), workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "default", "default", "allow", warnings = setOf(), workflowInfo = WorkflowInfo("", "")),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 4,
