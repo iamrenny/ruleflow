@@ -162,7 +162,7 @@ class MainRouter @Inject constructor(
             SignalFx.noticeError("failed to evaluate active workflow", cause)
             when (cause) {
                 is NoSuchElementException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
-                is TimeoutException -> ctx.response().setStatusCode(503).end()
+                is TimeoutException -> ctx.response().setStatusCode(504).end()
                 else -> ctx.fail(cause)
             }
         })
@@ -184,7 +184,7 @@ class MainRouter @Inject constructor(
             SignalFx.noticeError("failed to evaluate workflow", cause)
             when (cause) {
                 is NotFoundException -> ctx.response().setStatusCode(HttpResponseStatus.NOT_FOUND.code()).end()
-                is TimeoutException -> ctx.response().setStatusCode(503).end()
+                is TimeoutException -> ctx.response().setStatusCode(504).end()
                 else -> ctx.fail(cause)
             }
         })

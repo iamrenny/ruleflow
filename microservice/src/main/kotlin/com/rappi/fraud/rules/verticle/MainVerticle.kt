@@ -1,6 +1,7 @@
 package com.rappi.fraud.rules.verticle
 
 import com.google.inject.Inject
+import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.documentdb.DocumentDbInit
 import com.rappi.fraud.rules.repositories.Database
@@ -39,7 +40,14 @@ class MainVerticle @Inject constructor(
         val server = vertx.createHttpServer()
         server.requestStream()
             .toFlowable()
-            .onBackpressureBuffer(512)
+            .onBackpressureBuffer(512) {logger.warn("Buffering requests..")}
+            .onBackpressureDrop {req ->
+                logger.warn("Dropping Requests...")
+
+                Grafana.noticeError("Request Dropped")
+                SignalFx.noticeError("Request Dropped")
+                req.response().setStatusCode(503).end()
+            }
             .subscribe(router::handle, ::logError)
 
         val port = config().getInteger("http.port", 8080)
@@ -51,8 +59,9 @@ class MainVerticle @Inject constructor(
     }
 
     private fun logError(t: Throwable) {
-        logger.error("Error handling request: ", t)
+        Grafana.noticeError("Error handling request", t)
         SignalFx.noticeError("Error handling request", t)
+        logger.error("Error handling request: ", t)
     }
 }
 
