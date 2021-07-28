@@ -17,7 +17,7 @@ class MathTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 15,
@@ -40,7 +40,7 @@ class MathTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 15,
@@ -63,7 +63,7 @@ class MathTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 15,
@@ -86,7 +86,7 @@ class MathTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 15,
@@ -108,7 +108,7 @@ class MathTest {
         """
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 3.43,
@@ -130,7 +130,7 @@ class MathTest {
         """
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 4,
@@ -151,7 +151,7 @@ class MathTest {
         """
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "default", "default", "allow", warnings = setOf(), workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "default", "default", "allow", warnings = setOf()),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 4,
@@ -172,7 +172,7 @@ class MathTest {
         """
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "default", "default", "allow", warnings = setOf("y field cannot be found"), workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "default", "default", "allow", warnings = setOf("y field cannot be found")),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to 4

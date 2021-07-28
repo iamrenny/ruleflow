@@ -53,8 +53,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                             workflow = "add_card",
                             ruleSet = "default",
                             rule = "default",
-                            risk = "allow",
-                            workflowInfo = WorkflowInfo("", ""))
+                            risk = "allow")
                     ),
 
                     // Has more than allowed per day
@@ -80,8 +79,8 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per day",
-                                    risk = "block",
-                                    workflowInfo = WorkflowInfo("", ""))
+                                    risk = "block"
+                                    )
                     ),
 
                     // Has more than allowed per week
@@ -112,8 +111,8 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per week",
-                                    risk = "block",
-                                    workflowInfo = WorkflowInfo("", ""))
+                                    risk = "block"
+                                    )
                     ),
 
                     // Has more than allowed per week
@@ -144,8 +143,8 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per month",
-                                    risk = "block",
-                                    workflowInfo = WorkflowInfo("", ""))
+                                    risk = "block"
+                                    )
                     )
             )
         }

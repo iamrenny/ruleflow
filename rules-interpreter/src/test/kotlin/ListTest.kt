@@ -17,7 +17,7 @@ class ListTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-                WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+                WorkflowResult("test", "dummy", "item_a", "block"),
                 ruleEngine.evaluate(
                         mapOf(
                                 "order" to mapOf(
@@ -44,7 +44,7 @@ class ListTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-                WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", workflowInfo = WorkflowInfo("", "")), ruleEngine.evaluate(
+                WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default"), ruleEngine.evaluate(
                 mapOf(
                         "order" to mapOf(
                                 "items" to listOf(
@@ -70,7 +70,7 @@ class ListTest {
 
 
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to "1"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("order field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("order field cannot be found")), result)
 
     }
 
@@ -86,7 +86,7 @@ class ListTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-                WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+                WorkflowResult("test", "dummy", "item_a", "block"),
                 ruleEngine.evaluate(
                         mapOf(
                                 "items" to listOf(
@@ -111,7 +111,7 @@ class ListTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-                WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", workflowInfo = WorkflowInfo("", "")), ruleEngine.evaluate(
+                WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"), ruleEngine.evaluate(
                 mapOf(
                         "items" to listOf(
                                 mapOf("type" to "b"),
@@ -134,7 +134,7 @@ class ListTest {
         """
 
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to 1))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("order field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("order field cannot be found")), result)
     }
 
     @Test
@@ -149,7 +149,7 @@ class ListTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block", workflowInfo = WorkflowInfo("", "")),
+            WorkflowResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "items" to listOf(
@@ -174,7 +174,7 @@ class ListTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", workflowInfo = WorkflowInfo("", "")), ruleEngine.evaluate(
+            WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"), ruleEngine.evaluate(
             mapOf(
                 "items" to listOf(
                     mapOf("type" to "a"),
@@ -197,7 +197,7 @@ class ListTest {
         """
 
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("items" to 1))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("order field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("order field cannot be found")), result)
     }
 
     @Test
@@ -210,7 +210,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "item"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
 
     }
 
@@ -224,7 +224,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "item"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
     }
 
 
@@ -238,7 +238,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -251,7 +251,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "auto"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -264,7 +264,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item"))))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
 
     }
 
@@ -278,7 +278,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item5"))))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
 
     }
 
@@ -292,7 +292,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("item2" to "item"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("item field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("item field cannot be found")), result)
     }
 
     @Test
@@ -305,7 +305,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item", "card_bins" to listOf("item1", "item2", "item")))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -318,7 +318,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item", "smart_lists" to mapOf("card_bins" to listOf("item1", "item2", "item"))))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -331,7 +331,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item", "card_bin" to setOf("item1", "item2", "item")))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("smart_lists field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", warnings = setOf("smart_lists field cannot be found")), result)
     }
 
 
@@ -345,7 +345,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("string" to "item", "card_bin" to listOf("item1", "item2", "item")))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", risk = "allow", ruleSet = "default", rule = "default"), result)
     }
 
     @Test
@@ -360,7 +360,7 @@ class ListTest {
         val request = mapOf("card_bin" to "item1", "card_bins" to listOf("item3", "item2", "item"))
         val lists = mapOf("card_bins" to setOf("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -375,7 +375,7 @@ class ListTest {
         val request = mapOf("card_bin" to "item2")
         val lists = mapOf("card_bins" to setOf("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -390,7 +390,7 @@ class ListTest {
         val request = mapOf("card_bin" to "item2")
         val lists = mapOf("card_bins" to setOf("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
 
@@ -406,7 +406,7 @@ class ListTest {
         val request = mapOf("card_bin" to "item1", "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
         val lists = mapOf("card_bins" to setOf("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -421,7 +421,7 @@ class ListTest {
         val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item1")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
         val lists = mapOf("card_bins" to setOf<String>("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -436,7 +436,7 @@ class ListTest {
         val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
         val lists = mapOf("card_bins" to setOf("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found")), result)
     }
 
     @Test
@@ -451,7 +451,7 @@ class ListTest {
         val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
         val lists = mapOf("card_bins" to setOf("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found")), result)
     }
 
     @Test
@@ -466,7 +466,7 @@ class ListTest {
         val request = mapOf("order" to mapOf("payment_method" to mapOf("card_bin" to "item")), "card_bins" to listOf("item5", "item2", "item"), "device_id" to "android")
         val lists = mapOf("card_bins" to setOf("item1"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found"), workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", warnings = setOf("not_card_bin field cannot be found")), result)
     }
 
     @Test
@@ -487,7 +487,7 @@ class ListTest {
         )
         val lists = mapOf("card_bins" to setOf("477213"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -508,7 +508,7 @@ class ListTest {
         )
         val lists = mapOf("card_bins" to setOf("477213"))
         val result = WorkflowEvaluator(workflow).evaluate(request, lists)
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -524,7 +524,7 @@ class ListTest {
                 "device_id" to "itemC"
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -540,7 +540,7 @@ class ListTest {
                 "device_agent" to "Mozilla iPhone bla bla bla "
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -560,7 +560,7 @@ class ListTest {
                 )
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -580,7 +580,7 @@ class ListTest {
             )
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 
     @Test
@@ -600,7 +600,7 @@ class ListTest {
             )
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"), result)
     }
 
     @Test
@@ -620,7 +620,7 @@ class ListTest {
                 )
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"), result)
     }
 
     @Test
@@ -640,7 +640,7 @@ class ListTest {
                 )
         )
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"), result)
     }
 
     @Test
@@ -653,7 +653,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "valueABCD"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
     }
 
     @Test
@@ -666,7 +666,7 @@ class ListTest {
             end
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "itemABCDE"))
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "item_a", risk = "block"), result)
 
     }
 
@@ -681,7 +681,7 @@ class ListTest {
         """
         val result = WorkflowEvaluator(workflow).evaluate(mapOf("item" to "notitemABCDE"))
         Assertions.assertEquals(
-                WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow", workflowInfo = WorkflowInfo("", "")),
+                WorkflowResult(workflow = "test", ruleSet = "default", rule = "default", risk = "allow"),
                 result
         )
 
@@ -702,8 +702,7 @@ class ListTest {
                 ruleSet = "default",
                 rule = "default",
                 risk = "allow",
-                warnings = setOf("item field cannot be found"),
-                workflowInfo = WorkflowInfo("", "")
+                warnings = setOf("item field cannot be found")
         ), result)
     }
 
@@ -721,7 +720,7 @@ class ListTest {
                 workflow = "test",
                 ruleSet = "dummy",
                 rule = "rule_a",
-                risk = "block", workflowInfo = WorkflowInfo("", "")
+                risk = "block"
         ), result)
     }
 
@@ -741,8 +740,7 @@ class ListTest {
                         workflow = "test",
                         ruleSet = "dummy",
                         rule = "rule_a",
-                        risk = "block",
-                        workflowInfo = WorkflowInfo("", ""))
+                        risk = "block")
                 , result
         )
     }
@@ -786,6 +784,6 @@ class ListTest {
         )
 
         val result = WorkflowEvaluator(workflow).evaluate(request, mapOf())
-        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block", workflowInfo = WorkflowInfo("", "")), result)
+        Assertions.assertEquals(WorkflowResult(workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block"), result)
     }
 }

@@ -18,6 +18,7 @@ import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.exceptions.BadRequestException
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
+import com.rappi.fraud.rules.parser.errors.NotFoundException
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
@@ -62,10 +63,18 @@ class WorkflowService @Inject constructor(
                                     workflowRepository.save(workflow)
                                 }
                         } else {
-                            throw ErrorRequestException("the workflow is being edited by $userEditing", "workflow.is.being.edited", 423)
+                            throw ErrorRequestException(
+                                "the workflow is being edited by $userEditing",
+                                "workflow.is.being.edited",
+                                423
+                            )
                         }
                     } else {
-                        throw ErrorRequestException("no active workflow edition to save", "workflow.edition.not.active", 400)
+                        throw ErrorRequestException(
+                            "no active workflow edition to save",
+                            "workflow.edition.not.active",
+                            400
+                        )
                     }
                 }
             } else {
@@ -90,18 +99,32 @@ class WorkflowService @Inject constructor(
         return workflowRepository.getAllWorkflowsByCountry(countryCode)
     }
 
-    fun evaluate(countryCode: String, name: String, version: Long? = null, data: JsonObject, isSimulation: Boolean? = false): Single<WorkflowResult> {
+    fun evaluate(
+        countryCode: String,
+        name: String,
+        version: Long? = null,
+        data: JsonObject,
+        isSimulation: Boolean? = false
+    ): Single<WorkflowResult> {
         val startTimeInMillis = System.currentTimeMillis()
         return getWorkflow(countryCode, name, version)
             .flatMap { workflow ->
                 Single.just(workflow.evaluator.evaluate(data.map, listRepository.cacheGet()))
                     .flatMap { result ->
                         if (isSimulation!!) {
-                            Single.just(result.copy(
-                                workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name)
-                            ))
+                            Single.just(
+                                result.copy(
+                                    workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name)
+                                )
+                            )
                         } else {
-                            saveDataInDocDBandReturnWorkflowResult(data, result, workflow)
+                            val resultWithVersion = result.copy(
+                                workflowInfo = WorkflowInfo(
+                                    version = workflow.name,
+                                    workflowName = workflow.version?.toString() ?: "active"
+                                )
+                            )
+                            saveDataInDocDBandReturnWorkflowResult(data, resultWithVersion, workflow)
                         }
                     }
                     .doOnSuccess { result ->
@@ -119,9 +142,11 @@ class WorkflowService @Inject constructor(
                     }
             }
             .doAfterTerminate {
-                BackendRegistries.getDefaultNow().timer("fraud.rules.engine.workflowService.evaluate",
+                BackendRegistries.getDefaultNow().timer(
+                    "fraud.rules.engine.workflowService.evaluate",
                     "countryCode", countryCode,
-                    "workflow", name)
+                    "workflow", name
+                )
                     .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
             }
     }
@@ -164,7 +189,12 @@ class WorkflowService @Inject constructor(
             })
     }
 
-    fun getWorkflowForEdition(countryCode: String, workflowName: String, version: Long, user: String): Single<WorkflowEditionResponse> {
+    fun getWorkflowForEdition(
+        countryCode: String,
+        workflowName: String,
+        version: Long,
+        user: String
+    ): Single<WorkflowEditionResponse> {
         return workflowRepository.getWorkflow(countryCode, workflowName, version).flatMap { workflow ->
             workFlowEditionService.lockWorkflowEdition(countryCode, workflowName, user).map { workflowEditionStatus ->
                 if (workflowEditionStatus.status == "OK")
@@ -207,7 +237,7 @@ class WorkflowService @Inject constructor(
     fun getRequestIdData(requestId: String): Single<EventData> {
         return documentDbDataRepository.find(requestId).onErrorResumeNext {
             if (it is DocumentDbDataRepository.NoRequestIdDataWasFound) {
-                Single.error(BadRequestException("$requestId was not found", "bad.request"))
+                Single.error(NotFoundException("$requestId was not found", "not.found"))
             } else {
                 Single.error(it)
             }

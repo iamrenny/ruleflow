@@ -26,7 +26,6 @@ internal class PropertyContextEvaluatorUnitTest {
                 risk = "allow",
                 actions = setOf(),
                 actionsWithParams = mapOf(),
-                workflowInfo = WorkflowInfo("", ""),
                 warnings = setOf("user_id field cannot be found")
             ), result)
     }
@@ -50,7 +49,6 @@ internal class PropertyContextEvaluatorUnitTest {
                 risk = "block",
                 actions = setOf(),
                 actionsWithParams = mapOf(),
-                workflowInfo = WorkflowInfo("", ""),
                 warnings = setOf()
             ), result)
     }
@@ -86,7 +84,6 @@ internal class PropertyContextEvaluatorUnitTest {
                 risk = "block",
                 actions = setOf(),
                 actionsWithParams = mapOf(),
-                workflowInfo = WorkflowInfo("", ""),
                 warnings = setOf()
             ), result)
     }
@@ -122,7 +119,6 @@ internal class PropertyContextEvaluatorUnitTest {
                 risk = "allow",
                 actions = setOf(),
                 actionsWithParams = mapOf(),
-                workflowInfo = WorkflowInfo("", ""),
                 warnings = setOf()
             ), result)
     }
@@ -159,7 +155,6 @@ internal class PropertyContextEvaluatorUnitTest {
                 risk = "allow",
                 actions = setOf(),
                 actionsWithParams = mapOf(),
-                workflowInfo = WorkflowInfo("", ""),
                 warnings = setOf("order_id field cannot be found")
             ), result)
     }

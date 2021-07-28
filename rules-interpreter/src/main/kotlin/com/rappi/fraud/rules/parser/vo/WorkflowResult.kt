@@ -8,6 +8,6 @@ data class WorkflowResult(
     val actions: Set<String> = emptySet(),
     val warnings: Set<String> = emptySet(),
     val actionsWithParams: Map<String, Map<String, String>> = emptyMap(),
-    val workflowInfo : WorkflowInfo,
+    val workflowInfo : WorkflowInfo? = null,
     val requestId: String? = null
 )
