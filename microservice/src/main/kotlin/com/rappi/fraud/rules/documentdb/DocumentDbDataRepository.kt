@@ -150,17 +150,21 @@ class DocumentDbDataRepository @Inject constructor(
             batch = batchSize
         )
 
+        val orderListAsString = riskDetailIds.map {
+            "\"$it\""
+        }.toList()
+
         return (riskDetailIds.windowed(riskDetailIds.size, batchSize, false))
             .map {
                 logger.info("FindInValues docdb call size: ${it.size}")
                 documentDb.findBatch(config.collection,
-                    JsonObject("{\"reference_id\" : { \"\$in\" : $it}}"), options)
-            }.map {
-                it.map {
-                    it.map {
+                    JsonObject("{\"reference_id\" : { \"\$in\" : $orderListAsString}}"), options)
+            }.map { single ->
+                single.map { json ->
+                    json.map { response ->
                         RiskDetail(
-                            id = it.getString(ID),
-                            request = JsonObject(it.getString(REQUEST))
+                            id = response.getString(ID),
+                            request = JsonObject(response.getString(REQUEST))
                         ) } }
             }.first()
     }
