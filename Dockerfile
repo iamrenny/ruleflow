@@ -5,4 +5,4 @@ RUN mkdir /code
 COPY microservice/build/libs/*-shadow.jar /code
 
 
-ENTRYPOINT [ "sh", "-c", "java -jar -Duser.timezone=$TIMEZONE -Dnetworkaddress.cache.ttl=60 /code/*.jar" ]
+ENTRYPOINT [ "sh", "-c", "java -jar -Duser.timezone=$TIMEZONE -XX:MaxRAMPercentage=90 -Dnetworkaddress.cache.ttl=60 /code/*.jar" ]
