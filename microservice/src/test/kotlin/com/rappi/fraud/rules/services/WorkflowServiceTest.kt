@@ -693,7 +693,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any()))
+        whenever(documentDbDataRepository.findInList(any(), any()))
             .thenReturn(Single.just(listOf()))
 
         service.getEvaluationOrderListHistory(request)
@@ -709,7 +709,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any()))
+        whenever(documentDbDataRepository.findInList(any(), any()))
             .then { Single.error<Exception>(RuntimeException()) }
 
         service.getEvaluationOrderListHistory(request)
@@ -725,7 +725,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any()))
+        whenever(documentDbDataRepository.findInList(any(), any()))
             .then { Single.error<Exception>(NoRiskDetailDataWasFound()) }
 
         service.getEvaluationOrderListHistory(request)

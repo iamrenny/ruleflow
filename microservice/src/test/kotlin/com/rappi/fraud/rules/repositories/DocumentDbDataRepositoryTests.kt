@@ -115,4 +115,44 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             .await()
             .assertError(DocumentDbDataRepository.NoRequestIdDataWasFound::class.java)
     }
+
+    @Test
+    fun `Finding order information with create_order workflow query`() {
+        val json = getSeedAsJsonObject("simulate_workflow.json")
+
+        val data = EventData(
+            id = "3",
+            request = json,
+            response = JsonObject().put("response", "OK"),
+            countryCode = "DEV",
+            workflowName = "create_order"
+        )
+
+        repository.saveEventData(data)
+            .doOnSuccess {
+                repository.findInList(listOf("3"), "create_order").test()
+                    .await()
+                    .assertValue { it.isNotEmpty() }
+            }
+    }
+
+    @Test
+    fun `Not finding order information with create_order workflow query`() {
+        val json = getSeedAsJsonObject("simulate_workflow.json")
+
+        val data = EventData(
+            id = "3",
+            request = json,
+            response = JsonObject().put("response", "OK"),
+            countryCode = "DEV",
+            workflowName = "any_workflow_name"
+        )
+
+        repository.saveEventData(data)
+            .doOnSuccess {
+                repository.findInList(listOf("3"), "create_order").test()
+                    .await()
+                    .assertValue { it.isEmpty() }
+            }
+    }
 }

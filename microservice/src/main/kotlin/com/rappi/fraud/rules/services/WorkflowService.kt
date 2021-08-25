@@ -256,7 +256,7 @@ class WorkflowService @Inject constructor(
     }
 
     fun getEvaluationOrderListHistory(request: RulesEngineOrderListHistoryRequest): Single<List<RiskDetail>> {
-        return documentDbDataRepository.findInList(request.orders)
+        return documentDbDataRepository.findInList(request.orders, request.workflowName)
             .onErrorResumeNext {
                 if (it is NoRiskDetailDataWasFound) {
                     Single.error(BadRequestException("$request was not found", "bad.request"))
