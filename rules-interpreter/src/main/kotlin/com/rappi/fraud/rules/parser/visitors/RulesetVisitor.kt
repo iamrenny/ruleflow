@@ -4,6 +4,7 @@ import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.errors.PropertyNotFoundException
 import com.rappi.fraud.rules.parser.removeSingleQuote
+import com.rappi.fraud.rules.parser.vo.Action
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.slf4j.LoggerFactory
 import java.lang.Exception
@@ -36,9 +37,13 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                                     ).let {
                                         if(rule.actions() != null) {
                                             val actions = ActionsVisitor().visit(rule.actions())
+                                            val actionsList = actions.map { action -> Action(action.first, action.second) }
+                                            val actionsMap = actions.toMap()
+
                                             it.copy(
-                                                actions = actions.keys,
-                                                actionsWithParams = actions
+                                                actions = actionsMap.keys,
+                                                actionsWithParams = actionsMap,
+                                                actionsList = actionsList
                                             )
                                         } else {
                                             it

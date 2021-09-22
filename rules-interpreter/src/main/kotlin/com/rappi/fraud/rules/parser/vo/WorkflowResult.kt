@@ -9,5 +9,6 @@ data class WorkflowResult(
     val warnings: Set<String> = emptySet(),
     val actionsWithParams: Map<String, Map<String, String>> = emptyMap(),
     val workflowInfo : WorkflowInfo? = null,
-    val requestId: String? = null
+    val requestId: String? = null,
+    val actionsList: List<Action> = emptyList()
 )

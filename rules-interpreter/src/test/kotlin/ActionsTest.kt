@@ -1,4 +1,5 @@
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
+import com.rappi.fraud.rules.parser.vo.Action
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
@@ -20,7 +21,8 @@ ActionsTest {
         Assertions.assertEquals(
             WorkflowResult(
                 workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf())
+                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
+                actionsList = listOf(Action("manual_review", emptyMap()))
             ), result
         )
     }
@@ -39,7 +41,8 @@ ActionsTest {
         Assertions.assertEquals(
             WorkflowResult(
                 workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf())
+                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
+                actionsList = listOf(Action("manual_review", emptyMap()))
             ), result
         )
     }
@@ -58,7 +61,8 @@ ActionsTest {
         Assertions.assertEquals(
             WorkflowResult(
                 workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf())
+                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
+                actionsList = listOf(Action("manual_review", emptyMap()))
             ), result
         )
     }
@@ -78,7 +82,8 @@ ActionsTest {
             WorkflowResult(
                 workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
                 actions = setOf("manual_review", "logout_user"),
-                actionsWithParams = mapOf("manual_review" to mapOf(), "logout_user" to mapOf())
+                actionsWithParams = mapOf("manual_review" to mapOf(), "logout_user" to mapOf()),
+                actionsList = listOf(Action("manual_review", emptyMap()), Action("logout_user", emptyMap()))
             ), result
         )
     }
@@ -101,6 +106,10 @@ ActionsTest {
                 actionsWithParams = mapOf(
                     "manual_review" to mapOf("test" to "me", "foo" to "bar"),
                     "logout_user" to mapOf()
+                ),
+                actionsList = listOf(
+                    Action("manual_review", mapOf("test" to "me", "foo" to "bar")),
+                    Action("logout_user", emptyMap())
                 )
             ), result
         )
@@ -121,7 +130,10 @@ ActionsTest {
             WorkflowResult(
                 workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
                 actions = setOf("manual_review"),
-                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar"))
+                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
+                actionsList = listOf(
+                    Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
+                )
             ), result
         )
     }
@@ -142,7 +154,10 @@ ActionsTest {
             WorkflowResult(
                 workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
                 actions = setOf("manual_review"),
-                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar"))
+                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
+                actionsList = listOf(
+                    Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
+                )
             ), result
         )
     }
@@ -162,7 +177,10 @@ ActionsTest {
             WorkflowResult(
                 workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
                 actions = setOf("manual_review"),
-                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar"))
+                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
+                actionsList = listOf(
+                    Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
+                )
             ), result
         )
     }
@@ -185,6 +203,36 @@ ActionsTest {
                 actionsWithParams = mapOf(
                     "manual_review" to mapOf("test" to "me", "foo" to "bar"),
                     "apply_restriction" to mapOf("responsible" to "homer")
+                ),
+                actionsList = listOf(
+                    Action("manual_review", mapOf("test" to "me", "foo" to "bar")),
+                    Action("apply_restriction", mapOf("responsible" to "homer"))
+                )
+            ), result
+        )
+    }
+
+    @Test
+    fun `given two actions with same name, both must be in actions list`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' user_id = 15 return block with apply_restriction({'test': 'me', 'foo': 'bar'}) AND apply_restriction({'responsible': 'homer'})
+                default allow
+            end
+        """
+        val request = mapOf("user_id" to 15)
+        val result = WorkflowEvaluator(workflow).evaluate(request)
+        Assertions.assertEquals(
+            WorkflowResult(
+                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+                actions = setOf("apply_restriction"),
+                actionsWithParams = mapOf(
+                    "apply_restriction" to mapOf("responsible" to "homer")
+                ),
+                actionsList = listOf(
+                    Action("apply_restriction", mapOf("test" to "me", "foo" to "bar")),
+                    Action("apply_restriction", mapOf("responsible" to "homer"))
                 )
             ), result
         )

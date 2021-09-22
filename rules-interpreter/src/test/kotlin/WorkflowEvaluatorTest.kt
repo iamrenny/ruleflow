@@ -1,4 +1,5 @@
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
+import com.rappi.fraud.rules.parser.vo.Action
 import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -336,7 +337,8 @@ class WorkflowEvaluatorTest {
     fun testLogical() {
         val file = javaClass.classLoader.getResourceAsStream("samples/test_logical.ANA")!!.reader().readText()
         val ruleEngine = WorkflowEvaluator(file)
-        val expected = WorkflowResult("test", "test", "payment_type", "block", setOf("manual_review"), setOf(), mapOf("manual_review" to mapOf()))
+        val expected = WorkflowResult("test", "test", "payment_type", "block", setOf("manual_review"),
+            setOf(), mapOf("manual_review" to mapOf()), actionsList = listOf(Action("manual_review", mapOf()), Action("manual_review", mapOf())))
         Assertions.assertEquals(expected, ruleEngine.evaluate(data))
     }
 

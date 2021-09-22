@@ -4,7 +4,7 @@ import com.rappi.fraud.analang.ANAParser
 import kotlin.streams.toList
 
 class ActionsVisitor {
-    fun visit(context: ANAParser.ActionsContext): Map<String, Map<String, String>> {
+    fun visit(context: ANAParser.ActionsContext): List<Pair<String, Map<String, String>>> {
         return context.action()
             .stream()
             .map { action ->
@@ -17,8 +17,6 @@ class ActionsVisitor {
                 Pair(name, ActionVisitor().visit(action))
             }
             .toList()
-            .toMap()
-
     }
 }
 
