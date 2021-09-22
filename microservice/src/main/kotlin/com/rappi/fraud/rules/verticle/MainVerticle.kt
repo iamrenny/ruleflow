@@ -27,7 +27,6 @@ class MainVerticle @Inject constructor(
 
     override fun start(promise: Promise<Void>) {
         migration.migrateDB()
-            .andThen(documentDbInit.createIndexes())
             .andThen(startServer())
             .subscribe(CompletableHelper.toObserver(promise))
     }

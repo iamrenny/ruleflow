@@ -16,35 +16,26 @@ class DocumentDbInit @Inject constructor(
     private val logger by LoggerDelegate()
 
     fun createIndexes(): Completable {
-        return Completable.create { compl ->
-            createIndexesForDb().subscribe({
-                logger.info("ALL INDEXES WERE CREATED")
-                compl.onComplete()
-            }, {
-                logger.error("ERROR CREATING INDEXES FOR DOCUMENT DB", it)
-                compl.onError(it)
-            })
-        }
-    }
-
-    private fun createIndexesForDb(): Completable {
-        return Observable.fromIterable(documentDbRepos).flatMapCompletable { repository ->
-            createIndexesForRepository(repository)
-        }
+        return Observable.fromIterable(documentDbRepos)
+            .flatMapCompletable { repository ->
+                createIndexesForRepository(repository)
+            }
     }
 
     private fun createIndexesForRepository(repository: DocumentDbRepository): Completable {
-        return getIndexesToApply(repository.collection, repository.indexes).flatMapCompletable {
-            createIndex(repository.collection, it)
-        }
+        return getIndexesToApply(repository.collection, repository.indexes)
+            .flatMapCompletable {
+                createIndex(repository.collection, it)
+            }
     }
 
     private fun getIndexesToApply(collectionName: String, collectionIndexes: Set<DocumentDbIndex>): Observable<DocumentDbIndex> {
-        return getIndexesAppliedInDb(collectionName).map { currentIndexes ->
-            collectionIndexes.filter { !currentIndexes.contains(it.name) }
-        }.flatMapObservable {
-            Observable.fromIterable(it)
-        }
+        return getIndexesAppliedInDb(collectionName)
+            .map { currentIndexes ->
+                collectionIndexes.filter { !currentIndexes.contains(it.name) }
+            }.flatMapObservable {
+                Observable.fromIterable(it)
+            }
     }
 
     private fun createIndex(collection: String, index: DocumentDbIndex): Completable {

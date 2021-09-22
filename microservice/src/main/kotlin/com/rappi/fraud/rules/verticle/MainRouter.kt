@@ -171,11 +171,11 @@ class MainRouter @Inject constructor(
     private fun evaluate(ctx: RoutingContext) {
         validateCountry(ctx.pathParam("countryCode"))
         Single.just(ctx.bodyAsJson).flatMap {
-        workflowService.evaluate(
+            workflowService.evaluate(
                 ctx.pathParam("countryCode"),
                 URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
                 ctx.pathParam("version").toLong(), it, isSimulation(ctx)
-        ).timeout(config.timeout, TimeUnit.MILLISECONDS)
+            ).timeout(config.timeout, TimeUnit.MILLISECONDS)
         }.subscribe({
             ctx.ok(JsonObject.mapFrom(it).toString())
         }, { cause ->
