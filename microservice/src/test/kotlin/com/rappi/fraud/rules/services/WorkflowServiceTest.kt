@@ -1,12 +1,6 @@
 package com.rappi.fraud.rules.services
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.reset
-import com.nhaarman.mockito_kotlin.times
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.EventData
 import com.rappi.fraud.rules.entities.ActivateRequest
@@ -693,7 +687,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any()))
             .thenReturn(Single.just(listOf()))
 
         service.getEvaluationOrderListHistory(request)
@@ -709,7 +703,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any()))
             .then { Single.error<Exception>(RuntimeException()) }
 
         service.getEvaluationOrderListHistory(request)
@@ -725,7 +719,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any()))
             .then { Single.error<Exception>(NoRiskDetailDataWasFound()) }
 
         service.getEvaluationOrderListHistory(request)

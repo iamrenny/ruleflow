@@ -155,4 +155,24 @@ class DocumentDbDataRepositoryTests : BaseTest() {
                     .assertValue { it.isEmpty() }
             }
     }
+
+    @Test
+    fun `Finding order information with countryCode workflow query`() {
+        val json = getSeedAsJsonObject("simulate_workflow.json")
+
+        val data = EventData(
+            id = "3",
+            request = json,
+            response = JsonObject().put("response", "OK"),
+            countryCode = "dev",
+            workflowName = "create_order"
+        )
+
+        repository.saveEventData(data)
+            .doOnSuccess {
+                repository.findInList(listOf("3"), "create_order", "dev").test()
+                    .await()
+                    .assertValue { it.isNotEmpty() }
+            }
+    }
 }

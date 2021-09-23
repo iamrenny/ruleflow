@@ -486,7 +486,7 @@ class MainRouter @Inject constructor(
         val country = ctx.request().getParam("country")
         val workflow = ctx.request().getParam("workflow")
 
-        request = request.copy(workflowName = workflow, countryCode = country)
+        request = request.copy(workflowName = workflow, countryCode = country?.toLowerCase())
 
         workflowService.getEvaluationOrderListHistory(request).subscribe({
             ctx.response().putHeader("content-type", "application/json; charset=utf-8")

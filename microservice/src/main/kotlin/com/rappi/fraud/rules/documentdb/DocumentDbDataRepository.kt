@@ -138,7 +138,11 @@ class DocumentDbDataRepository @Inject constructor(
             }
     }
 
-    fun findInList(riskDetailIds: List<String>, workflowName: String? = null): Single<List<RiskDetail>> {
+    fun findInList(
+        riskDetailIds: List<String>,
+        workflowName: String? = null,
+        countryCode: String? = null
+    ): Single<List<RiskDetail>> {
         val batchSize = 500
 
         logger.info("FindInValues total length: ${riskDetailIds.size}")
@@ -157,8 +161,11 @@ class DocumentDbDataRepository @Inject constructor(
         return (riskDetailIds.windowed(riskDetailIds.size, batchSize, false))
             .map {
                 logger.info("FindInValues docdb call size: ${it.size}")
+
+                val referenceQuery = "\"reference_id\" : { \"\$in\" : $orderListAsString }"
                 val workflowQuery = if (workflowName.isNullOrBlank()) "" else ", \"workflow_name\": { \"\$eq\" : \"$workflowName\" }"
-                val query = JsonObject("{\"reference_id\" : { \"\$in\" : $orderListAsString }$workflowQuery}")
+                val countryCodeQuery = if (countryCode.isNullOrBlank()) "" else ", \"country_code\": { \"\$eq\" : \"$countryCode\" }"
+                val query = JsonObject("{$referenceQuery$workflowQuery$countryCodeQuery}")
                 documentDb.findBatch(config.collection, query, options)
             }.map { single ->
                 single.map { json ->
