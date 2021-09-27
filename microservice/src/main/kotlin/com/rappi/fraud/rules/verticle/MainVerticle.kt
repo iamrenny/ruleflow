@@ -39,8 +39,8 @@ class MainVerticle @Inject constructor(
         val server = vertx.createHttpServer()
         server.requestStream()
             .toFlowable()
-            .onBackpressureBuffer(512) {logger.warn("Buffering requests..")}
-            .onBackpressureDrop {req ->
+            .onBackpressureBuffer(512) { logger.warn("Buffering requests..") }
+            .onBackpressureDrop { req ->
                 logger.warn("Dropping Requests...")
 
                 Grafana.noticeError("Request Dropped")
