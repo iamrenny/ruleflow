@@ -18,7 +18,7 @@ class DocumentDbDataRepositoryTests : BaseTest() {
     @AfterEach
     fun clean() {
         val db = injector.getInstance(DocumentDb::class.java)
-        db.getDelegate().rxDropCollection(repository.collection).blockingGet()
+        db.delegate.rxDropCollection(repository.collection).blockingGet()
     }
 
     @Test

@@ -59,6 +59,7 @@ class ActiveWorkflowRepository @Inject constructor(private val database: Databas
         return if (cached == null) {
             database.get(query, params)
                 .map(::Workflow)
+                .map(Workflow::activate)
                 .firstOrError()
                 .doOnSuccess(::cache)
                 .doAfterTerminate {

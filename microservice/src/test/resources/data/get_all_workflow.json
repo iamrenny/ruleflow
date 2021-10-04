@@ -2,7 +2,7 @@
   {
     "id": 1,
     "version": 1,
-    "name": "Workflow 1",
+    "name": "Workflow 2",
     "countryCode": "co",
     "workflow": "Workflow \"Workflow 1\" ruleset \"test\" \"test\" total >= 100 return allow default block end",
     "userId": "84b22591-7894-4063-943f-511a157409c3",
@@ -13,7 +13,7 @@
   {
     "id": 2,
     "version": 2,
-    "name": "Workflow 1",
+    "name": "Workflow 3",
     "countryCode": "co",
     "workflow": "Workflow \"Workflow 1\" ruleset \"test\" \"test\" total >= 200 return allow default block end",
     "userId": "40a91153-647b-4f67-9096-ed2d5c4cb186",
@@ -24,7 +24,7 @@
   {
     "id": 3,
     "version": 3,
-    "name": "Workflow 1",
+    "name": "Workflow 4",
     "countryCode": "co",
     "workflow": "Workflow \"Workflow 1\" ruleset \"test\" \"test\" total >= 300 return allow default block end",
     "userId": "7b120557-a437-4f55-b218-9da099c9a0b3",

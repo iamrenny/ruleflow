@@ -39,8 +39,6 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
         return config.getJsonObject("documentdb").let { documentDb ->
             DocumentDbProvider.Config(
                 connectionStringWrite = documentDb.getString("CONNECTION_STRING_WRITE").split("?")[0],
-                connectionStringRead = documentDb.getString("CONNECTION_STRING_READ").split("?")[0],
-                maxPoolConnections = documentDb.getString("MAX_CONNECTION_POOL").toInt(),
                 connectTimeout = documentDb.getString("CONNECT_TIMEOUT").toInt()
             )
         }

@@ -24,10 +24,13 @@ import io.vertx.micrometer.backends.BackendRegistries
 import io.vertx.reactivex.core.http.HttpClient
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(VertxExtension::class)
 abstract class BaseTest {
+
+    private val database = injector.getInstance(Database::class.java)
 
     companion object {
 
@@ -78,6 +81,14 @@ abstract class BaseTest {
 
         private fun readFile(file: String) =
                 BaseTest::class.java.classLoader.getResourceAsStream("data/$file")!!.reader().readText()
+    }
+
+    @BeforeEach
+    fun setup() {
+        database.executeDelete("DELETE FROM active_workflows;", listOf())
+            .blockingGet()
+        database.executeDelete("DELETE FROM workflows;", listOf())
+            .blockingGet()
     }
 
     class TestResourcesModule(vertx: io.vertx.reactivex.core.Vertx, config: JsonObject) :

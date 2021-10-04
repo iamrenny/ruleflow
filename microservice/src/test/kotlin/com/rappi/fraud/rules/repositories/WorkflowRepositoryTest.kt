@@ -3,9 +3,10 @@ package com.rappi.fraud.rules.repositories
 import com.rappi.fraud.rules.BaseTest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
+import io.reactivex.Observable
 import io.vertx.core.json.JsonObject
 import java.time.LocalDateTime
-import java.util.UUID
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class WorkflowRepositoryTest : BaseTest() {
@@ -18,7 +19,7 @@ class WorkflowRepositoryTest : BaseTest() {
                 countryCode = "MX",
                 name = "Name",
                 workflowAsString = "Workflow",
-                userId = UUID.randomUUID().toString()
+                userId = "23"
         )
         repository.save(expected)
                 .test()
@@ -48,17 +49,30 @@ class WorkflowRepositoryTest : BaseTest() {
                 active = false
         )
 
-        repository.getWorkflow(
-                countryCode = expected.countryCode!!,
-                name = expected.name,
-                version = expected.version!!
-        )
-                .test()
-                .assertSubscribed()
-                .await()
-                .assertComplete()
-                .assertValue(expected)
-                .dispose()
+        repository.save(expected)
+            .ignoreElement()
+            .andThen(
+                repository.getWorkflow(
+                    countryCode = expected.countryCode!!,
+                    name = expected.name,
+                    version = expected.version!!
+                )
+            )
+
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValue { it ->
+                Assertions.assertEquals(expected.name, it.name)
+                Assertions.assertEquals(expected.version!!, it.version)
+                Assertions.assertEquals(expected.countryCode, it.countryCode)
+                Assertions.assertEquals(expected.workflowAsString, it.workflowAsString)
+                Assertions.assertEquals(expected.userId, it.userId)
+
+                true
+            }
+            .dispose()
     }
 
     @Test
@@ -71,10 +85,20 @@ class WorkflowRepositoryTest : BaseTest() {
                 countryCode = expected[0].countryCode!!,
                 name = expected[0].name
         )
-        repository.getWorkflowsByCountryAndName(request)
-                .test()
-                .assertSubscribed()
-                .await()
-                .assertValueSequence(expected.sortedByDescending { it.id })
+
+        Observable.fromIterable(expected)
+            .flatMapCompletable {
+                repository.save(it)
+                    .ignoreElement()
+            }
+            .andThen(repository.getWorkflowsByCountryAndName(request))
+            .toList()
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertValue { it ->
+                it.all { it is Workflow }
+            }
+            .assertComplete()
     }
 }

@@ -22,6 +22,25 @@ services:
       - MONGODB_USERNAME=fraud_rules_engine
       - MONGODB_PASSWORD=fraud_rules_engine
       - MONGODB_DATABASE=fraud_rules_engine
+      - ALLOW_EMPTY_PASSWORD=yes
       - MONGODB_PORT_NUMBER=27018
+      - MONGODB_REPLICA_SET_NAME=rs0
+      - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      - MONGODB_ROOT_PASSWORD=replicasetkey123
+      - REDIS_REPLICATION_MODE=master
     ports:
       - "27018:27018"
+  mongodb-secondary:
+    image: 'bitnami/mongodb:4.2.8'
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
+      - MONGODB_REPLICA_SET_MODE=secondary
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27018
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=replicasetkey123
+      - MONGODB_REPLICA_SET_NAME=rs0
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123

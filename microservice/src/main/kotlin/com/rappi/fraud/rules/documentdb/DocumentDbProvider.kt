@@ -14,29 +14,19 @@ class DocumentDbProvider @Inject constructor(
     override fun get(): DocumentDb {
         val settingsWrite = JsonObject().apply {
             put("connection_string", config.connectionStringWrite)
-            put("maxPoolSize", config.maxPoolConnections)
             put("connectTimeoutMS", config.connectTimeout)
             put("useObjectId", true)
+            put("readPreference", "secondaryPreferred")
+            put("replicaSet", "rs0")
         }
 
-        val settingsRead = JsonObject().apply {
-            put("connection_string", config.connectionStringRead)
-            put("maxPoolSize", config.maxPoolConnections)
-            put("connectTimeoutMS", config.connectTimeout)
-            put("useObjectId", true)
-        }
-
-        val mongoWrite = MongoClient.createShared(vertx, settingsWrite)
-        val mongoRead = MongoClient.createShared(vertx, settingsRead)
         return DocumentDb(
-            delegateRead = mongoRead,
-            delegateWrite = mongoWrite)
+            delegate = MongoClient.createShared(vertx, settingsWrite)
+        )
     }
 
     data class Config(
         val connectionStringWrite: String,
-        val connectionStringRead: String,
-        val maxPoolConnections: Int,
         val connectTimeout: Int
     )
 }

@@ -39,15 +39,16 @@ fun main() {
 
     val main = injector.getInstance(MainVerticle::class.java)
 
-    vertx.rxDeployVerticle(main).subscribe({
-        log.info("Application started")
-    }, { cause ->
-        when (cause) {
-            is FlywaySqlException -> log.error("Unable to obtain connection from database", cause.message)
-            else -> log.error("Could not start application", cause)
-        }
-        exitProcess(1)
-    })
+    vertx.rxDeployVerticle(main)
+        .subscribe({
+            log.info("Application started")
+        }, { cause ->
+            when (cause) {
+                is FlywaySqlException -> log.error("Unable to obtain connection from database", cause.message)
+                else -> log.error("Could not start application", cause)
+            }
+            exitProcess(1)
+        })
 }
 
 private fun configPrometheus(): VertxOptions {
