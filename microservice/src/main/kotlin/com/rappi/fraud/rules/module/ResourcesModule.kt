@@ -15,12 +15,12 @@ class ResourcesModule(vertx: Vertx, config: JsonObject) : AbstractModule(vertx, 
 
     override fun configure() {
         super.configure()
-        bind(ActiveWorkflowRepository::class.java).`in`(Singleton::class.java)
-        bind(ActiveWorkflowHistoryRepository::class.java).`in`(Singleton::class.java)
-        bind(WorkflowRepository::class.java).`in`(Singleton::class.java)
-        bind(WorkflowService::class.java).`in`(Singleton::class.java)
-        bind(ListRepository::class.java).`in`(Singleton::class.java)
-        bind(ListHistoryRepository::class.java).`in`(Singleton::class.java)
+        bind(ActiveWorkflowRepository::class.java).asEagerSingleton()
+        bind(ActiveWorkflowHistoryRepository::class.java).asEagerSingleton()
+        bind(WorkflowRepository::class.java).asEagerSingleton()
+        bind(WorkflowService::class.java).asEagerSingleton()
+        bind(ListRepository::class.java).asEagerSingleton()
+        bind(ListHistoryRepository::class.java).asEagerSingleton()
         bind(EventsListener::class.java).asEagerSingleton()
     }
 }

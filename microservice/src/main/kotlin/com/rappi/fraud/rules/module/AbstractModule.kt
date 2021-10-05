@@ -23,15 +23,15 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
 
     override fun configure() {
         bind(Vertx::class.java).toInstance(vertx)
-        bind(MainVerticle::class.java).`in`(Singleton::class.java)
-        bind(MainRouter::class.java).`in`(Singleton::class.java)
+        bind(MainVerticle::class.java).asEagerSingleton()
+        bind(MainRouter::class.java).asEagerSingleton()
         bind(JDBCClient::class.java)
             .toProvider(JdbcClientProvider::class.java)
-            .`in`(Singleton::class.java)
-        bind(DocumentDb::class.java).toProvider(DocumentDbProvider::class.java).`in`(Singleton::class.java)
+            .asEagerSingleton()
+        bind(DocumentDb::class.java).toProvider(DocumentDbProvider::class.java).asEagerSingleton()
 
         val documentDbRepositories = Multibinder.newSetBinder(binder(), DocumentDbRepository::class.java)
-        documentDbRepositories.addBinding().to(DocumentDbDataRepository::class.java)
+        documentDbRepositories.addBinding().to(DocumentDbDataRepository::class.java).asEagerSingleton()
     }
 
     @Provides
