@@ -67,7 +67,7 @@ class DocumentDb @Inject constructor(
 
         val mongoOptions = io.vertx.ext.mongo.FindOptions().apply {
             batchSize = options.batch!!
-            limit = options.limit
+            limit = if (options.limit > 0) options.limit else 0
             if (options.sort != null) {
                 sort = JsonObject().put(options.sort.fieldName, options.sort.sortOrder.order)
             }

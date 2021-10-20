@@ -145,12 +145,9 @@ class DocumentDbDataRepository @Inject constructor(
     ): Single<List<RiskDetail>> {
         val batchSize = 500
 
-        logger.info("FindInValues total length: ${riskDetailIds.size}")
-
         if (riskDetailIds.isEmpty()) return Single.just(emptyList())
 
         val options = FindOptions(
-            limit = riskDetailIds.size,
             batch = batchSize
         )
 
