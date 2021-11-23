@@ -3,7 +3,8 @@ package com.rappi.fraud.rules.parser.visitors
 import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.evaluators.AggregationContextEvaluator
-import com.rappi.fraud.rules.parser.evaluators.BinaryContextEvaluator
+import com.rappi.fraud.rules.parser.evaluators.BinaryAndContextEvaluator
+import com.rappi.fraud.rules.parser.evaluators.BinaryOrContextEvaluator
 import com.rappi.fraud.rules.parser.evaluators.ComparatorContextEvaluator
 import com.rappi.fraud.rules.parser.evaluators.ContextEvaluator
 import com.rappi.fraud.rules.parser.evaluators.DateDiffContextEvaluator
@@ -28,7 +29,6 @@ class Visitor(
         val ctx = tree as ParserRuleContext
 
         val condition = when (ctx) {
-            is ANAParser.BinaryContext -> BinaryContextEvaluator()
             is ANAParser.ComparatorContext -> ComparatorContextEvaluator()
             is ANAParser.AggregationContext -> AggregationContextEvaluator()
             is ANAParser.MathMulContext -> MathMulContextEvaluator()
@@ -40,7 +40,9 @@ class Visitor(
             is ANAParser.DateDiffContext -> DateDiffContextEvaluator()
             is ANAParser.ListContext -> ListContextEvaluator()
             is ANAParser.UnaryContext -> UnaryContextEvaluator()
-            else -> throw IllegalArgumentException("Context not supported: ${ctx.javaClass}")
+            is ANAParser.BinaryAndContext -> BinaryAndContextEvaluator()
+            is ANAParser.BinaryOrContext -> BinaryOrContextEvaluator()
+            else -> throw IllegalArgumentException("Operation not supported: ${ctx.javaClass}")
         } as ContextEvaluator<ParserRuleContext>
 
         return condition.evaluate(ctx, this)

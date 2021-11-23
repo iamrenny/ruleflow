@@ -70,7 +70,8 @@
         (L_BRACE predicate = expr R_BRACE | L_PAREN R_PAREN)                                                #aggregation
  | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left = expr COMMA right = expr R_PAREN                     #dateDiff
  | op = ABS L_PAREN left = expr R_PAREN                                                                     #unary
- | left = expr op = (K_AND | K_OR) right = expr                                                             #binary
+ | left = expr op = K_AND right = expr                                                                      #binaryAnd
+ | left = expr op = K_OR right = expr                                                                       #binaryOr
  | validProperty                                                                                            #property
  | validValue                                                                                               #value
  ;
