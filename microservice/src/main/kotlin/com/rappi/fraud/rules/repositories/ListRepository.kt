@@ -24,10 +24,6 @@ class ListRepository @Inject constructor(
     private val logger by LoggerDelegate()
     private val enabledListCache: MutableMap<String, Set<String>> = mutableMapOf()
 
-    init {
-        cacheUpdateAll()
-    }
-
     fun createList(listName: String, description: String, createdBy: String): Single<RulesEngineList> {
         val insert = """INSERT INTO lists (list_name, description, created_by, status, last_updated_by) 
                         VALUES ($1, $2, $3, $4, $5) 
@@ -247,9 +243,9 @@ class ListRepository @Inject constructor(
             })
     }
 
-    fun cacheUpdateAll() {
-        findAll(true)
-            .subscribe()
+    fun cacheUpdateAll(): Completable {
+        return findAll(true)
+            .ignoreElement()
     }
 
     fun cacheRemove(listName: String) {

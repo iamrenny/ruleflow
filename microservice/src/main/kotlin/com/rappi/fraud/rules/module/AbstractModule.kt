@@ -2,7 +2,6 @@ package com.rappi.fraud.rules.module
 
 import com.google.inject.AbstractModule
 import com.google.inject.Provides
-import com.google.inject.Singleton
 import com.google.inject.multibindings.Multibinder
 import com.rappi.fraud.rules.db.JdbcClientProvider
 import com.rappi.fraud.rules.documentdb.DocumentDb

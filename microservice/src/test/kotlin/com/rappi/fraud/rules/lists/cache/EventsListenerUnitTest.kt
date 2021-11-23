@@ -32,7 +32,8 @@ internal class EventsListenerUnitTest {
     @Test
     fun `when instantiating eventsListener must go send SUBSCRIBE operation and observe responses`() {
 
-        target = EventsListener(redis, listRepository)
+        EventsListener(redis, listRepository)
+            .listen()
 
         verify { redisConnection.rxSend(any()) }
         verify { redisConnection.toObservable() }
@@ -45,7 +46,8 @@ internal class EventsListenerUnitTest {
         every { redisConnection.toObservable() } returns Observable.fromIterable(listOf(element))
         every { redis.rxConnect() } returns Single.just(redisConnection)
 
-        target = EventsListener(redis, listRepository)
+        EventsListener(redis, listRepository)
+            .listen()
 
         verify { listRepository.cachePut(15) }
     }
@@ -58,7 +60,8 @@ internal class EventsListenerUnitTest {
 
         every { redisConnection.toObservable() } returns Observable.fromIterable(listOf(element))
 
-        target = EventsListener(redis, listRepository)
+        EventsListener(redis, listRepository)
+            .listen()
 
         verify { listRepository.cacheRemove("test") }
     }
@@ -72,7 +75,8 @@ internal class EventsListenerUnitTest {
 
         every { redis.rxConnect() } returns Single.just(redisConnection)
 
-        target = EventsListener(redis, listRepository)
+        EventsListener(redis, listRepository)
+            .listen()
 
         verify { listRepository.cachePut(15) }
     }

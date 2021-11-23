@@ -17,3 +17,4 @@ out
 
 rules-interpreter/**/gen/*
 rules-interpreter/**/*.class
+/splunk-otel-javaagent.jar

@@ -1,6 +1,5 @@
 package com.rappi.fraud.rules.module
 
-import com.google.inject.Singleton
 import com.rappi.fraud.rules.lists.cache.EventsListener
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository

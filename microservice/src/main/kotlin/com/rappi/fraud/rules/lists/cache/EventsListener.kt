@@ -3,19 +3,20 @@ package com.rappi.fraud.rules.lists.cache
 import com.google.inject.Inject
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
+import io.reactivex.disposables.Disposable
 import io.vertx.reactivex.redis.client.Command
 import io.vertx.reactivex.redis.client.Redis
 import io.vertx.reactivex.redis.client.Request
 import io.vertx.reactivex.redis.client.Response
 
 class EventsListener @Inject constructor(
-    redis: Redis,
-    listRepository: ListRepository
+    val redis: Redis,
+    val listRepository: ListRepository
 ) {
     private val logger by LoggerDelegate()
 
-    init {
-        redis.rxConnect()
+    fun listen(): Disposable {
+        return redis.rxConnect()
             .subscribe { connection ->
                 logger.info("Succesfully connected to Redis for List Events Listener...")
 
