@@ -44,6 +44,28 @@ class DocumentDbDataRepositoryTests : BaseTest() {
     }
 
     @Test
+    fun testSaveCourierEventData() {
+        val json = getSeedAsJsonObject("handshake_workflow.json")
+
+        val data = EventData(
+            request = json,
+            response = JsonObject(),
+            receivedAt = LocalDateTime.now().toString(),
+            countryCode = "co",
+            workflowName = "handshake"
+        )
+
+        repository.saveEventData(data)
+            .test()
+            .await()
+            .assertComplete()
+            .assertValue {
+                Assertions.assertEquals(repository.findReferenceId(data), "13007")
+                it.id!!.isNotBlank()
+            }
+    }
+
+    @Test
     fun testSaveAndFindEventData() {
         val json = getSeedAsJsonObject("simulate_workflow.json")
         val data = EventData(

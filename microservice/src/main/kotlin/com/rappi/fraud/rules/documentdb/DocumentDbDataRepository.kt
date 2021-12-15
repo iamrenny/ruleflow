@@ -181,14 +181,14 @@ class DocumentDbDataRepository @Inject constructor(
 
     private fun searchEntityId(entity: EntityType, request: JsonObject): String {
         val it = request.iterator()
-        while (it.hasNext()) {
+        var entityId = ""
+
+        while (it.hasNext() && entityId.isNullOrBlank()) {
             val next = it.next()
-            when {
-                next.key == entity.description -> return next.value as String
-                else -> return ""
-            }
+            if(next.key == entity.description) { entityId = next.value as String }
         }
-        return ""
+
+        return entityId
     }
 
     private fun requestToSearch(entity: EntityType, request: JsonObject): JsonObject {
@@ -200,8 +200,12 @@ class DocumentDbDataRepository @Inject constructor(
     }
 
     private fun findEntityType(eventData: EventData): EntityType {
+        val isStorekeeperEntityType = eventData.workflowName.startsWith("courier", true) ||
+                eventData.workflowName.startsWith("handshake", true)
+
         return when {
             eventData.workflowName.contains("order") -> EntityType.ORDER
+            isStorekeeperEntityType -> EntityType.STOREKEEPER
             else -> EntityType.USER
         }
     }
@@ -215,7 +219,8 @@ class DocumentDbDataRepository @Inject constructor(
 
 enum class EntityType(val description: String? = null) {
     ORDER("order_id"),
-    USER("user_id");
+    USER("user_id"),
+    STOREKEEPER("storekeeper_id");
 
     override fun toString(): String {
         return name.toLowerCase()
