@@ -16,7 +16,8 @@ data class EventData(
     val receivedAt: String? = null,
     val countryCode: String,
     val workflowName: String,
-    val referenceId: String? = null
+    val referenceId: String? = null,
+    val error: Boolean = false
 )
 
 class DocumentDbDataRepository @Inject constructor(
@@ -71,9 +72,6 @@ class DocumentDbDataRepository @Inject constructor(
                     workflowName = it.getString(WORKFLOW_NAME),
                     referenceId = it.getString(REFERENCE_ID)
                 )
-            }.onErrorReturn {
-                logger.error("$it")
-                eventData
             }.toSingle()
     }
 

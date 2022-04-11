@@ -5,25 +5,26 @@ import com.rappi.fraud.rules.documentdb.DocumentDb
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.EventData
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
+import io.mockk.every
+import io.mockk.mockk
+import io.reactivex.Maybe
+import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import java.time.LocalDateTime
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class DocumentDbDataRepositoryTests : BaseTest() {
 
-    private val repository = injector.getInstance(DocumentDbDataRepository::class.java)
 
-    @AfterEach
-    fun clean() {
-        val db = injector.getInstance(DocumentDb::class.java)
-        db.delegate.rxDropCollection(repository.collection).blockingGet()
-    }
+    private val documentDb = mockk<DocumentDb>(relaxed = true)
+    private val config = mockk<DocumentDbDataRepository.Config>(relaxed = true)
+    private val repository = DocumentDbDataRepository(documentDb,config)
 
     @Test
     fun testSaveEventData() {
         val json = getSeedAsJsonObject("simulate_workflow.json")
+        val jsonResponse = getSeedAsJsonObject("saveEventData.json")
 
         val data = EventData(
             request = json,
@@ -33,6 +34,10 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             workflowName = "login"
         )
 
+        every {
+            documentDb.save(any(),any())
+        } returns Maybe.just(jsonResponse)
+
         repository.saveEventData(data)
             .test()
             .await()
@@ -40,12 +45,14 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             .assertValue {
                 Assertions.assertEquals(repository.findReferenceId(data), "101000004184")
                 it.id!!.isNotBlank()
+                !it.error
             }
     }
 
     @Test
     fun testSaveCourierEventData() {
         val json = getSeedAsJsonObject("handshake_workflow.json")
+        val jsonResponse = getSeedAsJsonObject("saveCourierEvent.json")
 
         val data = EventData(
             request = json,
@@ -55,6 +62,11 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             workflowName = "handshake"
         )
 
+        every {
+            documentDb.save(any(),any())
+        } returns Maybe.just(jsonResponse)
+
+
         repository.saveEventData(data)
             .test()
             .await()
@@ -62,12 +74,14 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             .assertValue {
                 Assertions.assertEquals(repository.findReferenceId(data), "13007")
                 it.id!!.isNotBlank()
+                !it.error
             }
     }
 
     @Test
     fun testSaveAndFindEventData() {
         val json = getSeedAsJsonObject("simulate_workflow.json")
+        val jsonResponse = getSeedAsJsonObject("saveEventData.json")
         val data = EventData(
             request = json,
             response = JsonObject().put("response", "OK"),
@@ -76,16 +90,21 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             workflowName = "login"
         )
 
-        repository.saveEventData(data).flatMap {
-            repository.find(it.id!!)
-        }.test()
-            .await()
-            .assertComplete()
-            .assertValue {
-                data.request == it.request &&
-                        data.response == it.response &&
-                        "101000004184" == it.referenceId
+        every {
+            documentDb.save(any(),any())
+        } returns Maybe.just(jsonResponse)
+        every {
+            documentDb.find(any(),any(),any())
+        } returns Single.just(listOf(jsonResponse))
+
+        repository.saveEventData(data).flatMap { resultSave ->
+            repository.find(resultSave.id!!).map{ response->
+                response.request
             }
+        }.test().assertComplete().assertValue {
+            data.request == it
+        }
+
     }
 
     @Test
@@ -96,6 +115,9 @@ class DocumentDbDataRepositoryTests : BaseTest() {
             countryCode = "co",
             workflowName = "login"
         )
+        every {
+            documentDb.findBatch(any(),any(),any())
+        } returns Single.just(emptyList())
 
         repository.getRiskDetailHistoryFromDocDb(data).test().await().assertComplete().assertValue {
             it.isEmpty()
@@ -132,6 +154,10 @@ class DocumentDbDataRepositoryTests : BaseTest() {
 
     @Test
     fun tryingToFindNonExistingRequestIdWillFail() {
+
+        every {
+            documentDb.find(any(),any(),any())
+        } returns Single.error(DocumentDbDataRepository.NoRequestIdDataWasFound())
 
         repository.find("121qwa23").test()
             .await()

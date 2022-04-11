@@ -10,5 +10,6 @@ data class WorkflowResult(
     val actionsWithParams: Map<String, Map<String, String>> = emptyMap(),
     val workflowInfo : WorkflowInfo? = null,
     val requestId: String? = null,
-    val actionsList: List<Action> = emptyList()
+    val actionsList: List<Action> = emptyList(),
+    val error: Boolean = false
 )

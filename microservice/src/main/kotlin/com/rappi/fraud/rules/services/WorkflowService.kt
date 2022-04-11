@@ -231,6 +231,12 @@ class WorkflowService @Inject constructor(
                 requestId = it.id,
                 workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name)
             )
+        }.onErrorReturn {
+            logger.error(it.message, it)
+            result.copy(
+                error = true,
+                workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name)
+            )
         }
     }
 
