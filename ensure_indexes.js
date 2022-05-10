@@ -1,0 +1,1 @@
+db.workflow_responses.ensureIndex({country_code: 1, workflow_name: 1, received_at: -1}, {background: true})

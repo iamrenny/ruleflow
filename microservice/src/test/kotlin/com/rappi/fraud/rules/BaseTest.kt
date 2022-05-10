@@ -85,6 +85,8 @@ abstract class BaseTest {
 
     @BeforeEach
     fun setup() {
+        database.executeDelete("DELETE FROM active_workflows_history;", listOf())
+            .blockingGet()
         database.executeDelete("DELETE FROM active_workflows;", listOf())
             .blockingGet()
         database.executeDelete("DELETE FROM workflows;", listOf())

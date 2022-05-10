@@ -1,8 +1,7 @@
 package com.rappi.fraud.rules.parser.evaluators.context
 
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
-import com.rappi.fraud.rules.parser.vo.WorkflowInfo
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -19,7 +18,7 @@ internal class PropertyContextEvaluatorUnitTest {
         val request = mapOf("not_a_user_id" to 10)
         val result = WorkflowEvaluator(workflow).evaluate(request)
         assertEquals(
-            WorkflowResult(
+            WorkflowEvaluatorResult(
                 workflow = "test",
                 ruleSet = "default",
                 rule = "default",
@@ -42,7 +41,7 @@ internal class PropertyContextEvaluatorUnitTest {
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
         assertEquals(
-            WorkflowResult(
+            WorkflowEvaluatorResult(
                 workflow = "test",
                 ruleSet = "dummy",
                 rule = "rule_a",
@@ -77,7 +76,7 @@ internal class PropertyContextEvaluatorUnitTest {
         )
         val result = WorkflowEvaluator(workflow).evaluate(request)
         assertEquals(
-            WorkflowResult(
+            WorkflowEvaluatorResult(
                 workflow = "test",
                 ruleSet = "dummy",
                 rule = "rule_a",
@@ -112,7 +111,7 @@ internal class PropertyContextEvaluatorUnitTest {
         )
         val result = WorkflowEvaluator(workflow).evaluate(request)
         assertEquals(
-            WorkflowResult(
+            WorkflowEvaluatorResult(
                 workflow = "test",
                 ruleSet = "default",
                 rule = "default",
@@ -148,7 +147,7 @@ internal class PropertyContextEvaluatorUnitTest {
         val result = WorkflowEvaluator(workflow).evaluate(request)
 
         assertEquals(
-            WorkflowResult(
+            WorkflowEvaluatorResult(
                 workflow = "test",
                 ruleSet = "default",
                 rule = "default",

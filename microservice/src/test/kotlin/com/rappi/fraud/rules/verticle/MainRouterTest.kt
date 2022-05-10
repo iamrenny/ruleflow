@@ -3,12 +3,14 @@ package com.rappi.fraud.rules.verticle
 import com.nhaarman.mockito_kotlin.reset
 import com.nhaarman.mockito_kotlin.whenever
 import com.rappi.fraud.rules.BaseTest
+import com.rappi.fraud.rules.dto.WorkflowResultDTO
+import com.rappi.fraud.rules.dto.WorkflowResultDTOMapper
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.Workflow
-import com.rappi.fraud.rules.parser.vo.WorkflowInfo
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.fraud.rules.entities.WorkflowInfo
+import com.rappi.fraud.rules.entities.WorkflowResult
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.reactivex.Observable
@@ -246,11 +248,12 @@ class MainRouterTest : BaseTest() {
         val data = JsonObject()
 
         val expected = WorkflowResult(
+            requestId = "12",
             workflow = "Workflow 1",
             ruleSet = "test",
             rule = "test",
             risk = "block",
-            workflowInfo = WorkflowInfo("1", "Workflow 1")
+            workflowInfo = WorkflowInfo("CO", "1", "Workflow 1")
         )
 
         whenever(
@@ -278,9 +281,9 @@ class MainRouterTest : BaseTest() {
                 .subscribe {
                     Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
                     it.bodyHandler { body ->
-                        val response = body.toJsonObject().mapTo(WorkflowResult::class.java)
+                        val response = body.toJsonObject().mapTo(WorkflowResultDTO ::class.java)
                         try {
-                            Assertions.assertEquals(expected, response)
+                            Assertions.assertEquals(WorkflowResultDTOMapper().map(expected), response)
                             testContext.completeNow()
                         } catch (ex: AssertionError) {
                             testContext.failNow(ex)
@@ -297,11 +300,12 @@ class MainRouterTest : BaseTest() {
         val data = JsonObject()
 
         val expected = WorkflowResult(
+            requestId = "test",
             workflow = "Workflow 1",
             ruleSet = "test",
             rule = "test",
             risk = "allow",
-            workflowInfo = WorkflowInfo("1", "Workflow 1")
+            workflowInfo = WorkflowInfo("CO", "1", "Workflow 1")
         )
 
         whenever(
@@ -324,9 +328,9 @@ class MainRouterTest : BaseTest() {
                 .subscribe {
                     Assertions.assertEquals(HttpResponseStatus.OK.code(), it.statusCode())
                     it.bodyHandler { body ->
-                        val response = body.toJsonObject().mapTo(WorkflowResult::class.java)
+                        val response = body.toJsonObject().mapTo(WorkflowResultDTO::class.java)
                         try {
-                            Assertions.assertEquals(expected, response)
+                            Assertions.assertEquals(WorkflowResultDTOMapper().map(expected), response)
                             testContext.completeNow()
                         } catch (ex: AssertionError) {
                             testContext.failNow(ex)

@@ -1,7 +1,6 @@
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.vo.Action
-import com.rappi.fraud.rules.parser.vo.WorkflowInfo
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -18,13 +17,18 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
-                actionsList = listOf(Action("manual_review", emptyMap()))
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
+            actionsList = listOf(Action("manual_review", emptyMap()))
         )
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
     }
 
     @Test
@@ -38,13 +42,18 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
-                actionsList = listOf(Action("manual_review", emptyMap()))
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
+            actionsList = listOf(Action("manual_review", emptyMap()))
         )
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
     }
 
     @Test
@@ -58,13 +67,18 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
-                actionsList = listOf(Action("manual_review", emptyMap()))
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review"), actionsWithParams = mapOf("manual_review" to mapOf()),
+            actionsList = listOf(Action("manual_review", emptyMap()))
         )
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
     }
 
     @Test
@@ -78,13 +92,14 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review", "logout_user"),
+            actionsWithParams = mapOf("manual_review" to mapOf(), "logout_user" to mapOf()),
+            actionsList = listOf(Action("manual_review", emptyMap()), Action("logout_user", emptyMap()))
+        )
         Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review", "logout_user"),
-                actionsWithParams = mapOf("manual_review" to mapOf(), "logout_user" to mapOf()),
-                actionsList = listOf(Action("manual_review", emptyMap()), Action("logout_user", emptyMap()))
-            ), result
+            workflowEvaluatorResult, result
         )
     }
 
@@ -99,20 +114,25 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review", "logout_user"),
-                actionsWithParams = mapOf(
-                    "manual_review" to mapOf("test" to "me", "foo" to "bar"),
-                    "logout_user" to mapOf()
-                ),
-                actionsList = listOf(
-                    Action("manual_review", mapOf("test" to "me", "foo" to "bar")),
-                    Action("logout_user", emptyMap())
-                )
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review", "logout_user"),
+            actionsWithParams = mapOf(
+                "manual_review" to mapOf("test" to "me", "foo" to "bar"),
+                "logout_user" to mapOf()
+            ),
+            actionsList = listOf(
+                Action("manual_review", mapOf("test" to "me", "foo" to "bar")),
+                Action("logout_user", emptyMap())
+            )
         )
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
     }
 
     @Test
@@ -126,16 +146,21 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"),
-                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
-                actionsList = listOf(
-                    Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
-                )
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review"),
+            actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
+            actionsList = listOf(
+                Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
+            )
         )
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
     }
 
 
@@ -150,16 +175,21 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"),
-                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
-                actionsList = listOf(
-                    Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
-                )
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review"),
+            actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
+            actionsList = listOf(
+                Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
+            )
         )
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
     }
 
     @Test
@@ -173,16 +203,21 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review"),
-                actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
-                actionsList = listOf(
-                    Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
-                )
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review"),
+            actionsWithParams = mapOf("manual_review" to mapOf("test" to "me", "foo" to "bar")),
+            actionsList = listOf(
+                Action("manual_review", mapOf("test" to "me", "foo" to "bar"))
+            )
         )
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
     }
 
     @Test
@@ -196,20 +231,26 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("manual_review", "apply_restriction"),
-                actionsWithParams = mapOf(
-                    "manual_review" to mapOf("test" to "me", "foo" to "bar"),
-                    "apply_restriction" to mapOf("responsible" to "homer")
-                ),
-                actionsList = listOf(
-                    Action("manual_review", mapOf("test" to "me", "foo" to "bar")),
-                    Action("apply_restriction", mapOf("responsible" to "homer"))
-                )
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
+            actions = setOf("manual_review", "apply_restriction"),
+            actionsWithParams = mapOf(
+                "manual_review" to mapOf("test" to "me", "foo" to "bar"),
+                "apply_restriction" to mapOf("responsible" to "homer")
+            ),
+            actionsList = listOf(
+                Action("manual_review", mapOf("test" to "me", "foo" to "bar")),
+                Action("apply_restriction", mapOf("responsible" to "homer"))
+            )
         )
+
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
     }
 
     @Test
@@ -223,18 +264,27 @@ ActionsTest {
         """
         val request = mapOf("user_id" to 15)
         val result = WorkflowEvaluator(workflow).evaluate(request)
-        Assertions.assertEquals(
-            WorkflowResult(
-                workflow = "test", ruleSet = "dummy", rule = "rule_a", risk = "block",
-                actions = setOf("apply_restriction"),
-                actionsWithParams = mapOf(
-                    "apply_restriction" to mapOf("responsible" to "homer")
-                ),
-                actionsList = listOf(
-                    Action("apply_restriction", mapOf("test" to "me", "foo" to "bar")),
-                    Action("apply_restriction", mapOf("responsible" to "homer"))
-                )
-            ), result
+        val workflowEvaluatorResult = WorkflowEvaluatorResult(
+            workflow = "test",
+            ruleSet = "dummy",
+            rule = "rule_a",
+            risk = "block",
+            actions = setOf("apply_restriction"),
+            actionsWithParams = mapOf(
+                "apply_restriction" to mapOf("responsible" to "homer")
+            ),
+            actionsList = listOf(
+                Action("apply_restriction", mapOf("test" to "me", "foo" to "bar")),
+                Action("apply_restriction", mapOf("responsible" to "homer"))
+            )
         )
+        Assertions.assertEquals(workflowEvaluatorResult.workflow, result.workflow)
+        Assertions.assertEquals(workflowEvaluatorResult.ruleSet, result.ruleSet)
+        Assertions.assertEquals(workflowEvaluatorResult.rule, result.rule)
+        Assertions.assertEquals(workflowEvaluatorResult.risk, result.risk)
+        Assertions.assertEquals(workflowEvaluatorResult.actions, result.actions)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsWithParams, result.actionsWithParams)
+        Assertions.assertEquals(workflowEvaluatorResult.actionsList, result.actionsList)
+
     }
 }

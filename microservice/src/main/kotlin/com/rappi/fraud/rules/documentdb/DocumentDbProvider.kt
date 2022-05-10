@@ -21,7 +21,7 @@ class DocumentDbProvider @Inject constructor(
         }
 
         return DocumentDb(
-            delegate = MongoClient.createShared(vertx, settingsWrite)
+            delegate = MongoClient.create(vertx, settingsWrite)
         )
     }
 

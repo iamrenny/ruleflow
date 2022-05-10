@@ -8,26 +8,27 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyZeroInteractions
 import com.nhaarman.mockito_kotlin.whenever
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
-import com.rappi.fraud.rules.documentdb.EventData
+import com.rappi.fraud.rules.documentdb.WorkflowResponse
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
 import com.rappi.fraud.rules.entities.LockWorkflowEditionRequest
-import com.rappi.fraud.rules.entities.NoRiskDetailDataWasFound
+import com.rappi.fraud.rules.entities.RiskDetail
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.entities.WorkflowEditionResponse
-import com.rappi.fraud.rules.exceptions.BadRequestException
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
+import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
 import com.rappi.fraud.rules.parser.vo.WorkflowInfo
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import io.netty.handler.codec.http.HttpResponseStatus
+import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
@@ -36,6 +37,7 @@ import io.vertx.micrometer.backends.BackendRegistries
 import java.lang.Exception
 import java.time.LocalDateTime
 import java.util.UUID
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -55,8 +57,8 @@ class WorkflowServiceTest {
     fun cleanUp() {
         reset(activeWorkflowRepository, activeWorkflowHistoryRepository, workflowRepository, listRepository)
         BackendRegistries.setupBackend(MicrometerMetricsOptions())
-        whenever(documentDbDataRepository.saveEventData(any())).then {
-            Single.just(it.arguments[0] as EventData)
+        whenever(documentDbDataRepository.save(any())).then {
+            Completable.complete()
         }
     }
 
@@ -466,12 +468,12 @@ class WorkflowServiceTest {
         whenever(activeWorkflowRepository.get(workflow.countryCode!!, workflow.name))
                 .thenReturn(Single.just(workflow))
 
-        val evaluationResult = WorkflowResult(
-                workflow = "Sample",
-                ruleSet = "Sample",
-                rule = "Deny",
-                risk = "allow",
-                workflowInfo = WorkflowInfo("1", "Sample")
+        val evaluationResult = WorkflowEvaluatorResult(
+            workflow = "Sample",
+            ruleSet = "Sample",
+            rule = "Deny",
+            risk = "allow",
+            workflowInfo = WorkflowInfo("CO", "1", "Sample")
         )
 
         val data = JsonObject()
@@ -482,7 +484,12 @@ class WorkflowServiceTest {
                 .assertSubscribed()
                 .await()
                 .assertComplete()
-                .assertValue(evaluationResult)
+                .assertValue {
+                    Assertions.assertEquals("Sample", it.workflow)
+                    Assertions.assertNotNull(it.requestId)
+                    Assertions.assertEquals("allow", it.risk)
+                    true
+                }
                 .dispose()
 
         verify(activeWorkflowRepository, times(1)).get(any(), any())
@@ -504,14 +511,6 @@ class WorkflowServiceTest {
                                 workflowAsString = workflow.workflowAsString
                         )))
 
-        val evaluationResult = WorkflowResult(
-                workflow = "Sample",
-                ruleSet = "Sample",
-                rule = "Deny",
-                risk = "allow",
-                workflowInfo = WorkflowInfo("1", "Sample")
-        )
-
         val data = JsonObject()
                 .put("d", 101)
 
@@ -519,7 +518,14 @@ class WorkflowServiceTest {
                 .test()
                 .assertSubscribed()
                 .await()
-                .assertValue(evaluationResult)
+                .assertValue {
+                    Assertions.assertEquals("Sample", it.workflow)
+                    Assertions.assertEquals("Deny", it.rule)
+
+                    Assertions.assertNotNull(it.requestId)
+                    Assertions.assertEquals("allow", it.risk)
+                    true
+                }
                 .dispose()
 
         verify(activeWorkflowRepository, times(1)).get(any(), any())
@@ -533,28 +539,24 @@ class WorkflowServiceTest {
         whenever(workflowRepository.getWorkflow(workflow.countryCode!!, workflow.name, workflow.version!!))
                 .thenReturn(Single.just(workflow))
 
-        val evaluationResult = WorkflowResult(
-                workflow = "Sample",
-                ruleSet = "Sample",
-                rule = "Deny",
-                risk = "allow",
-                workflowInfo = WorkflowInfo("1", "Sample")
-        )
-
         val data = JsonObject()
                 .put("d", 101)
 
         service.evaluate(countryCode = workflow.countryCode!!, name = workflow.name, version = workflow.version, data = data)
-                .test()
-                .assertSubscribed()
-                .await()
-                .assertComplete()
-                .assertValue(evaluationResult)
-                .dispose()
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValue {
+                Assertions.assertEquals("Sample", it.workflow)
+                Assertions.assertNotNull(it.requestId)
+                Assertions.assertEquals("allow", it.risk)
+                true
+            }.dispose()
 
         verify(workflowRepository, times(1)).getWorkflow(any(), any(), any())
         verifyZeroInteractions(activeWorkflowRepository)
-        verify(documentDbDataRepository, times(1)).saveEventData(any())
+        verify(documentDbDataRepository, times(1)).save(any())
     }
 
     @Test
@@ -564,14 +566,6 @@ class WorkflowServiceTest {
         whenever(workflowRepository.getWorkflow(workflow.countryCode!!, workflow.name, workflow.version!!))
             .thenReturn(Single.just(workflow))
 
-        val evaluationResult = WorkflowResult(
-            workflow = "Sample",
-            ruleSet = "Sample",
-            rule = "Deny",
-            risk = "allow",
-            workflowInfo = WorkflowInfo("1", "Sample")
-        )
-
         val data = JsonObject()
             .put("d", 101)
 
@@ -580,17 +574,22 @@ class WorkflowServiceTest {
             .assertSubscribed()
             .await()
             .assertComplete()
-            .assertValue(evaluationResult)
+            .assertValue {
+                Assertions.assertEquals("Sample", it.workflow)
+                Assertions.assertNotNull(it.requestId)
+                Assertions.assertEquals("allow", it.risk)
+                true
+            }
             .dispose()
 
         verify(workflowRepository, times(1)).getWorkflow(any(), any(), any())
         verifyZeroInteractions(activeWorkflowRepository)
-        verify(documentDbDataRepository, times(0)).saveEventData(any())
+        verify(documentDbDataRepository, times(0)).save(any())
     }
 
     @Test
     fun `get data - getEventData`() {
-        val request = EventData(
+        val request = WorkflowResponse(
             request = JsonObject().put("pepe", "test"),
             response = JsonObject().put("response", "OK"),
             receivedAt = LocalDateTime.now().toString(),
@@ -599,10 +598,10 @@ class WorkflowServiceTest {
             id = "601c0a4bd103cb30b67bb19f"
         )
 
-        documentDbDataRepository.saveEventData(request)
+        documentDbDataRepository.save(request)
 
         whenever(documentDbDataRepository.find(request.id!!))
-            .then { Single.just(request) }
+            .then { Maybe.just(request) }
 
         service.getRequestIdData(request.id!!)
             .test()
@@ -612,18 +611,20 @@ class WorkflowServiceTest {
             .assertNoErrors()
 
         whenever(documentDbDataRepository.find(any()))
-            .then { Single.error<Exception>(DocumentDbDataRepository.NoRequestIdDataWasFound()) }
+            .then { Maybe.empty<WorkflowResponse>() }
 
         service.getRequestIdData("601c0a4bd103cb30b67bb191")
             .test()
             .await()
-            .assertError {
-                it.message.equals("601c0a4bd103cb30b67bb191 was not found")
-            }
+            .assertComplete()
+    }
+
+    @Test
+    fun `given a timeout error when processing result will be a timeout message`() {
 
         whenever(documentDbDataRepository.find(any()))
             .then {
-                Single.error<Exception>(
+                Maybe.error<Exception>(
                     ErrorRequestException(
                         "timeout", ErrorRequestException.ErrorCode.TIMEOUT.toString(),
                         HttpResponseStatus.REQUEST_TIMEOUT.code()
@@ -678,11 +679,13 @@ class WorkflowServiceTest {
             "dev")
 
         whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
-            .then { Single.error<Exception>(NoRiskDetailDataWasFound()) }
+            .then { Single.just(listOf<RiskDetail>()) }
 
         service.getEvaluationHistory(request)
             .test()
-            .assertFailure(BadRequestException::class.java)
+            .assertValue {
+                it.isEmpty()
+            }
             .dispose()
     }
 
@@ -726,11 +729,13 @@ class WorkflowServiceTest {
             "dev")
 
         whenever(documentDbDataRepository.findInList(any(), any(), any()))
-            .then { Single.error<Exception>(NoRiskDetailDataWasFound()) }
+            .then { Single.just(listOf<RiskDetail>()) }
 
         service.getEvaluationOrderListHistory(request)
             .test()
-            .assertFailure(BadRequestException::class.java)
+            .assertValue {
+                it.isEmpty()
+            }
             .dispose()
     }
 

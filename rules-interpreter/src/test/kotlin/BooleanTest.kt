@@ -1,5 +1,5 @@
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -16,7 +16,7 @@ class BooleanTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "default", "default", "allow"),
+            WorkflowEvaluatorResult( "test", "default", "default", "allow"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to false,
@@ -39,7 +39,7 @@ class BooleanTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block"),
+            WorkflowEvaluatorResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to true,
@@ -62,7 +62,7 @@ class BooleanTest {
 
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block"),
+            WorkflowEvaluatorResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to true,
@@ -84,7 +84,7 @@ class BooleanTest {
         """
         val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult("test", "dummy", "item_a", "block"),
+            WorkflowEvaluatorResult("test", "dummy", "item_a", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to true,

@@ -1,16 +1,17 @@
 package com.rappi.fraud.rules.documentdb
 
 import com.google.inject.Inject
-import com.rappi.fraud.rules.entities.DocumentDbIndex
 import com.rappi.fraud.rules.entities.DocumentDbRepository
 import com.rappi.fraud.rules.entities.RiskDetail
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.verticle.LoggerDelegate
+import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 
-data class EventData(
-    val id: String? = null,
+data class WorkflowResponse(
+    val id: String,
     val request: JsonObject,
     val response: JsonObject,
     val receivedAt: String? = null,
@@ -25,8 +26,7 @@ class DocumentDbDataRepository @Inject constructor(
     private val config: Config
 ) : DocumentDbRepository {
 
-    override val collection: String
-    override val indexes: Set<DocumentDbIndex>
+    override val collection: String = config.collection
 
     companion object {
         private const val ID = "_id"
@@ -38,20 +38,11 @@ class DocumentDbDataRepository @Inject constructor(
         private const val REFERENCE_ID = "reference_id"
     }
 
-    init {
-        collection = config.collection
-        indexes = setOf(
-            DocumentDbIndex("received_at_index", RECEIVED_AT),
-            DocumentDbIndex("country_code_index", COUNTRY_CODE),
-            DocumentDbIndex("workflow_name_index", WORKFLOW_NAME),
-            DocumentDbIndex("reference_id_index", REFERENCE_ID)
-        )
-    }
-
     private val logger by LoggerDelegate()
 
-    fun saveEventData(eventData: EventData): Single<EventData> {
+    fun save(eventData: WorkflowResponse): Completable {
         val jsonToPersist = JsonObject().apply {
+            put(ID, eventData.id)
             put(REQUEST, eventData.request.toString())
             put(RESPONSE, eventData.response.toString())
             put(RECEIVED_AT, eventData.receivedAt)
@@ -61,9 +52,17 @@ class DocumentDbDataRepository @Inject constructor(
         }
 
         return documentDb
-            .save(config.collection, jsonToPersist)
+            .insert(config.collection, jsonToPersist)
+    }
+
+    fun find(requestId: String): Maybe<WorkflowResponse> {
+        val query = JsonObject().apply {
+            put(ID, requestId)
+        }
+
+        return documentDb.find(config.collection, query)
             .map {
-                EventData(
+                WorkflowResponse(
                     id = it.getString(ID),
                     request = JsonObject(it.getString(REQUEST)),
                     response = JsonObject(it.getString(RESPONSE)),
@@ -72,33 +71,22 @@ class DocumentDbDataRepository @Inject constructor(
                     workflowName = it.getString(WORKFLOW_NAME),
                     referenceId = it.getString(REFERENCE_ID)
                 )
-            }.toSingle()
+            }
     }
 
-    fun find(requestId: String): Single<EventData> {
+    fun find(country: String, requestId: String): Maybe<WorkflowResponse> {
         val query = JsonObject().apply {
             put(ID, requestId)
         }
 
-        val options = FindOptions(
-            sort = SortOptions(ID, SortOrder.DESCENDING),
-            limit = 1
-        )
-
-        return documentDb.find(config.collection, query, options)
+        return documentDb.find("${country}_${config.collection}", query)
             .map {
-                if (it.isEmpty()) {
-                    logger.error("Trying to find riskDetailData for $ID:$requestId but nothing was found")
-                    throw NoRequestIdDataWasFound()
-                }
-                it.first()
-            }.map {
-                EventData(
+                WorkflowResponse(
                     id = it.getString(ID),
                     request = JsonObject(it.getString(REQUEST)),
                     response = JsonObject(it.getString(RESPONSE)),
+                    countryCode = country,
                     receivedAt = it.getString(RECEIVED_AT),
-                    countryCode = it.getString(COUNTRY_CODE),
                     workflowName = it.getString(WORKFLOW_NAME),
                     referenceId = it.getString(REFERENCE_ID)
                 )
@@ -172,7 +160,7 @@ class DocumentDbDataRepository @Inject constructor(
             }.first()
     }
 
-    fun findReferenceId(eventData: EventData): String {
+    fun findReferenceId(eventData: WorkflowResponse): String {
         val entityType = findEntityType(eventData)
         return searchEntityId(entityType, requestToSearch(entityType, eventData.request))
     }
@@ -183,7 +171,7 @@ class DocumentDbDataRepository @Inject constructor(
 
         while (it.hasNext() && entityId.isNullOrBlank()) {
             val next = it.next()
-            if(next.key == entity.description) { entityId = next.value as String }
+            if (next.key == entity.description) { entityId = next.value as String }
         }
 
         return entityId
@@ -197,7 +185,7 @@ class DocumentDbDataRepository @Inject constructor(
         }
     }
 
-    private fun findEntityType(eventData: EventData): EntityType {
+    private fun findEntityType(eventData: WorkflowResponse): EntityType {
         val isStorekeeperEntityType = eventData.workflowName.startsWith("courier", true) ||
                 eventData.workflowName.startsWith("handshake", true)
 
@@ -212,7 +200,7 @@ class DocumentDbDataRepository @Inject constructor(
         val collection: String
     )
 
-    class NoRequestIdDataWasFound : RuntimeException()
+    class NoRequestIdDataWasFound : RuntimeException("No Request Id was found")
 }
 
 enum class EntityType(val description: String? = null) {

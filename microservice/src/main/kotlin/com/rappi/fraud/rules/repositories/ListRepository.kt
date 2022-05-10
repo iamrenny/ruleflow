@@ -224,7 +224,7 @@ class ListRepository @Inject constructor(
             .doOnError { logger.error("error getting lists", it) }
     }
 
-    fun cacheGet(): Map<String, Set<String>> {
+    fun getCached(): Map<String, Set<String>> {
         return enabledListCache
     }
 

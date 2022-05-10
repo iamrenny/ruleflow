@@ -3,7 +3,6 @@ package com.rappi.fraud.rules.verticle
 import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.SignalFx
-import com.rappi.fraud.rules.documentdb.DocumentDbInit
 import com.rappi.fraud.rules.lists.cache.EventsListener
 import com.rappi.fraud.rules.repositories.Database
 import com.rappi.fraud.rules.repositories.ListRepository
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory
 class MainVerticle @Inject constructor(
     private val router: MainRouter,
     private val migration: FlywayMigration,
-    private val documentDbInit: DocumentDbInit,
     private val listRepository: ListRepository,
     private val eventsListener: EventsListener
 ) :

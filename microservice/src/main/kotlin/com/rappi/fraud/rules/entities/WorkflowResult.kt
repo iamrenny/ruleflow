@@ -1,6 +1,7 @@
-package com.rappi.fraud.rules.parser.vo
+package com.rappi.fraud.rules.entities
 
 data class WorkflowResult(
+    val requestId: String,
     val workflow: String,
     val ruleSet: String? = null,
     val rule: String? = null,
@@ -8,8 +9,7 @@ data class WorkflowResult(
     val actions: Set<String> = emptySet(),
     val warnings: Set<String> = emptySet(),
     val actionsWithParams: Map<String, Map<String, String>> = emptyMap(),
-    val workflowInfo : WorkflowInfo? = null,
-    val requestId: String? = null,
+    val workflowInfo: WorkflowInfo? = null,
     val actionsList: List<Action> = emptyList(),
     val error: Boolean = false
 )

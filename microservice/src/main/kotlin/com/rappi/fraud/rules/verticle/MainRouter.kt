@@ -4,8 +4,8 @@ import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.MetricHandler
 import com.rappi.fraud.rules.apm.SignalFx
-import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
-import com.rappi.fraud.rules.documentdb.EventData
+import com.rappi.fraud.rules.dto.WorkflowResponseDTOMapper
+import com.rappi.fraud.rules.dto.WorkflowResultDTOMapper
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.BatchItemsRequest
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
@@ -34,13 +34,14 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.jar.Attributes.Name.CONTENT_TYPE
 import kotlin.reflect.KClass
+import org.apache.http.entity.ContentType.APPLICATION_JSON
 
 class MainRouter @Inject constructor(
     private val vertx: Vertx,
     private val workflowService: WorkflowService,
     private val listService: ListService,
-    private val documentDbDataRepository: DocumentDbDataRepository,
     val config: Config
 ) {
 
@@ -85,32 +86,42 @@ class MainRouter @Inject constructor(
         router.get("/user/:userId/workflow/:countryCode/:name/:version/edit").handler(::getWorkflowForEdition)
         router.put("/workflow/edit/cancel").handler(::cancelWorkflowEdition)
         router.get("/request-data/:requestId/data").handler(::getRequestData)
+        router.get("/evaluation/:countryCode/:requestId").handler(::getRequestDataByCountryCode)
+
         router.get("/evaluation-history/:date_from/:date_to/:country/:workflow").handler(::getEvaluationHistory)
         router.post("/evaluation-history/request-history-order-list").handler(::getEvaluationOrderListHistory)
-        router.post("/admin/save-request").handler(::saveRequest)
 
         return router
-    }
-
-    private fun saveRequest(ctx: RoutingContext) {
-        validateAddedRequestAuthToken(ctx)
-        documentDbDataRepository.saveEventData(buildEventDataFromContext(ctx.bodyAsJson)).subscribe({
-            ctx.ok(JsonObject().put("request_id", it.id).toString())
-        }, { error ->
-            val message = "Error adding event_data ${ctx.bodyAsJson} into DocDB"
-            logger.error(message, error)
-            ctx.fail(error)
-        })
     }
 
     private fun getRequestData(ctx: RoutingContext) {
         val requestId = ctx.request().getParam("requestId").toString()
 
-        workflowService.getRequestIdData(requestId).subscribe({
-            ctx.response().putHeader("content-type", "application/json; charset=utf-8").end(Json.encode(it).toString())
+        workflowService.getRequestIdData(requestId)
+            .map(WorkflowResponseDTOMapper::map)
+            .subscribe({
+                ctx.response().putHeader(CONTENT_TYPE.toString(), APPLICATION_JSON.withCharset("utf-8").toString()).end(Json.encode(it).toString())
+            }, { ex ->
+                logger.error("Error retrieving risk detail data for $requestId", ex)
+                ctx.fail(ex)
+            }, {
+                ctx.fail(NotFoundException("$requestId was not found", "not.found"))
+            })
+    }
+
+    private fun getRequestDataByCountryCode(ctx: RoutingContext) {
+        val requestId = ctx.request().getParam("requestId").toString()
+        val countryCode = ctx.request().getParam("countryCode").toString()
+
+        workflowService.getRequestIdData(countryCode, requestId)
+            .map(WorkflowResponseDTOMapper::map)
+            .subscribe({
+            ctx.response().putHeader(CONTENT_TYPE.toString(), APPLICATION_JSON.withCharset("utf-8").toString()).end(Json.encode(it).toString())
         }, { ex ->
             logger.error("Error retrieving risk detail data for $requestId", ex)
             ctx.fail(ex)
+        }, {
+            ctx.fail(404)
         })
     }
 
@@ -148,13 +159,15 @@ class MainRouter @Inject constructor(
 
     private fun evaluateActive(ctx: RoutingContext) {
         validateCountry(ctx.pathParam("countryCode"))
-        Single.just(ctx.bodyAsJson).flatMap {
+        Single.just(ctx.bodyAsJson).flatMap { payload ->
             workflowService.evaluate(
                 countryCode = ctx.pathParam("countryCode"),
                 name = URLDecoder.decode(ctx.pathParam("name"), "UTF-8"),
-                data = it
+                data = payload
             ).timeout(config.timeout, TimeUnit.MILLISECONDS)
-        }.subscribe({
+        }
+            .map { WorkflowResultDTOMapper().map(it) }
+            .subscribe({
                 ctx.ok(JsonObject.mapFrom(it).toString())
         }, { cause ->
             logger.error("failed to evaluate workflow with request body ${ctx.bodyAsJson}", cause)
@@ -472,7 +485,7 @@ class MainRouter @Inject constructor(
         val request = RulesEngineHistoryRequest(from, to, workflow, country)
 
         workflowService.getEvaluationHistory(request).subscribe({
-            ctx.response().putHeader("content-type", "application/json; charset=utf-8")
+            ctx.response().putHeader(CONTENT_TYPE.toString(), APPLICATION_JSON.withCharset("utf-8").toString())
                 .end(JsonObject().put("result", it).toString())
         }, { ex ->
             logger.error("Error processing /evaluation-history", ex)
@@ -489,7 +502,7 @@ class MainRouter @Inject constructor(
         request = request.copy(workflowName = workflow, countryCode = country?.toLowerCase())
 
         workflowService.getEvaluationOrderListHistory(request).subscribe({
-            ctx.response().putHeader("content-type", "application/json; charset=utf-8")
+            ctx.response().putHeader(CONTENT_TYPE.toString(), APPLICATION_JSON.withCharset("utf-8").toString())
                 .end(JsonObject().put("result", it).toString())
         }, { ex ->
             logger.error("Error processing /evaluation-history", ex)
@@ -505,7 +518,7 @@ class MainRouter @Inject constructor(
     private fun RoutingContext.ok(chunk: String) =
         response()
             .setStatusCode(HttpResponseStatus.OK.code())
-            .putHeader("Content-Type", "application/json")
+            .putHeader(CONTENT_TYPE.toString(), "application/json")
             .end(chunk)
 
     private fun <T> RoutingContext.bodyAs(clazz: KClass<out Any>): T {
@@ -520,28 +533,6 @@ class MainRouter @Inject constructor(
     private fun validateCountry(country: String) {
         if (!country.matches("[a-z]+".toRegex())) {
             throw ErrorRequestException(country, "Invalid country code", 400)
-        }
-    }
-
-    private fun buildEventDataFromContext(body: JsonObject): EventData {
-        return EventData(
-            "",
-            body.getJsonObject("request"),
-            body.getJsonObject("response"),
-            body.getString("received_at"),
-            body.getString("country_code"),
-            body.getString("workflow_name")
-        )
-    }
-
-    private fun validateAddedRequestAuthToken(ctx: RoutingContext) {
-        val authToken = ctx.request().getHeader("X-Auth-Token")
-        val authenticationKey = config.addRequestToken
-        if (authToken != authenticationKey) {
-            logger.warn("Unauthorized attempt to access to fraud-rules-engine save request to DocDB.")
-            throw ErrorRequestException(
-                "Unauthorized", "error.unauthorized",
-                HttpResponseStatus.UNAUTHORIZED.code())
         }
     }
 

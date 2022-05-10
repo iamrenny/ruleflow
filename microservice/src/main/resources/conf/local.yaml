@@ -18,8 +18,7 @@ redis:
   REDIS_PORT: "6379"
 documentdb:
   CONNECTION_STRING_WRITE: "mongodb://fraud_rules_engine:fraud_rules_engine@mongodb:27018/fraud_rules_engine?replicaSet=rs0"
-  CONNECTION_STRING_READ: "mongodb://fraud_rules_engine:fraud_rules_engine@mongodb:27018/fraud_rules_engine?replicaSet=rs0"
   MAX_CONNECTION_POOL: "10"
   CONNECT_TIMEOUT: "5000"
   COLLECTIONS:
-    REQUEST_DATA: "request_data"
+    REQUEST_DATA: "workflow_responses"

@@ -1,6 +1,5 @@
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
-import com.rappi.fraud.rules.parser.vo.WorkflowInfo
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -49,7 +48,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_TODAY,
                                     CREDIT_CARD_ADDED_TODAY
                             )),
-                        WorkflowResult(
+                        WorkflowEvaluatorResult(
                             workflow = "add_card",
                             ruleSet = "default",
                             rule = "default",
@@ -75,7 +74,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_TODAY,
                                     CREDIT_CARD_ADDED_TODAY
                             )),
-                            WorkflowResult(
+                            WorkflowEvaluatorResult(
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per day",
@@ -107,7 +106,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_LAST_7_DAYS,
                                     CREDIT_CARD_ADDED_LAST_7_DAYS
                             )),
-                            WorkflowResult(
+                            WorkflowEvaluatorResult(
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per week",
@@ -139,7 +138,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     CREDIT_CARD_ADDED_LAST_30_DAYS,
                                     CREDIT_CARD_ADDED_LAST_30_DAYS
                             )),
-                            WorkflowResult(
+                            WorkflowEvaluatorResult(
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per month",
@@ -152,7 +151,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
 
     @ParameterizedTest
     @MethodSource("rules")
-    fun test(data: Map<String, Any>, expected: WorkflowResult) {
+    fun test(data: Map<String, Any>, expected: WorkflowEvaluatorResult) {
         val workflow = javaClass.classLoader
                 .getResourceAsStream("samples/workflows/test_add_card.ANA")!!.reader().readText()
         val actual = getEngine(workflow).evaluate(data)

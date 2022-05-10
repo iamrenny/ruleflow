@@ -2,37 +2,37 @@ package com.rappi.fraud.rules.services
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.Grafana
+import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
-import com.rappi.fraud.rules.documentdb.EventData
+import com.rappi.fraud.rules.documentdb.WorkflowResponse
+import com.rappi.fraud.rules.entities.Action
 import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
-import com.rappi.fraud.rules.entities.NoRiskDetailDataWasFound
 import com.rappi.fraud.rules.entities.RiskDetail
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
 import com.rappi.fraud.rules.entities.Workflow
 import com.rappi.fraud.rules.entities.WorkflowEditionResponse
-import com.rappi.fraud.rules.exceptions.BadRequestException
+import com.rappi.fraud.rules.entities.WorkflowInfo
+import com.rappi.fraud.rules.entities.WorkflowResult
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
-import com.rappi.fraud.rules.parser.errors.NotFoundException
-import com.rappi.fraud.rules.parser.vo.WorkflowInfo
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.micrometer.core.instrument.Tag
+import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.micrometer.backends.BackendRegistries
 import java.time.LocalDateTime
-import java.util.concurrent.TimeUnit
+import org.bson.types.ObjectId
 
 class WorkflowService @Inject constructor(
     private val activeWorkflowRepository: ActiveWorkflowRepository,
@@ -104,50 +104,45 @@ class WorkflowService @Inject constructor(
         name: String,
         version: Long? = null,
         data: JsonObject,
-        isSimulation: Boolean? = false
+        isSimulation: Boolean = false
     ): Single<WorkflowResult> {
-        val startTimeInMillis = System.currentTimeMillis()
         return getWorkflow(countryCode, name, version)
-            .flatMap { workflow ->
-                Single.just(workflow.evaluator.evaluate(data.map, listRepository.cacheGet()))
-                    .flatMap { result ->
-                        if (isSimulation!!) {
-                            Single.just(
-                                result.copy(
-                                    workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name)
-                                )
-                            )
-                        } else {
-                            val resultWithVersion = result.copy(
-                                workflowInfo = WorkflowInfo(
-                                    version = workflow.name,
-                                    workflowName = workflow.version?.toString() ?: "active"
-                                )
-                            )
-                            saveDataInDocDBandReturnWorkflowResult(data, resultWithVersion, workflow)
-                        }
-                    }
-                    .doOnSuccess { result ->
-                        result.warnings.forEach { warning ->
-                            BackendRegistries.getDefaultNow().counter(
-                                "fraud.rules.engine.workflows.warnings",
-                                listOf(
-                                    Tag.of("workflow", result.workflow),
-                                    Tag.of("workflow_country", workflow.countryCode!!),
-                                    Tag.of("workflow_version", workflow.version?.toString() ?: "active"),
-                                    Tag.of("warning", warning)
-                                )
-                            ).increment()
-                        }
-                    }
-            }
-            .doAfterTerminate {
-                BackendRegistries.getDefaultNow().timer(
-                    "fraud.rules.engine.workflowService.evaluate",
-                    "countryCode", countryCode,
-                    "workflow", name
+            .map { workflow ->
+                val result = workflow.evaluator.evaluate(data.map, listRepository.getCached())
+
+                WorkflowResult(
+                    requestId = ObjectId.get().toHexString(),
+                    workflowInfo = WorkflowInfo(workflow.countryCode!!, workflow.version.toString(), workflow.name),
+                    workflow = name,
+                    rule = result.rule,
+                    ruleSet = result.ruleSet,
+                    risk = result.risk,
+                    actionsWithParams = result.actionsWithParams,
+                    actions = result.actions,
+                    warnings = result.warnings,
+                    actionsList = result.actionsList.map { action -> Action(action.name, action.params) },
+                    error = result.error
                 )
-                    .record(System.currentTimeMillis() - startTimeInMillis, TimeUnit.MILLISECONDS)
+            }
+            .doOnSuccess { result ->
+                if (!isSimulation) {
+                    val workflowResponse = WorkflowResponse(
+                        id = result.requestId,
+                        request = data,
+                        response = JsonObject.mapFrom(result),
+                        receivedAt = LocalDateTime.now().toString(),
+                        countryCode = countryCode,
+                        workflowName = name
+                    )
+
+                    Grafana.warn(result.warnings, result.workflow, version?.toString() ?: "active", countryCode)
+
+                    documentDbDataRepository.save(workflowResponse)
+                        .subscribe({}, {
+                            SignalFx.noticeError("Could not save workflow event to to collection in ${workflowResponse.countryCode}", it)
+                            logger.error("Could not save workflow event for ${workflowResponse.id} to collection in ${workflowResponse.countryCode}", it)
+                        })
+                }
             }
     }
 
@@ -214,61 +209,20 @@ class WorkflowService @Inject constructor(
         return workFlowEditionService.cancelWorkflowEdition(request.countryCode, request.workflowName, request.user)
     }
 
-    private fun saveDataInDocDBandReturnWorkflowResult(
-        data: JsonObject,
-        result: WorkflowResult,
-        workflow: Workflow
-    ): Single<WorkflowResult> {
-        val eventData = EventData(
-            request = data,
-            response = JsonObject.mapFrom(result),
-            receivedAt = LocalDateTime.now().toString(),
-            countryCode = workflow.countryCode!!,
-            workflowName = workflow.name
-        )
-        return documentDbDataRepository.saveEventData(eventData).map {
-            result.copy(
-                requestId = it.id,
-                workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name)
-            )
-        }.onErrorReturn {
-            logger.error(it.message, it)
-            result.copy(
-                error = true,
-                workflowInfo = WorkflowInfo(workflow.version?.toString() ?: "active", workflow.name)
-            )
-        }
+    fun getRequestIdData(requestId: String): Maybe<WorkflowResponse> {
+        return documentDbDataRepository
+            .find(requestId)
     }
 
-    fun getRequestIdData(requestId: String): Single<EventData> {
-        return documentDbDataRepository.find(requestId).onErrorResumeNext {
-            if (it is DocumentDbDataRepository.NoRequestIdDataWasFound) {
-                Single.error(NotFoundException("$requestId was not found", "not.found"))
-            } else {
-                Single.error(it)
-            }
-        }
+    fun getRequestIdData(country: String, requestId: String): Maybe<WorkflowResponse> {
+        return documentDbDataRepository.find(country, requestId)
     }
 
     fun getEvaluationHistory(request: RulesEngineHistoryRequest): Single<List<RiskDetail>> {
         return documentDbDataRepository.getRiskDetailHistoryFromDocDb(request)
-            .onErrorResumeNext {
-                if (it is NoRiskDetailDataWasFound) {
-                    Single.error(BadRequestException("$request was not found", "bad.request"))
-                } else {
-                    Single.error(it)
-                }
-            }
     }
 
     fun getEvaluationOrderListHistory(request: RulesEngineOrderListHistoryRequest): Single<List<RiskDetail>> {
         return documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode)
-            .onErrorResumeNext {
-                if (it is NoRiskDetailDataWasFound) {
-                    Single.error(BadRequestException("$request was not found", "bad.request"))
-                } else {
-                    Single.error(it)
-                }
-            }
     }
 }

@@ -5,7 +5,7 @@ import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.visitors.GrammarVisitor
 import com.rappi.fraud.rules.parser.visitors.RulesetVisitor
 import com.rappi.fraud.rules.parser.listeners.ErrorListener
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 
@@ -22,7 +22,7 @@ class WorkflowEvaluator(val workflow: String) {
         tree = parser.parse()
     }
 
-    fun evaluate(request: Map<String, Any>, list: Map<String, Set<String>>  = mapOf()): WorkflowResult {
+    fun evaluate(request: Map<String, Any>, list: Map<String, Set<String>>  = mapOf()): WorkflowEvaluatorResult {
         return RulesetVisitor(request, list)
             .visit(tree)
     }

@@ -5,18 +5,17 @@ import com.rappi.fraud.analang.ANAParser
 import com.rappi.fraud.rules.parser.errors.PropertyNotFoundException
 import com.rappi.fraud.rules.parser.removeSingleQuote
 import com.rappi.fraud.rules.parser.vo.Action
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
 import org.slf4j.LoggerFactory
-import java.lang.Exception
 
-class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<String, Set<String>>) : ANABaseVisitor<WorkflowResult>() {
+class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<String, Set<String>>) : ANABaseVisitor<WorkflowEvaluatorResult>() {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    override fun visitParse(ctx: ANAParser.ParseContext): WorkflowResult {
+    override fun visitParse(ctx: ANAParser.ParseContext): WorkflowEvaluatorResult {
         return visitWorkflow(ctx.workflow())
     }
 
-    override fun visitWorkflow(ctx: ANAParser.WorkflowContext): WorkflowResult {
+    override fun visitWorkflow(ctx: ANAParser.WorkflowContext): WorkflowEvaluatorResult {
         val ruleEvaluator = Visitor(data, lists, data)
         val warnings: MutableSet<String> = mutableSetOf()
 
@@ -26,51 +25,53 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                     .forEach { rule ->
                         try {
                             val visitedRule = ruleEvaluator.visit(rule.expr())
-                            if (visitedRule is Boolean) {
-                                if (visitedRule)
-                                    return WorkflowResult(
-                                        workflow = ctx.workflow_name().text.removeSingleQuote(),
-                                        ruleSet = ruleSet.name().text.removeSingleQuote(),
-                                        rule = rule.name().text.removeSingleQuote(),
-                                        risk = rule.result.text,
-                                        warnings = warnings
-                                    ).let {
-                                        if(rule.actions() != null) {
-                                            val actions = ActionsVisitor().visit(rule.actions())
-                                            val actionsList = actions.map { action -> Action(action.first, action.second) }
-                                            val actionsMap = actions.toMap()
+                            if (visitedRule is Boolean && visitedRule) {
+                                val result = WorkflowEvaluatorResult(
+                                    workflow = ctx.workflow_name().text.removeSingleQuote(),
+                                    ruleSet = ruleSet.name().text.removeSingleQuote(),
+                                    rule = rule.name().text.removeSingleQuote(),
+                                    risk = rule.result.text,
+                                    warnings = warnings
+                                )
 
-                                            it.copy(
-                                                actions = actionsMap.keys,
-                                                actionsWithParams = actionsMap,
-                                                actionsList = actionsList
-                                            )
-                                        } else {
-                                            it
-                                        }
+                                return if (rule.actions() == null) {
+                                    result
+                                } else {
+                                    val (actionsList, actionsMap) = visitActions(rule)
 
-                                    }
-                            }
-                        } catch (ex: Exception){
-                            val message = ex.message ?: "Unexpected Exception at ${rule.text}"
-                            when(ex) {
-                                is PropertyNotFoundException -> {
-                                    logger.warn(message)
-                                }
-                                else -> {
-                                    logger.error("Error while evaluating rule ${ctx.workflow_name().text} ${rule.name().text}", ex)
+                                    result.copy(
+                                        actions = actionsMap.keys,
+                                        actionsWithParams = actionsMap,
+                                        actionsList = actionsList
+                                    )
                                 }
                             }
-                            warnings.add(message)
+                        } catch (ex: PropertyNotFoundException) {
+                            logger.warn(ex.message)
+                            warnings.add(ex.message!!)
+                        } catch (ex: Exception) {
+                            logger.error(
+                                "Error while evaluating rule ${ctx.workflow_name().text} ${rule.name().text}",
+                                ex
+                            )
+                            warnings.add(ex.message ?: "Unexpected Exception at ${rule.text}")
                         }
                     }
             }
-        return WorkflowResult(
+
+        return WorkflowEvaluatorResult(
             workflow = ctx.workflow_name().text.removeSingleQuote(),
             ruleSet = "default",
             rule = "default",
             risk = ctx.defaultResult.result.text,
             warnings = warnings
         )
+    }
+
+    private fun visitActions(rule: ANAParser.RulesContext): Pair<List<Action>, Map<String, Map<String, String>>> {
+        val actions = ActionsVisitor().visit(rule.actions())
+        val actionsList = actions.map { action -> Action(action.first, action.second) }
+        val actionsMap = actions.toMap()
+        return Pair(actionsList, actionsMap)
     }
 }

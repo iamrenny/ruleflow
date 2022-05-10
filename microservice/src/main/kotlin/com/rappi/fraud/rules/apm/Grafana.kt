@@ -1,5 +1,6 @@
 package com.rappi.fraud.rules.apm
 
+import io.micrometer.core.instrument.Tag
 import io.vertx.micrometer.backends.BackendRegistries
 
 class Grafana {
@@ -38,6 +39,20 @@ class Grafana {
                     "message", "NA",
                     "expected", expected.toString()
             ).increment()
+        }
+
+        fun warn(p: Set<String>, workflowName: String, version: String, country: String) {
+            p.forEach { warning ->
+                BackendRegistries.getDefaultNow().counter(
+                    "fraud.rules.engine.workflows.warnings",
+                    listOf(
+                        Tag.of("workflow", workflowName),
+                        Tag.of("workflow_country", country),
+                        Tag.of("workflow_version", version),
+                        Tag.of("warning", warning)
+                    )
+                ).increment()
+            }
         }
     }
 }

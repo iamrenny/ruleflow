@@ -1,5 +1,6 @@
 package com.rappi.fraud.rules
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -72,5 +73,6 @@ private fun jsonConfig() {
         this.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+            .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
     }
 }
