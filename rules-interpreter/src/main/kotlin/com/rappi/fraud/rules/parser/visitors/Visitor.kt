@@ -16,6 +16,7 @@ import com.rappi.fraud.rules.parser.evaluators.PropertyContextEvaluator
 import com.rappi.fraud.rules.parser.evaluators.UnaryContextEvaluator
 import com.rappi.fraud.rules.parser.evaluators.ValidPropertyContextEvaluator
 import com.rappi.fraud.rules.parser.evaluators.ValueContextEvaluator
+import com.rappi.fraud.rules.parser.evaluators.DayOfWeekContextEvaluator
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 
@@ -42,6 +43,7 @@ class Visitor(
             is ANAParser.UnaryContext -> UnaryContextEvaluator()
             is ANAParser.BinaryAndContext -> BinaryAndContextEvaluator()
             is ANAParser.BinaryOrContext -> BinaryOrContextEvaluator()
+            is ANAParser.DayOfWeekContext -> DayOfWeekContextEvaluator()
             else -> throw IllegalArgumentException("Operation not supported: ${ctx.javaClass}")
         } as ContextEvaluator<ParserRuleContext>
 

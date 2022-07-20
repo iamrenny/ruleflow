@@ -224,6 +224,8 @@ the condition will be evaluated as `false`. The result will be scaled down to 2 
 
 * Absolute value `abs`. Returns the absolute value of a number.
 
+* Day Of Week `dayofweek`. Returns the day of the week value text of a date.
+
 #### Logical Operators
 `AND` Evaluates to true if all operands are true and not NULL, to false if one or more operands are false or null. 
      

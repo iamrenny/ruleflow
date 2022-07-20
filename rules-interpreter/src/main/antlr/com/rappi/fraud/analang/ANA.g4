@@ -74,6 +74,7 @@
  | left = expr op = K_OR right = expr                                                                       #binaryOr
  | validProperty                                                                                            #property
  | validValue                                                                                               #value
+ | op = DAY_OF_WEEK L_PAREN left = expr R_PAREN                                                             #dayOfWeek
  ;
 
  listElems
@@ -144,6 +145,7 @@
  K_AVERAGE: A V E R A G E;
  K_DISTINCT: D I S T I N C T;
  K_NULL: N U L L;
+ DAY_OF_WEEK: 'dayOfWeek' | 'dayofWeek' | 'dayofweek' ;
 
  ID
  : [a-zA-Z_] [a-zA-Z_0-9]*

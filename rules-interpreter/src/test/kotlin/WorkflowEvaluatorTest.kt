@@ -945,5 +945,65 @@ class WorkflowEvaluatorTest {
             )
         )
     }
+
+    @Test
+    fun testDayWeekValueWithDate() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'day_of_week' dayofweek(test) = 'TUESDAY' return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowEvaluatorResult(workflow = "test", ruleSet = "dummy", rule = "day_of_week",  risk = "block"),
+            ruleEngine.evaluate(
+                mapOf("test" to LocalDateTime.parse("2022-07-19T08:31:58.129"))
+            )
+        )
+    }
+
+    @Test
+    fun testDayWeekValueWithString() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'day_of_week' dayofweek(test) = 'WEDNESDAY' return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowEvaluatorResult(workflow = "test", ruleSet = "dummy", rule = "day_of_week",  risk = "block"),
+            ruleEngine.evaluate(
+                mapOf("test" to "2022-07-20T08:31:58.129")
+            )
+        )
+    }
+
+    @Test
+    fun `test DayWeek value with numerical fails`() {
+        val testNumeric = 56
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'day_of_week' dayofweek(test) = 'TUESDAY' return block
+                default allow
+            end
+        """
+
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowEvaluatorResult(workflow = "test", ruleSet = "default", rule = "default",  risk = "allow",
+                warnings = setOf("Text '$testNumeric' could not be parsed at index 0")),
+            ruleEngine.evaluate(
+                mapOf("test" to testNumeric )
+            )
+        )
+    }
+
 }
 
