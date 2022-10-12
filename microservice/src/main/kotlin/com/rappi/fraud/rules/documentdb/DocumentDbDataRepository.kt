@@ -9,6 +9,7 @@ import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
+import java.time.LocalDate
 
 data class WorkflowResponse(
     val id: String,
@@ -160,6 +161,18 @@ class DocumentDbDataRepository @Inject constructor(
             }.first()
     }
 
+    fun removeBatchDocDb(): Completable {
+        val dateLimit = LocalDate.now().minusMonths(config.historyMonths)
+        val query = "{\"${RECEIVED_AT}\" : { \"\$lte\" : \"${dateLimit}\"}}"
+        logger.info("Query: $query")
+
+        return documentDb.removeBatch(
+            config.collection,
+            JsonObject(query)
+        )
+    }
+
+
     fun findReferenceId(eventData: WorkflowResponse): String {
         val entityType = findEntityType(eventData)
         return searchEntityId(entityType, requestToSearch(entityType, eventData.request))
@@ -197,7 +210,8 @@ class DocumentDbDataRepository @Inject constructor(
     }
 
     data class Config(
-        val collection: String
+        val collection: String,
+        val historyMonths: Long
     )
 
     class NoRequestIdDataWasFound : RuntimeException("No Request Id was found")

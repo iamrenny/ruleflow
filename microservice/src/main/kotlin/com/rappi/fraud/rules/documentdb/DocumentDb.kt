@@ -39,6 +39,15 @@ class DocumentDb @Inject constructor(
             .rxFindWithOptions(collection, query, mongoOptions)
             .subscribeOn(Schedulers.io())
     }
+
+    fun removeBatch(collection: String, query: JsonObject): Completable {
+
+        return delegate
+            .rxRemoveDocumentsWithOptions(collection, query,null)
+            .subscribeOn(Schedulers.io())
+            .ignoreElement()
+    }
+
 }
 
 data class FindOptions(

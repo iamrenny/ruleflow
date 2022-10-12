@@ -26,6 +26,7 @@ import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.micrometer.core.instrument.Tag
+import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -224,5 +225,9 @@ class WorkflowService @Inject constructor(
 
     fun getEvaluationOrderListHistory(request: RulesEngineOrderListHistoryRequest): Single<List<RiskDetail>> {
         return documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode)
+    }
+
+    fun deleteDocumentsHistory(): Completable{
+        return documentDbDataRepository.removeBatchDocDb()
     }
 }

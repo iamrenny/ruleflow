@@ -739,6 +739,17 @@ class WorkflowServiceTest {
             .dispose()
     }
 
+    @Test
+    fun testDeleteBatchHistory() {
+        whenever(documentDbDataRepository.removeBatchDocDb()).then {
+            Completable.complete()
+        }
+        service.deleteDocumentsHistory()
+            .test()
+            .assertComplete()
+            .dispose()
+    }
+
     private fun baseWorkflow(): Workflow {
         val request = "workflow 'Sample' ruleset 'Sample' 'Deny' d >= 100 return allow default block end"
         return Workflow(

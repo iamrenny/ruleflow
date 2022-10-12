@@ -90,6 +90,7 @@ class MainRouter @Inject constructor(
 
         router.get("/evaluation-history/:date_from/:date_to/:country/:workflow").handler(::getEvaluationHistory)
         router.post("/evaluation-history/request-history-order-list").handler(::getEvaluationOrderListHistory)
+        router.delete("/evaluation-history").handler(::deleteDocumentsHistory)
 
         return router
     }
@@ -507,6 +508,17 @@ class MainRouter @Inject constructor(
         }, { ex ->
             logger.error("Error processing /evaluation-history", ex)
             ctx.fail(ex)
+        })
+    }
+
+    private fun deleteDocumentsHistory(ctx: RoutingContext) {
+
+        workflowService.deleteDocumentsHistory().subscribe({
+            ctx.ok("")
+        }, { error ->
+            val message = "Error deleting Batch History "
+            logger.error(message, error)
+            ctx.fail(error)
         })
     }
 

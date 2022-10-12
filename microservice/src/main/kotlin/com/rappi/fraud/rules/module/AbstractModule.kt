@@ -48,7 +48,8 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
         return config.getJsonObject("documentdb").let { documentDb ->
             documentDb.getJsonObject("COLLECTIONS").let { collections ->
                 DocumentDbDataRepository.Config(
-                    collection = collections.getString("REQUEST_DATA")
+                    collection = collections.getString("REQUEST_DATA"),
+                    historyMonths = documentDb.getLong("LIMIT_HISTORY_MONTHS")
                 )
             }
         }
