@@ -14,6 +14,7 @@ import com.rappi.fraud.rules.entities.ListStatus
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
+import com.rappi.fraud.rules.entities.GetVersionRequest
 import com.rappi.fraud.rules.errors.ErrorHandler
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.errors.NotFoundException
@@ -68,6 +69,7 @@ class MainRouter @Inject constructor(
         router.get("/workflow/:countryCode/:name/:version").handler(::getWorkflow)
         router.get("/workflow/:countryCode/:name").handler(::getWorkflowsByCountryAndName)
         router.get("/workflow/:countryCode").handler(::getAllWorkflowsByCountry)
+        router.get("/workflow/:country_code/names/:name/versions").handler(::getTheLastWorkflows)
         router.post("/workflow/:countryCode/:name/evaluate").handler(::evaluateActive)
         router.post("/workflow/:countryCode/:name/:version/evaluate").handler(::evaluate)
         router.post("/workflow/:countryCode/:name/:version/activate").handler(::activateWorkflow)
@@ -137,6 +139,26 @@ class MainRouter @Inject constructor(
             }.toString())
         }, { error ->
             val message = "Error getting workflows for '${ctx.pathParam("countryCode")}'"
+            logger.error(message, error)
+            ctx.fail(error)
+        })
+    }
+
+    private fun getTheLastWorkflows(ctx: RoutingContext) {
+        val limit = ctx.request().getParam("limit")?.toLong()?:15
+        Single.just(ctx.pathParams()).map {
+            validateCountry(it["country_code"]!!)
+            GetVersionRequest(
+                countryCode = it["country_code"]!!,
+                name = URLDecoder.decode(it["name"]!!, "UTF-8")!!,
+                number = if (limit > 100) 100 else limit
+            )
+        }.flatMap {
+            workflowService.getTheLastWorkflowVersions(it).toList()
+        }.subscribe({
+            ctx.ok(it.map { w -> JsonObject.mapFrom(w).toString() }.toString())
+        }, { error ->
+            val message = "Error getting workflow version '${ctx.pathParam("name")}' for '${ctx.pathParam("countryCode")}'"
             logger.error(message, error)
             ctx.fail(error)
         })

@@ -2,7 +2,9 @@ package com.rappi.fraud.rules.repositories
 
 import com.google.inject.Inject
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.GetVersionRequest
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.entities.WorkflowVersion
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.micrometer.backends.BackendRegistries
@@ -126,5 +128,28 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
         return database.get(getActiveAndInactiveWorkflows, params).map {
             Workflow(it)
         }
+    }
+
+    fun getTheLastWorkflowVersions(request: GetVersionRequest): Observable<WorkflowVersion> {
+        val getWorkflowsLastVersions = """
+            SELECT w.version,
+                   w.id,
+                   w.created_at,
+                   CASE WHEN aw.workflow_id isnull THEN false ELSE true END AS is_active,
+                   w.user_id        
+            FROM workflows w
+            left JOIN active_workflows aw ON w.id = aw.workflow_id
+            WHERE w.country_code = $1
+              AND w.name = $2
+              ORDER BY version DESC
+             LIMIT $3
+             """
+        val params = listOf(
+            request.countryCode,
+            request.name,
+            request.number
+        )
+        return database.get(getWorkflowsLastVersions, params)
+            .map { WorkflowVersion(it) }
     }
 }

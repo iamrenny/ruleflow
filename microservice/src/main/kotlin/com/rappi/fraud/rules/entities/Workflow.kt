@@ -16,6 +16,12 @@ data class GetAllWorkflowRequest(
     val name: String
 )
 
+data class GetVersionRequest(
+    val countryCode: String,
+    val name: String,
+    val number: Long
+)
+
 data class CreateWorkflowRequest(
     val countryCode: String,
     val workflow: String,

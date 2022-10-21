@@ -15,9 +15,11 @@ import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.entities.WorkflowVersion
 import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.entities.WorkflowResult
+import com.rappi.fraud.rules.entities.GetVersionRequest
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
@@ -98,6 +100,10 @@ class WorkflowService @Inject constructor(
 
     fun getAllWorkflowsByCountry(countryCode: String): Observable<Workflow> {
         return workflowRepository.getAllWorkflowsByCountry(countryCode)
+    }
+
+    fun getTheLastWorkflowVersions(request: GetVersionRequest): Observable<WorkflowVersion> {
+        return workflowRepository.getTheLastWorkflowVersions(request)
     }
 
     fun evaluate(

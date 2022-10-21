@@ -18,6 +18,8 @@ import com.rappi.fraud.rules.entities.RiskDetail
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.entities.WorkflowVersion
+import com.rappi.fraud.rules.entities.GetVersionRequest
 import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
@@ -342,6 +344,31 @@ class WorkflowServiceTest {
                 .assertComplete()
                 .assertValueSet(expected)
                 .dispose()
+    }
+
+    @Test
+    fun testGetLastFifteenVersion() {
+        val base = baseWorkflowVersion()
+
+        val expected = listOf(base, base.copy(id = 13, version = 2))
+
+        val request = GetVersionRequest(
+            countryCode = "co",
+            name = "add_card",
+            number = 10
+        )
+
+        whenever(workflowRepository.getTheLastWorkflowVersions(request))
+            .thenReturn(Observable.merge(expected.map { Observable.just(it) }))
+
+        service
+            .getTheLastWorkflowVersions(request)
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValueSet(expected)
+            .dispose()
     }
 
     @Test
@@ -759,6 +786,16 @@ class WorkflowServiceTest {
                 version = 1,
                 workflowAsString = request,
                 userId = UUID.randomUUID().toString()
+        )
+    }
+
+    private fun baseWorkflowVersion(): WorkflowVersion {
+        return WorkflowVersion(
+            id = 12,
+            version = 1,
+            userId = UUID.randomUUID().toString(),
+            createdAt = LocalDateTime.now(),
+            active = true
         )
     }
 
