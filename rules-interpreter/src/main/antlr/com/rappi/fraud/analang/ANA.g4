@@ -62,7 +62,7 @@
 
  expr
  : L_PAREN expr R_PAREN                                                                                     #parenthesis
- | left = expr op = (MULTIPLY | DIVIDE) right = expr                                                        #mathMul
+ | left = expr op = (MULTIPLY | DIVIDE | MODULO) right = expr                                                        #mathMul
  | left = expr op = (ADD | MINUS) right = expr                                                              #mathAdd
  | left = expr op = (LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right = expr                            #comparator
  | value = expr not = K_NOT? op = (K_CONTAINS | K_IN | K_STARTS_WITH) values = listElems                    #list
@@ -75,6 +75,7 @@
  | validProperty                                                                                            #property
  | validValue                                                                                               #value
  | op = DAY_OF_WEEK L_PAREN left = expr R_PAREN                                                             #dayOfWeek
+ | op = REGEX_STRIP L_PAREN value = validProperty COMMA regex = SQUOTA_STRING R_PAREN                       #regexlike
  ;
 
  listElems
@@ -146,6 +147,9 @@
  K_DISTINCT: D I S T I N C T;
  K_NULL: N U L L;
  DAY_OF_WEEK: 'dayOfWeek' | 'dayofWeek' | 'dayofweek' ;
+ REGEX_STRIP: 'regex_strip' | 'regexStrip' | 'regexstrip';
+ MODULO: '%' | 'mod';
+
 
  ID
  : [a-zA-Z_] [a-zA-Z_0-9]*
