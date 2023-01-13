@@ -9,7 +9,7 @@ import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class WorkflowResponse(
     val id: String,
@@ -162,8 +162,9 @@ class DocumentDbDataRepository @Inject constructor(
     }
 
     fun removeBatchDocDb(): Completable {
-        val dateLimit = LocalDate.now().minusMonths(config.historyMonths)
-        val query = "{\"${RECEIVED_AT}\" : { \"\$lte\" : \"${dateLimit}\"}}"
+        val dateLimit = LocalDateTime.now().minusMonths(config.historyMonths)
+        val query = "{\"${RECEIVED_AT}\" : { \"\$gte\" : \"${dateLimit.toLocalDate()}\" ,  \"\$lte\" : \"${dateLimit.plusHours(((dateLimit.hour % 6) * 5).toLong())}\"}}"
+        logger.info("DateLimit: $dateLimit")
         logger.info("Query: $query")
 
         return documentDb.removeBatch(
