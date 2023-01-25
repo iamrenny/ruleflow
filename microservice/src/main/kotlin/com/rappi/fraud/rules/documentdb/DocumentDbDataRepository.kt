@@ -204,8 +204,8 @@ class DocumentDbDataRepository @Inject constructor(
                 eventData.workflowName.startsWith("handshake", true)
 
         return when {
-            eventData.workflowName.contains("order") -> EntityType.ORDER
             isStorekeeperEntityType -> EntityType.STOREKEEPER
+            eventData.workflowName.contains("order") -> EntityType.ORDER
             else -> EntityType.USER
         }
     }
