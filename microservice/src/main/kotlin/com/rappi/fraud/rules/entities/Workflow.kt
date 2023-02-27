@@ -84,7 +84,8 @@ data class RulesEngineHistoryRequest(
 data class RulesEngineOrderListHistoryRequest(
     val orders: List<String>,
     val workflowName: String,
-    val countryCode: String? = "dev"
+    val countryCode: String? = "dev",
+    val referenceIds: JsonArray
 )
 
 data class WorkflowEditionResponse(
