@@ -47,7 +47,8 @@ data class Workflow(
     @JsonDeserialize(using = LocalDateTimeDeserializer::class)
     @JsonSerialize(using = LocalDateTimeSerializer::class)
     val createdAt: LocalDateTime? = null,
-    val active: Boolean? = null
+    val active: Boolean? = null,
+    val referenceIds: List<String>
 ) {
     constructor(row: Row) : this(
         id = row.getLong("id"),
@@ -58,7 +59,8 @@ data class Workflow(
         userId = row.getString("user_id"),
         createdAt = row.getValue("created_at") as? LocalDateTime,
         lists = listOf<RulesEngineList>(),
-        active = row.getBoolean("is_active")
+        active = row.getBoolean("is_active"),
+        referenceIds = row.getArray("reference_ids").toList<String>()
     )
 
     val evaluator @JsonIgnore get() = WorkflowEvaluator(this.workflowAsString!!)

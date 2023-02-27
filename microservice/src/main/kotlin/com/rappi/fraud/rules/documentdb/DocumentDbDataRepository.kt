@@ -18,7 +18,9 @@ data class WorkflowResponse(
     val receivedAt: String? = null,
     val countryCode: String,
     val workflowName: String,
+    @Deprecated("Consider using referenceIds for multiple values")
     val referenceId: String? = null,
+    val referenceIds: JsonObject,
     val error: Boolean = false
 )
 
@@ -37,6 +39,7 @@ class DocumentDbDataRepository @Inject constructor(
         private const val COUNTRY_CODE = "country_code"
         private const val WORKFLOW_NAME = "workflow_name"
         private const val REFERENCE_ID = "reference_id"
+        private const val REFERENCE_IDS = "reference_ids"
     }
 
     private val logger by LoggerDelegate()
@@ -50,6 +53,7 @@ class DocumentDbDataRepository @Inject constructor(
             put(COUNTRY_CODE, eventData.countryCode)
             put(WORKFLOW_NAME, eventData.workflowName)
             put(REFERENCE_ID, findReferenceId(eventData))
+            put(REFERENCE_IDS, eventData.referenceIds)
         }
 
         return documentDb
@@ -70,7 +74,9 @@ class DocumentDbDataRepository @Inject constructor(
                     receivedAt = it.getString(RECEIVED_AT),
                     countryCode = it.getString(COUNTRY_CODE),
                     workflowName = it.getString(WORKFLOW_NAME),
-                    referenceId = it.getString(REFERENCE_ID)
+                    referenceId = it.getString(REFERENCE_ID),
+                    referenceIds = it.getJsonObject(REFERENCE_IDS)
+
                 )
             }
     }
@@ -89,7 +95,8 @@ class DocumentDbDataRepository @Inject constructor(
                     countryCode = country,
                     receivedAt = it.getString(RECEIVED_AT),
                     workflowName = it.getString(WORKFLOW_NAME),
-                    referenceId = it.getString(REFERENCE_ID)
+                    referenceId = it.getString(REFERENCE_ID),
+                    referenceIds = it.getJsonObject(REFERENCE_IDS)
                 )
             }
     }
@@ -173,6 +180,7 @@ class DocumentDbDataRepository @Inject constructor(
     }
 
 
+    @Deprecated("Use referenceId JsonObject in WorkflowResponse")
     fun findReferenceId(eventData: WorkflowResponse): String {
         val entityType = findEntityType(eventData)
         return searchEntityId(entityType, requestToSearch(entityType, eventData.request))

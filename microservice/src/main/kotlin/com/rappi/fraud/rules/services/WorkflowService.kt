@@ -27,13 +27,11 @@ import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
-import io.micrometer.core.instrument.Tag
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
-import io.vertx.micrometer.backends.BackendRegistries
 import java.time.LocalDateTime
 import org.bson.types.ObjectId
 
@@ -119,7 +117,7 @@ class WorkflowService @Inject constructor(
 
                 WorkflowResult(
                     requestId = ObjectId.get().toHexString(),
-                    workflowInfo = WorkflowInfo(workflow.countryCode!!, workflow.version.toString(), workflow.name),
+                    workflowInfo = WorkflowInfo(workflow.countryCode!!, workflow.version.toString(), workflow.name, workflow.referenceIds),
                     workflow = name,
                     rule = result.rule,
                     ruleSet = result.ruleSet,
@@ -133,13 +131,16 @@ class WorkflowService @Inject constructor(
             }
             .doOnSuccess { result ->
                 if (!isSimulation) {
+                    val referenceIds = getReferenceIdsByWorkflow(result.workflowInfo, data)
+
                     val workflowResponse = WorkflowResponse(
                         id = result.requestId,
                         request = data,
                         response = JsonObject.mapFrom(result),
                         receivedAt = LocalDateTime.now().toString(),
                         countryCode = countryCode,
-                        workflowName = name
+                        workflowName = name,
+                        referenceIds = referenceIds
                     )
 
                     Grafana.warn(result.warnings, result.workflow, version?.toString() ?: "active", countryCode)
@@ -151,6 +152,14 @@ class WorkflowService @Inject constructor(
                         })
                 }
             }
+    }
+
+    private fun getReferenceIdsByWorkflow(workflowInfo: WorkflowInfo?, data: JsonObject): JsonObject {
+        val referenceIds = JsonObject()
+         workflowInfo?.referenceIds?.forEach { name ->
+             referenceIds.put(name, data.getValue(name))
+        }
+        return referenceIds
     }
 
     private fun getWorkflow(
