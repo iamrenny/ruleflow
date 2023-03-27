@@ -28,10 +28,7 @@ import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.micrometer.core.instrument.Tag
-import io.reactivex.Completable
-import io.reactivex.Maybe
-import io.reactivex.Observable
-import io.reactivex.Single
+import io.reactivex.*
 import io.vertx.core.json.JsonObject
 import io.vertx.micrometer.backends.BackendRegistries
 import java.time.LocalDateTime
@@ -226,11 +223,31 @@ class WorkflowService @Inject constructor(
     }
 
     fun getEvaluationHistory(request: RulesEngineHistoryRequest): Single<List<RiskDetail>> {
-        return documentDbDataRepository.getRiskDetailHistoryFromDocDb(request)
+        return if(request.history){
+            documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, request.history)
+                .map {
+                    it.plus(
+                        documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, false)
+                            .blockingGet()
+                    ).toList()
+                }
+        }else{
+            documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, request.history)
+        }
     }
 
     fun getEvaluationOrderListHistory(request: RulesEngineOrderListHistoryRequest): Single<List<RiskDetail>> {
-        return documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode)
+        return if(request.history){
+                documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, request.history)
+                    .map {
+                        it.plus(
+                            documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, false)
+                                .blockingGet()
+                        ).toList()
+                    }
+        }else{
+            documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, request.history)
+        }
     }
 
     fun deleteDocumentsHistory(): Completable{

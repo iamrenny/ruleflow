@@ -22,3 +22,4 @@ documentdb:
   LIMIT_HISTORY_MONTHS: 6
   COLLECTIONS:
     REQUEST_DATA: "request_data"
+    REQUEST_DATA_OLD: "workflow_responses_old"

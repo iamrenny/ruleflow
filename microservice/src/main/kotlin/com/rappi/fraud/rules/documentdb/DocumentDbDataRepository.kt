@@ -95,10 +95,11 @@ class DocumentDbDataRepository @Inject constructor(
     }
 
     fun getRiskDetailHistoryFromDocDb(
-        request: RulesEngineHistoryRequest
+        request: RulesEngineHistoryRequest,
+        history: Boolean = false
     ): Single<List<RiskDetail>> {
         val batchSize = 500
-
+        val collection =  if (history) config.collectionOld else config.collection
         val options = FindOptions(
             batch = batchSize
         )
@@ -112,7 +113,7 @@ class DocumentDbDataRepository @Inject constructor(
         logger.info("Query: $receiveAtQuery$workflowNameQuery$countryCodeQuery")
 
         return documentDb.findBatch(
-            config.collection,
+            collection,
             JsonObject(startQuery + receiveAtQuery + workflowNameQuery + countryCodeQuery + endQuery), options
         )
             .map {
@@ -128,9 +129,11 @@ class DocumentDbDataRepository @Inject constructor(
     fun findInList(
         riskDetailIds: List<String>,
         workflowName: String? = null,
-        countryCode: String? = null
+        countryCode: String? = null,
+        history: Boolean = false
     ): Single<List<RiskDetail>> {
         val batchSize = 500
+        val collection =  if (history) config.collectionOld else config.collection
 
         if (riskDetailIds.isEmpty()) return Single.just(emptyList())
 
@@ -150,7 +153,7 @@ class DocumentDbDataRepository @Inject constructor(
                 val workflowQuery = if (workflowName.isNullOrBlank()) "" else ", \"workflow_name\": { \"\$eq\" : \"$workflowName\" }"
                 val countryCodeQuery = if (countryCode.isNullOrBlank()) "" else ", \"country_code\": { \"\$eq\" : \"$countryCode\" }"
                 val query = JsonObject("{$referenceQuery$workflowQuery$countryCodeQuery}")
-                documentDb.findBatch(config.collection, query, options)
+                documentDb.findBatch(collection, query, options)
             }.map { single ->
                 single.map { json ->
                     json.map { response ->
@@ -212,7 +215,8 @@ class DocumentDbDataRepository @Inject constructor(
 
     data class Config(
         val collection: String,
-        val historyMonths: Long
+        val historyMonths: Long,
+        val collectionOld: String
     )
 
     class NoRequestIdDataWasFound : RuntimeException("No Request Id was found")

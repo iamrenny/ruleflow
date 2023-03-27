@@ -1,12 +1,6 @@
 package com.rappi.fraud.rules.services
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.reset
-import com.nhaarman.mockito_kotlin.times
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.WorkflowResponse
 import com.rappi.fraud.rules.entities.ActivateRequest
@@ -43,6 +37,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.ArgumentMatchers
 
 class WorkflowServiceTest {
 
@@ -673,7 +668,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
             .thenReturn(Single.just(listOf()))
 
         service.getEvaluationHistory(request)
@@ -689,7 +684,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
             .then { Single.error<Exception>(RuntimeException()) }
 
         service.getEvaluationHistory(request)
@@ -705,7 +700,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
             .then { Single.just(listOf<RiskDetail>()) }
 
         service.getEvaluationHistory(request)
@@ -723,7 +718,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))
             .thenReturn(Single.just(listOf()))
 
         service.getEvaluationOrderListHistory(request)
@@ -739,7 +734,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))
             .then { Single.error<Exception>(RuntimeException()) }
 
         service.getEvaluationOrderListHistory(request)
@@ -755,7 +750,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))
             .then { Single.just(listOf<RiskDetail>()) }
 
         service.getEvaluationOrderListHistory(request)
@@ -775,6 +770,47 @@ class WorkflowServiceTest {
             .test()
             .assertComplete()
             .dispose()
+    }
+
+    @Test
+    fun testGetHistoryFromDbHistory() {
+        val request = RulesEngineHistoryRequest(LocalDateTime.now(),
+            LocalDateTime.now(),
+            "create_order",
+            "dev",
+            true
+        )
+
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
+            .thenReturn(Single.just(listOf()))
+
+
+        service.getEvaluationHistory(request)
+            .test()
+            .assertComplete()
+            .dispose()
+        verify(documentDbDataRepository).getRiskDetailHistoryFromDocDb(any(),eq(true))
+        verify(documentDbDataRepository).getRiskDetailHistoryFromDocDb(any(),eq(false))
+    }
+
+    @Test
+    fun testGetOrdersHistoryListHistory() {
+        val request = RulesEngineOrderListHistoryRequest(
+            listOf("3"),
+            "create_order",
+            "dev",
+            true
+        )
+
+        whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))
+            .thenReturn(Single.just(listOf()))
+
+        service.getEvaluationOrderListHistory(request)
+            .test()
+            .assertComplete()
+            .dispose()
+        verify(documentDbDataRepository).findInList(any(), any(), any(),eq(true))
+        verify(documentDbDataRepository).findInList(any(), any(), any(),eq(false))
     }
 
     private fun baseWorkflow(): Workflow {

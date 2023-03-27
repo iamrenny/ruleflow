@@ -91,6 +91,7 @@ class MainRouter @Inject constructor(
         router.get("/evaluation/:countryCode/:requestId").handler(::getRequestDataByCountryCode)
 
         router.get("/evaluation-history/:date_from/:date_to/:country/:workflow").handler(::getEvaluationHistory)
+        router.get("/evaluation-history/:date_from/:date_to/:country/:workflow/:history").handler(::getEvaluationHistory)
         router.post("/evaluation-history/request-history-order-list").handler(::getEvaluationOrderListHistory)
         router.delete("/evaluation-history").handler(::deleteDocumentsHistory)
 
@@ -501,11 +502,15 @@ class MainRouter @Inject constructor(
         val dateTo = ctx.request().getParam("date_to")
         val country = ctx.request().getParam("country")
         val workflow = ctx.request().getParam("workflow")
+        val history = if(ctx.request().getParam("history").isNullOrBlank())
+                        { false }
+                        else { ctx.request().getParam("history").toBoolean()}
+
 
         val from = if (dateFrom.isEmpty()) LocalDateTime.now() else LocalDateTime.parse(dateFrom, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
         val to = if (dateTo.isEmpty()) LocalDateTime.now() else LocalDateTime.parse(dateTo, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
 
-        val request = RulesEngineHistoryRequest(from, to, workflow, country)
+        val request = RulesEngineHistoryRequest(from, to, workflow, country,history)
 
         workflowService.getEvaluationHistory(request).subscribe({
             ctx.response().putHeader(CONTENT_TYPE.toString(), APPLICATION_JSON.withCharset("utf-8").toString())
