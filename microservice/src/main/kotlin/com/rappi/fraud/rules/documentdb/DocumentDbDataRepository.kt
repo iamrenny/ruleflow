@@ -75,6 +75,25 @@ class DocumentDbDataRepository @Inject constructor(
             }
     }
 
+    fun find(requestId: String, history: Boolean = false): Maybe<WorkflowResponse> {
+        val query = JsonObject().apply {
+            put(ID, requestId)
+        }
+        val collection =  if (history) config.collectionOld else config.collection
+        return documentDb.find(collection, query)
+            .map {
+                WorkflowResponse(
+                    id = it.getString(ID),
+                    request = JsonObject(it.getString(REQUEST)),
+                    response = JsonObject(it.getString(RESPONSE)),
+                    receivedAt = it.getString(RECEIVED_AT),
+                    countryCode = it.getString(COUNTRY_CODE),
+                    workflowName = it.getString(WORKFLOW_NAME),
+                    referenceId = it.getString(REFERENCE_ID)
+                )
+            }
+    }
+
     fun find(country: String, requestId: String): Maybe<WorkflowResponse> {
         val query = JsonObject().apply {
             put(ID, requestId)

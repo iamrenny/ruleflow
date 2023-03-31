@@ -624,6 +624,8 @@ class WorkflowServiceTest {
 
         whenever(documentDbDataRepository.find(request.id!!))
             .then { Maybe.just(request) }
+        whenever(documentDbDataRepository.find(any(),eq(true)))
+            .then { Maybe.empty<WorkflowResponse>() }
 
         service.getRequestIdData(request.id!!)
             .test()
@@ -645,6 +647,15 @@ class WorkflowServiceTest {
     fun `given a timeout error when processing result will be a timeout message`() {
 
         whenever(documentDbDataRepository.find(any()))
+            .then {
+                Maybe.error<Exception>(
+                    ErrorRequestException(
+                        "timeout", ErrorRequestException.ErrorCode.TIMEOUT.toString(),
+                        HttpResponseStatus.REQUEST_TIMEOUT.code()
+                    )
+                )
+            }
+        whenever(documentDbDataRepository.find(any(),eq(true)))
             .then {
                 Maybe.error<Exception>(
                     ErrorRequestException(
@@ -777,8 +788,7 @@ class WorkflowServiceTest {
         val request = RulesEngineHistoryRequest(LocalDateTime.now(),
             LocalDateTime.now(),
             "create_order",
-            "dev",
-            true
+            "dev"
         )
 
         whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
@@ -798,8 +808,7 @@ class WorkflowServiceTest {
         val request = RulesEngineOrderListHistoryRequest(
             listOf("3"),
             "create_order",
-            "dev",
-            true
+            "dev"
         )
 
         whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))

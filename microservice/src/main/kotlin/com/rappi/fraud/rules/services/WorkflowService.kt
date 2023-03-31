@@ -214,8 +214,10 @@ class WorkflowService @Inject constructor(
     }
 
     fun getRequestIdData(requestId: String): Maybe<WorkflowResponse> {
-        return documentDbDataRepository
-            .find(requestId)
+        return  Maybe.concat(
+            documentDbDataRepository.find(requestId),
+            documentDbDataRepository.find(requestId,true)
+        ).firstElement()
     }
 
     fun getRequestIdData(country: String, requestId: String): Maybe<WorkflowResponse> {
@@ -223,31 +225,23 @@ class WorkflowService @Inject constructor(
     }
 
     fun getEvaluationHistory(request: RulesEngineHistoryRequest): Single<List<RiskDetail>> {
-        return if(request.history){
-            documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, request.history)
+        return documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, true)
                 .map {
                     it.plus(
                         documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, false)
                             .blockingGet()
                     ).toList()
                 }
-        }else{
-            documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, request.history)
-        }
     }
 
     fun getEvaluationOrderListHistory(request: RulesEngineOrderListHistoryRequest): Single<List<RiskDetail>> {
-        return if(request.history){
-                documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, request.history)
-                    .map {
-                        it.plus(
-                            documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, false)
-                                .blockingGet()
-                        ).toList()
-                    }
-        }else{
-            documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, request.history)
-        }
+        return documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, true)
+                .map {
+                    it.plus(
+                        documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, false)
+                            .blockingGet()
+                    ).toList()
+                }
     }
 
     fun deleteDocumentsHistory(): Completable{

@@ -76,15 +76,13 @@ data class RulesEngineHistoryRequest(
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
     val workflowName: String,
-    val countryCode: String,
-    val history: Boolean = false
+    val countryCode: String
 )
 
 data class RulesEngineOrderListHistoryRequest(
     val orders: List<String>,
     val workflowName: String,
-    val countryCode: String? = "dev",
-    val history: Boolean = false
+    val countryCode: String? = "dev"
 )
 
 data class WorkflowEditionResponse(
