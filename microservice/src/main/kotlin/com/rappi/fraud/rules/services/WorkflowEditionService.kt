@@ -23,7 +23,7 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
                         else
                             Single.just(
                                 WorkflowEditionStatus(
-                                    status = "NOT OK",
+                                    status = MSG_NOT_OK,
                                     message = "workflow is being edited by $userEditing"
                                 )
                             )
@@ -49,7 +49,7 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
                         else
                             Single.just(
                                 WorkflowEditionStatus(
-                                    status = "NOT OK",
+                                    status = MSG_NOT_OK,
                                     message = "workflow is being edited by $userEditing"
                                 )
                             )
@@ -65,9 +65,9 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
     private fun lockWorkflowEditing(countryCode: String, workflowName: String, user: String): Single<WorkflowEditionStatus> {
         return redisClient.rxSetex(buildKey(countryCode, workflowName), ttl, user)
             .map { result ->
-                if (result == "OK")
+                if (result == MSG_OK)
                     WorkflowEditionStatus(
-                        "OK",
+                        MSG_OK,
                         "workflow is being edited by $user"
                     )
                 else
@@ -90,7 +90,7 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
         return redisClient.rxDel(buildKey(countryCode, workflowName))
             .map {
                 WorkflowEditionStatus(
-                    "OK",
+                    MSG_OK,
                     "workflow edition canceled"
                 )
             }
@@ -100,7 +100,12 @@ class WorkflowEditionService @Inject constructor(private val redisClient: RedisC
         "$prefix$countryCode$workflowName"
 
     data class WorkflowEditionStatus(
-        val status: String? = "NOT OK",
+        val status: String? = MSG_NOT_OK,
         val message: String? = "can not edit workflow"
     )
+
+    companion object {
+        const val MSG_OK = "OK"
+        const val MSG_NOT_OK = "NOT OK"
+    }
 }

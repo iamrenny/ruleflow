@@ -3,21 +3,8 @@ package com.rappi.fraud.rules.services
 import com.nhaarman.mockito_kotlin.*
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.WorkflowResponse
-import com.rappi.fraud.rules.entities.ActivateRequest
-import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
-import com.rappi.fraud.rules.entities.CreateWorkflowRequest
-import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
-import com.rappi.fraud.rules.entities.LockWorkflowEditionRequest
-import com.rappi.fraud.rules.entities.RiskDetail
-import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
-import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
-import com.rappi.fraud.rules.entities.Workflow
-import com.rappi.fraud.rules.entities.WorkflowVersion
-import com.rappi.fraud.rules.entities.GetVersionRequest
-import com.rappi.fraud.rules.entities.WorkflowEditionResponse
+import com.rappi.fraud.rules.entities.*
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
-import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
-import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
@@ -37,7 +24,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.ArgumentMatchers
 
 class WorkflowServiceTest {
 
@@ -76,6 +62,50 @@ class WorkflowServiceTest {
         whenever(workflowRepository
             .exists(any(), any()))
             .thenReturn(Single.just(true))
+
+        whenever(workFlowEditionService
+            .getUserEditing(any(), any()))
+            .thenReturn(Single.just(expected.userId))
+
+        whenever(workFlowEditionService
+            .cancelWorkflowEditing(any(), any()))
+            .thenReturn(Single.just(WorkflowEditionService.WorkflowEditionStatus(
+                "OK",
+                "workflow edition canceled"
+            )))
+
+        service
+            .save(
+                CreateWorkflowRequest(
+                    countryCode = expected.countryCode!!,
+                    workflow = expected.workflowAsString!!,
+                    userId = expected.userId!!)
+            )
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValue(expected)
+            .dispose()
+    }
+
+    @Test
+    fun testSaveNoExists() {
+        val expected = baseWorkflow()
+
+        whenever(workflowRepository
+            .save(
+                Workflow(
+                    countryCode = expected.countryCode,
+                    name = expected.name,
+                    workflowAsString = expected.workflowAsString,
+                    userId = expected.userId)
+            ))
+            .thenReturn(Single.just(expected))
+
+        whenever(workflowRepository
+            .exists(any(), any()))
+            .thenReturn(Single.just(false))
 
         whenever(workFlowEditionService
             .getUserEditing(any(), any()))
@@ -490,14 +520,6 @@ class WorkflowServiceTest {
         whenever(activeWorkflowRepository.get(workflow.countryCode!!, workflow.name))
                 .thenReturn(Single.just(workflow))
 
-        val evaluationResult = WorkflowEvaluatorResult(
-            workflow = "Sample",
-            ruleSet = "Sample",
-            rule = "Deny",
-            risk = "allow",
-            workflowInfo = WorkflowInfo("CO", "1", "Sample")
-        )
-
         val data = JsonObject()
                 .put("d", 101)
 
@@ -640,6 +662,51 @@ class WorkflowServiceTest {
         service.getRequestIdData("601c0a4bd103cb30b67bb191")
             .test()
             .await()
+            .assertComplete()
+    }
+
+    @Test
+    fun `get data - getEventDataCountryId`() {
+        val request = WorkflowResponse(
+            request = JsonObject().put("pepe", "test"),
+            response = JsonObject().put("response", "OK"),
+            receivedAt = LocalDateTime.now().toString(),
+            countryCode = "co",
+            workflowName = "login",
+            id = "601c0a4bd103cb30b67bb19f"
+        )
+
+        documentDbDataRepository.save(request)
+
+        whenever(documentDbDataRepository.find(request.countryCode, request.id!!))
+            .then { Maybe.just(request) }
+
+        service.getRequestIdData(request.countryCode, request.id!!)
+            .test()
+            .await()
+            .assertValue (request)
+            .assertComplete()
+
+        whenever(documentDbDataRepository.find(any()))
+            .then { Maybe.empty<WorkflowResponse>() }
+
+    }
+
+    @Test
+    fun `test unlock workflow edition request`() {
+
+        var request = UnlockWorkflowEditionRequest("co", "flow-test", "54321")
+
+        val response = WorkflowEditionService.WorkflowEditionStatus(
+            "OK",
+            "workflow edition canceled"
+        )
+
+        whenever(service.cancelWorkflowEdition(request)).thenReturn(Single.just(response))
+
+        service.cancelWorkflowEdition(request)
+            .test()
+            .assertValue(response)
             .assertComplete()
     }
 

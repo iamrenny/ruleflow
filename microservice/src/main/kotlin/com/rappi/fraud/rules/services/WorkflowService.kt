@@ -27,10 +27,8 @@ import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
 import com.rappi.fraud.rules.repositories.WorkflowRepository
 import com.rappi.fraud.rules.verticle.LoggerDelegate
-import io.micrometer.core.instrument.Tag
 import io.reactivex.*
 import io.vertx.core.json.JsonObject
-import io.vertx.micrometer.backends.BackendRegistries
 import java.time.LocalDateTime
 import org.bson.types.ObjectId
 
