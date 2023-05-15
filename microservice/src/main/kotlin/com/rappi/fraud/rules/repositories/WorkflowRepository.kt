@@ -16,7 +16,7 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
         // TODO: Change versioning for is extremely inefficient
         val insertWorkflow = """
             INSERT INTO workflows (name, version, workflow, country_code, user_id) 
-                 VALUES ($1::VARCHAR, (SELECT COALESCE(MAX(version), 0) + 1 FROM workflows w WHERE w.country_code = $3 AND w.name = $1::VARCHAR), $2, $3, $4) 
+                 VALUES ($1::VARCHAR, (SELECT COALESCE(MAX(w.version), 0) + 1 FROM workflows w WHERE w.country_code = $3 AND w.name = $1::VARCHAR), $2, $3, $4) 
               RETURNING id, name, version, workflow, country_code, user_id, created_at
             """
 
@@ -60,12 +60,10 @@ class WorkflowRepository @Inject constructor(private val database: Database) {
     fun exists(countryCode: String, name: String): Single<Boolean> {
 
         val getWorkflow = """
-            SELECT w.*,
-                   CASE WHEN aw.workflow_id isnull THEN false ELSE true END AS is_active
-            FROM workflows w
-            left JOIN active_workflows aw ON w.id = aw.workflow_id
+            SELECT w.id 
+            FROM workflows w 
             WHERE w.country_code = $1
-              AND w.name = $2
+              AND w.name = $2 order by w.id desc limit 1
             """
         val params = listOf(
             countryCode,

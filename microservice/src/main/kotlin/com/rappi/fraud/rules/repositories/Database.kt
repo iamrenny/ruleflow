@@ -9,8 +9,9 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
+import java.util.concurrent.TimeUnit
 
-private const val MAX_CONNECTIONS_PER_INSTANCE = 5
+private const val MAX_CONNECTIONS_PER_INSTANCE = 10
 
 class Database(vertx: Vertx, config: Config) {
 
@@ -22,6 +23,10 @@ class Database(vertx: Vertx, config: Config) {
             user = cfg.user
             password = cfg.pass
             maxSize = MAX_CONNECTIONS_PER_INSTANCE
+            connectTimeout = cfg.connTimeout.toInt()
+            idleTimeout = cfg.idleTimeout
+            reconnectAttempts=2
+            idleTimeoutUnit = TimeUnit.MILLISECONDS
         }
         return PgPool.pool(vertx, config)
     }
