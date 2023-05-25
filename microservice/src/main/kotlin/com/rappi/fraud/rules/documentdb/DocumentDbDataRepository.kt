@@ -134,7 +134,7 @@ class DocumentDbDataRepository @Inject constructor(
         return documentDb.findBatch(
             collection,
             JsonObject(startQuery + receiveAtQuery + workflowNameQuery + countryCodeQuery + endQuery), options
-        )
+        ).map { it.distinctBy { it.getString("reference_id") } }
             .map {
                 it.map {
                     RiskDetail(
@@ -162,7 +162,7 @@ class DocumentDbDataRepository @Inject constructor(
 
         val orderListAsString = riskDetailIds.map {
             "\"$it\""
-        }.toList()
+        }.toList().distinct()
 
         return (riskDetailIds.windowed(riskDetailIds.size, batchSize, false))
             .map {
@@ -172,7 +172,7 @@ class DocumentDbDataRepository @Inject constructor(
                 val workflowQuery = if (workflowName.isNullOrBlank()) "" else ", \"workflow_name\": { \"\$eq\" : \"$workflowName\" }"
                 val countryCodeQuery = if (countryCode.isNullOrBlank()) "" else ", \"country_code\": { \"\$eq\" : \"$countryCode\" }"
                 val query = JsonObject("{$referenceQuery$workflowQuery$countryCodeQuery}")
-                documentDb.findBatch(collection, query, options)
+                documentDb.findBatch(collection, query, options).map { it.distinctBy { it.getString("reference_id") } }
             }.map { single ->
                 single.map { json ->
                     json.map { response ->

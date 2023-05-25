@@ -223,20 +223,20 @@ class WorkflowService @Inject constructor(
     }
 
     fun getEvaluationHistory(request: RulesEngineHistoryRequest): Single<List<RiskDetail>> {
-        return documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, true)
+        return documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, false)
                 .map {
                     it.plus(
-                        documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, false)
+                        documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, true)
                             .blockingGet()
                     ).toList()
                 }
     }
 
     fun getEvaluationOrderListHistory(request: RulesEngineOrderListHistoryRequest): Single<List<RiskDetail>> {
-        return documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, true)
+        return documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, false)
                 .map {
                     it.plus(
-                        documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, false)
+                        documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, true)
                             .blockingGet()
                     ).toList()
                 }
