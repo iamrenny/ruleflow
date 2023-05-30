@@ -866,7 +866,6 @@ class WorkflowServiceTest {
             .test()
             .assertComplete()
             .dispose()
-        verify(documentDbDataRepository).getRiskDetailHistoryFromDocDb(any(),eq(true))
         verify(documentDbDataRepository).getRiskDetailHistoryFromDocDb(any(),eq(false))
     }
 
@@ -885,7 +884,6 @@ class WorkflowServiceTest {
             .test()
             .assertComplete()
             .dispose()
-        verify(documentDbDataRepository).findInList(any(), any(), any(),eq(true))
         verify(documentDbDataRepository).findInList(any(), any(), any(),eq(false))
     }
 
