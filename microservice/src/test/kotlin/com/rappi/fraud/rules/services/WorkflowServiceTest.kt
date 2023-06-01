@@ -1,29 +1,10 @@
 package com.rappi.fraud.rules.services
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.reset
-import com.nhaarman.mockito_kotlin.times
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyZeroInteractions
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.WorkflowResponse
-import com.rappi.fraud.rules.entities.ActivateRequest
-import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
-import com.rappi.fraud.rules.entities.CreateWorkflowRequest
-import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
-import com.rappi.fraud.rules.entities.LockWorkflowEditionRequest
-import com.rappi.fraud.rules.entities.RiskDetail
-import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
-import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
-import com.rappi.fraud.rules.entities.Workflow
-import com.rappi.fraud.rules.entities.WorkflowVersion
-import com.rappi.fraud.rules.entities.GetVersionRequest
-import com.rappi.fraud.rules.entities.WorkflowEditionResponse
+import com.rappi.fraud.rules.entities.*
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
-import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
-import com.rappi.fraud.rules.parser.vo.WorkflowInfo
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
@@ -81,6 +62,50 @@ class WorkflowServiceTest {
         whenever(workflowRepository
             .exists(any(), any()))
             .thenReturn(Single.just(true))
+
+        whenever(workFlowEditionService
+            .getUserEditing(any(), any()))
+            .thenReturn(Single.just(expected.userId))
+
+        whenever(workFlowEditionService
+            .cancelWorkflowEditing(any(), any()))
+            .thenReturn(Single.just(WorkflowEditionService.WorkflowEditionStatus(
+                "OK",
+                "workflow edition canceled"
+            )))
+
+        service
+            .save(
+                CreateWorkflowRequest(
+                    countryCode = expected.countryCode!!,
+                    workflow = expected.workflowAsString!!,
+                    userId = expected.userId!!)
+            )
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertComplete()
+            .assertValue(expected)
+            .dispose()
+    }
+
+    @Test
+    fun testSaveNoExists() {
+        val expected = baseWorkflow()
+
+        whenever(workflowRepository
+            .save(
+                Workflow(
+                    countryCode = expected.countryCode,
+                    name = expected.name,
+                    workflowAsString = expected.workflowAsString,
+                    userId = expected.userId)
+            ))
+            .thenReturn(Single.just(expected))
+
+        whenever(workflowRepository
+            .exists(any(), any()))
+            .thenReturn(Single.just(false))
 
         whenever(workFlowEditionService
             .getUserEditing(any(), any()))
@@ -495,14 +520,6 @@ class WorkflowServiceTest {
         whenever(activeWorkflowRepository.get(workflow.countryCode!!, workflow.name))
                 .thenReturn(Single.just(workflow))
 
-        val evaluationResult = WorkflowEvaluatorResult(
-            workflow = "Sample",
-            ruleSet = "Sample",
-            rule = "Deny",
-            risk = "allow",
-            workflowInfo = WorkflowInfo("CO", "1", "Sample")
-        )
-
         val data = JsonObject()
                 .put("d", 101)
 
@@ -629,6 +646,8 @@ class WorkflowServiceTest {
 
         whenever(documentDbDataRepository.find(request.id!!))
             .then { Maybe.just(request) }
+        whenever(documentDbDataRepository.find(any(),eq(true)))
+            .then { Maybe.empty<WorkflowResponse>() }
 
         service.getRequestIdData(request.id!!)
             .test()
@@ -647,9 +666,63 @@ class WorkflowServiceTest {
     }
 
     @Test
+    fun `get data - getEventDataCountryId`() {
+        val request = WorkflowResponse(
+            request = JsonObject().put("pepe", "test"),
+            response = JsonObject().put("response", "OK"),
+            receivedAt = LocalDateTime.now().toString(),
+            countryCode = "co",
+            workflowName = "login",
+            id = "601c0a4bd103cb30b67bb19f"
+        )
+
+        documentDbDataRepository.save(request)
+
+        whenever(documentDbDataRepository.find(request.countryCode, request.id!!))
+            .then { Maybe.just(request) }
+
+        service.getRequestIdData(request.countryCode, request.id!!)
+            .test()
+            .await()
+            .assertValue (request)
+            .assertComplete()
+
+        whenever(documentDbDataRepository.find(any()))
+            .then { Maybe.empty<WorkflowResponse>() }
+
+    }
+
+    @Test
+    fun `test unlock workflow edition request`() {
+
+        var request = UnlockWorkflowEditionRequest("co", "flow-test", "54321")
+
+        val response = WorkflowEditionService.WorkflowEditionStatus(
+            "OK",
+            "workflow edition canceled"
+        )
+
+        whenever(service.cancelWorkflowEdition(request)).thenReturn(Single.just(response))
+
+        service.cancelWorkflowEdition(request)
+            .test()
+            .assertValue(response)
+            .assertComplete()
+    }
+
+    @Test
     fun `given a timeout error when processing result will be a timeout message`() {
 
         whenever(documentDbDataRepository.find(any()))
+            .then {
+                Maybe.error<Exception>(
+                    ErrorRequestException(
+                        "timeout", ErrorRequestException.ErrorCode.TIMEOUT.toString(),
+                        HttpResponseStatus.REQUEST_TIMEOUT.code()
+                    )
+                )
+            }
+        whenever(documentDbDataRepository.find(any(),eq(true)))
             .then {
                 Maybe.error<Exception>(
                     ErrorRequestException(
@@ -673,7 +746,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
             .thenReturn(Single.just(listOf()))
 
         service.getEvaluationHistory(request)
@@ -689,7 +762,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
             .then { Single.error<Exception>(RuntimeException()) }
 
         service.getEvaluationHistory(request)
@@ -705,7 +778,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any()))
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
             .then { Single.just(listOf<RiskDetail>()) }
 
         service.getEvaluationHistory(request)
@@ -723,7 +796,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))
             .thenReturn(Single.just(listOf()))
 
         service.getEvaluationOrderListHistory(request)
@@ -739,7 +812,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))
             .then { Single.error<Exception>(RuntimeException()) }
 
         service.getEvaluationOrderListHistory(request)
@@ -755,7 +828,7 @@ class WorkflowServiceTest {
             "create_order",
             "dev")
 
-        whenever(documentDbDataRepository.findInList(any(), any(), any()))
+        whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))
             .then { Single.just(listOf<RiskDetail>()) }
 
         service.getEvaluationOrderListHistory(request)
@@ -775,6 +848,43 @@ class WorkflowServiceTest {
             .test()
             .assertComplete()
             .dispose()
+    }
+
+    @Test
+    fun testGetHistoryFromDbHistory() {
+        val request = RulesEngineHistoryRequest(LocalDateTime.now(),
+            LocalDateTime.now(),
+            "create_order",
+            "dev"
+        )
+
+        whenever(documentDbDataRepository.getRiskDetailHistoryFromDocDb(any(), any()))
+            .thenReturn(Single.just(listOf()))
+
+
+        service.getEvaluationHistory(request)
+            .test()
+            .assertComplete()
+            .dispose()
+        verify(documentDbDataRepository).getRiskDetailHistoryFromDocDb(any(),eq(false))
+    }
+
+    @Test
+    fun testGetOrdersHistoryListHistory() {
+        val request = RulesEngineOrderListHistoryRequest(
+            listOf("3"),
+            "create_order",
+            "dev"
+        )
+
+        whenever(documentDbDataRepository.findInList(any(), any(), any(), any()))
+            .thenReturn(Single.just(listOf()))
+
+        service.getEvaluationOrderListHistory(request)
+            .test()
+            .assertComplete()
+            .dispose()
+        verify(documentDbDataRepository).findInList(any(), any(), any(),eq(false))
     }
 
     private fun baseWorkflow(): Workflow {

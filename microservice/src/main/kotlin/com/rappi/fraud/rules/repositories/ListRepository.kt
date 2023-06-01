@@ -182,8 +182,8 @@ class ListRepository @Inject constructor(
     private fun publishUpdate(listId: Long) {
         redisClient.rxSend(Request.cmd(Command.PUBLISH).arg("fraud_rules_engine_list_modifications").arg("UPDATE $listId"))
             .subscribe({}, {
-                logger.error("Could not publish to Redis", it)
-                SignalFx.noticeError("Could not publish to Redis", it)
+                logger.error(MSG_NOT_PUBLISH, it)
+                SignalFx.noticeError(MSG_NOT_PUBLISH, it)
             }, {})
     }
 
@@ -196,8 +196,8 @@ class ListRepository @Inject constructor(
             .subscribe(
                 {},
                 {
-                    logger.error("Could not publish to Redis", it)
-                    SignalFx.noticeError("Could not publish to Redis", it)
+                    logger.error(MSG_NOT_PUBLISH, it)
+                    SignalFx.noticeError(MSG_NOT_PUBLISH, it)
                 },
                 {}
             )
@@ -250,5 +250,9 @@ class ListRepository @Inject constructor(
 
     fun cacheRemove(listName: String) {
         enabledListCache.remove(listName)
+    }
+
+    companion object {
+        const val MSG_NOT_PUBLISH = "Could not publish to Redis"
     }
 }

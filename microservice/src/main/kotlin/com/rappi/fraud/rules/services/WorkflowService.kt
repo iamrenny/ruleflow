@@ -216,8 +216,10 @@ class WorkflowService @Inject constructor(
     }
 
     fun getRequestIdData(requestId: String): Maybe<WorkflowResponse> {
-        return documentDbDataRepository
-            .find(requestId)
+        return  Maybe.concat(
+            documentDbDataRepository.find(requestId),
+            documentDbDataRepository.find(requestId,true)
+        ).firstElement()
     }
 
     fun getRequestIdData(country: String, requestId: String): Maybe<WorkflowResponse> {
@@ -225,11 +227,11 @@ class WorkflowService @Inject constructor(
     }
 
     fun getEvaluationHistory(request: RulesEngineHistoryRequest): Single<List<RiskDetail>> {
-        return documentDbDataRepository.getRiskDetailHistoryFromDocDb(request)
+        return documentDbDataRepository.getRiskDetailHistoryFromDocDb(request, false)
     }
 
     fun getEvaluationOrderListHistory(request: RulesEngineOrderListHistoryRequest): Single<List<RiskDetail>> {
-        return documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode)
+        return documentDbDataRepository.findInList(request.orders, request.workflowName, request.countryCode, false)
     }
 
     fun deleteDocumentsHistory(): Completable{

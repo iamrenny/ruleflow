@@ -9,7 +9,7 @@ import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class WorkflowResponse(
     val id: String,
@@ -78,6 +78,25 @@ class DocumentDbDataRepository @Inject constructor(
             }
     }
 
+    fun find(requestId: String, history: Boolean = false): Maybe<WorkflowResponse> {
+        val query = JsonObject().apply {
+            put(ID, requestId)
+        }
+        val collection =  if (history) config.collectionOld else config.collection
+        return documentDb.find(collection, query)
+            .map {
+                WorkflowResponse(
+                    id = it.getString(ID),
+                    request = JsonObject(it.getString(REQUEST)),
+                    response = JsonObject(it.getString(RESPONSE)),
+                    receivedAt = it.getString(RECEIVED_AT),
+                    countryCode = it.getString(COUNTRY_CODE),
+                    workflowName = it.getString(WORKFLOW_NAME),
+                    referenceId = it.getString(REFERENCE_ID)
+                )
+            }
+    }
+
     fun find(country: String, requestId: String): Maybe<WorkflowResponse> {
         val query = JsonObject().apply {
             put(ID, requestId)
@@ -98,10 +117,11 @@ class DocumentDbDataRepository @Inject constructor(
     }
 
     fun getRiskDetailHistoryFromDocDb(
-        request: RulesEngineHistoryRequest
+        request: RulesEngineHistoryRequest,
+        history: Boolean = false
     ): Single<List<RiskDetail>> {
         val batchSize = 500
-
+        val collection =  if (history) config.collectionOld else config.collection
         val options = FindOptions(
             batch = batchSize
         )
@@ -115,9 +135,9 @@ class DocumentDbDataRepository @Inject constructor(
         logger.info("Query: $receiveAtQuery$workflowNameQuery$countryCodeQuery")
 
         return documentDb.findBatch(
-            config.collection,
+            collection,
             JsonObject(startQuery + receiveAtQuery + workflowNameQuery + countryCodeQuery + endQuery), options
-        )
+        ).map { it.distinctBy { it.getString("reference_id") } }
             .map {
                 it.map {
                     RiskDetail(
@@ -131,9 +151,11 @@ class DocumentDbDataRepository @Inject constructor(
     fun findInList(
         riskDetailIds: List<String>,
         workflowName: String? = null,
-        countryCode: String? = null
+        countryCode: String? = null,
+        history: Boolean = false
     ): Single<List<RiskDetail>> {
         val batchSize = 500
+        val collection =  if (history) config.collectionOld else config.collection
 
         if (riskDetailIds.isEmpty()) return Single.just(emptyList())
 
@@ -143,7 +165,7 @@ class DocumentDbDataRepository @Inject constructor(
 
         val orderListAsString = riskDetailIds.map {
             "\"$it\""
-        }.toList()
+        }.toList().distinct()
 
         return (riskDetailIds.windowed(riskDetailIds.size, batchSize, false))
             .map {
@@ -153,7 +175,7 @@ class DocumentDbDataRepository @Inject constructor(
                 val workflowQuery = if (workflowName.isNullOrBlank()) "" else ", \"workflow_name\": { \"\$eq\" : \"$workflowName\" }"
                 val countryCodeQuery = if (countryCode.isNullOrBlank()) "" else ", \"country_code\": { \"\$eq\" : \"$countryCode\" }"
                 val query = JsonObject("{$referenceQuery$workflowQuery$countryCodeQuery}")
-                documentDb.findBatch(config.collection, query, options)
+                documentDb.findBatch(collection, query, options).map { it.distinctBy { it.getString("reference_id") } }
             }.map { single ->
                 single.map { json ->
                     json.map { response ->
@@ -165,8 +187,9 @@ class DocumentDbDataRepository @Inject constructor(
     }
 
     fun removeBatchDocDb(): Completable {
-        val dateLimit = LocalDate.now().minusMonths(config.historyMonths)
-        val query = "{\"${RECEIVED_AT}\" : { \"\$lte\" : \"${dateLimit}\"}}"
+        val dateLimit = LocalDateTime.now().minusMonths(config.historyMonths)
+        val query = "{\"${RECEIVED_AT}\" : { \"\$gte\" : \"${dateLimit.toLocalDate()}\" ,  \"\$lte\" : \"${dateLimit.plusHours(((dateLimit.hour % 6) * 5).toLong())}\"}}"
+        logger.info("DateLimit: $dateLimit")
         logger.info("Query: $query")
 
         return documentDb.removeBatch(
@@ -207,15 +230,16 @@ class DocumentDbDataRepository @Inject constructor(
                 eventData.workflowName.startsWith("handshake", true)
 
         return when {
-            eventData.workflowName.contains("order") -> EntityType.ORDER
             isStorekeeperEntityType -> EntityType.STOREKEEPER
+            eventData.workflowName.contains("order") -> EntityType.ORDER
             else -> EntityType.USER
         }
     }
 
     data class Config(
         val collection: String,
-        val historyMonths: Long
+        val historyMonths: Long,
+        val collectionOld: String
     )
 
     class NoRequestIdDataWasFound : RuntimeException("No Request Id was found")

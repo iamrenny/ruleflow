@@ -18,7 +18,8 @@ class MathMulContextEvaluator : ContextEvaluator<ANAParser.MathMulContext> {
         return when {
             right.compareTo(BigDecimal.ZERO) == 0 -> return BigDecimal.ZERO
             ctx.op.type == ANALexer.MULTIPLY -> left.multiply(right)
-            ctx.op.type ==    ANALexer.DIVIDE -> left.divide(right, 2, RoundingMode.DOWN)
+            ctx.op.type == ANALexer.DIVIDE -> left.divide(right, 2, RoundingMode.DOWN)
+            ctx.op.type == ANALexer.MODULO -> left % right
             else -> throw IllegalArgumentException("Operation not supported: ${ctx.op.text}")
             }
     }

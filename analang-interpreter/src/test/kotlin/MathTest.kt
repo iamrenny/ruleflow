@@ -179,4 +179,86 @@ class MathTest {
             )
         )
     }
+
+    @Test
+    fun `given a modulo  expression when operating must be resolved ok`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' x % y = 9 return block
+                default allow
+            end
+        """
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowEvaluatorResult("test", "dummy", "item_a", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "x" to 99,
+                    "y" to 10
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `given a modulo expression when operating must be not equal to expected result`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' x % y = 9 return block
+                default allow
+            end
+        """
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowEvaluatorResult("test", "default", "default", "allow"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "x" to 99,
+                    "y" to 100
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `given a modulo expression when operating with non existing right value must return warning`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' x % y = 9 return block
+                default allow
+            end
+        """
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowEvaluatorResult("test", "default", "default", "allow", warnings =  setOf("y field cannot be found")),
+            ruleEngine.evaluate(
+                mapOf(
+                    "x" to 9
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `given a modulo expression when operating with non existing left value must return warning`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'item_a' x % y = 9 return block
+                default allow
+            end
+        """
+        val ruleEngine = WorkflowEvaluator(workflow)
+        Assertions.assertEquals(
+            WorkflowEvaluatorResult("test", "default", "default", "allow", warnings =  setOf("x field cannot be found")),
+            ruleEngine.evaluate(
+                mapOf(
+                    "y" to 10
+                )
+            )
+        )
+    }
 }

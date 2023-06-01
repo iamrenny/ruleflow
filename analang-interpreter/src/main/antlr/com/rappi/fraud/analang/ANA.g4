@@ -40,7 +40,7 @@ param_pairs: param_pair (COMMA param_pair)*;
 param_pair: field_name = string_literal ':' field_value = validValue;
 
 expr: L_PAREN expr R_PAREN                                                      #parenthesis
-    | left=expr op=(MULTIPLY | DIVIDE) right=expr                               #mathMul
+    | left=expr op=(MULTIPLY | DIVIDE | MODULO) right=expr                               #mathMul
     | left=expr op=(ADD | MINUS) right=expr                                     #mathAdd
     | left=expr op=(LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right=expr   #comparator
     | value=expr not=K_NOT? op=(K_CONTAINS | K_IN | K_STARTS_WITH) values=listElems #list
@@ -48,6 +48,7 @@ expr: L_PAREN expr R_PAREN                                                      
       (L_BRACE predicate=expr R_BRACE | L_PAREN R_PAREN)                       #aggregation
     | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left=expr COMMA right=expr R_PAREN #dateDiff
     | op=DAY_OF_WEEK L_PAREN left=expr R_PAREN                                   #dayOfWeek
+    | op = REGEX_STRIP L_PAREN value = validProperty COMMA regex = SQUOTA_STRING R_PAREN                       #regexlike
     | op=ABS L_PAREN left=expr R_PAREN                                          #unary
     | left=expr op=K_AND right=expr                                             #binaryAnd
     | left=expr op=K_OR right=expr                                              #binaryOr
@@ -86,6 +87,8 @@ CURRENT_DATE: 'currentDate' L_PAREN R_PAREN
              | 'currentdate' L_PAREN R_PAREN;
 DATE_DIFF: 'dateDiff' | 'datediff';
 ABS: 'abs';
+REGEX_STRIP: 'regex_strip' | 'regexStrip' | 'regexstrip';
+MODULO: '%' | 'mod';
 K_STARTS_WITH: 'starts_with' | 'startswith' | 'startsWith';
 K_LIST: 'list';
 L_BRACE: '{';
