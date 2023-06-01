@@ -11,14 +11,18 @@ plugins {
     id "org.jetbrains.kotlin.jvm"
     id 'antlr'
     id 'jacoco'
+    id 'java-library'
+    id 'maven-publish'
 }
 
 apply plugin: "kotlin"
 apply plugin: 'antlr'
+apply plugin: "maven-publish"
 
 group 'com.rappi'
 
-version '1.0'
+version '1.0.0'
+
 repositories {
     mavenCentral()
 }
@@ -59,10 +63,6 @@ dependencies {
     testCompile "org.mockito:mockito-core:$mockito_version"
     testCompile "com.google.code.gson:gson:$gson_version"
     testCompile "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
-
-    // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.1.4'
-    compile 'com.zaxxer:HikariCP:4.0.3'
 }
 
 test {
@@ -99,6 +99,33 @@ jacocoTestReport {
 
 generateGrammarSource {
     arguments += ["-visitor", "-long-messages"]
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name "nexus"
+            allowInsecureProtocol = true
+
+            def nexusHome = System.getenv("NEXUS_URL_REPOSITORY")
+
+            if (project.version.endsWith("-SNAPSHOT")) {
+                url = uri("${nexusHome}/repository/maven2-snapshot-hosted/")
+            } else {
+                url = uri("${nexusHome}/repository/maven2-hosted/")
+            }
+
+            credentials {
+                username System.getenv("NEXUS_USERNAME_REPOSITORY")
+                password System.getenv("NEXUS_PASSWORD_REPOSITORY")
+            }
+        }
+    }
 }
 
 compileKotlin.dependsOn(generateGrammarSource)

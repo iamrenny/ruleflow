@@ -117,7 +117,7 @@ class WorkflowService @Inject constructor(
 
                 WorkflowResult(
                     requestId = ObjectId.get().toHexString(),
-                    workflowInfo = WorkflowInfo(workflow.countryCode!!, workflow.version.toString(), workflow.name, workflow.referenceIds),
+                    workflowInfo = WorkflowInfo(workflow.countryCode!!, workflow.version.toString(), workflow.name),
                     workflow = name,
                     rule = result.rule,
                     ruleSet = result.ruleSet,
@@ -131,7 +131,6 @@ class WorkflowService @Inject constructor(
             }
             .doOnSuccess { result ->
                 if (!isSimulation) {
-                    val referenceIds = getReferenceIdsByWorkflow(result.workflowInfo, data)
 
                     val workflowResponse = WorkflowResponse(
                         id = result.requestId,
@@ -139,8 +138,7 @@ class WorkflowService @Inject constructor(
                         response = JsonObject.mapFrom(result),
                         receivedAt = LocalDateTime.now().toString(),
                         countryCode = countryCode,
-                        workflowName = name,
-                        referenceIds = referenceIds
+                        workflowName = name
                     )
 
                     Grafana.warn(result.warnings, result.workflow, version?.toString() ?: "active", countryCode)
@@ -152,14 +150,6 @@ class WorkflowService @Inject constructor(
                         })
                 }
             }
-    }
-
-    private fun getReferenceIdsByWorkflow(workflowInfo: WorkflowInfo?, data: JsonObject): JsonObject {
-        val referenceIds = JsonObject()
-         workflowInfo?.referenceIds?.forEach { name ->
-             referenceIds.put(name, data.getValue(name))
-        }
-        return referenceIds
     }
 
     private fun getWorkflow(

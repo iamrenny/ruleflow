@@ -20,7 +20,6 @@ data class WorkflowResponse(
     val workflowName: String,
     @Deprecated("Consider using referenceIds for multiple values")
     val referenceId: String? = null,
-    val referenceIds: JsonObject,
     val error: Boolean = false
 )
 
@@ -53,7 +52,6 @@ class DocumentDbDataRepository @Inject constructor(
             put(COUNTRY_CODE, eventData.countryCode)
             put(WORKFLOW_NAME, eventData.workflowName)
             put(REFERENCE_ID, findReferenceId(eventData))
-            put(REFERENCE_IDS, eventData.referenceIds)
         }
 
         return documentDb
@@ -74,8 +72,7 @@ class DocumentDbDataRepository @Inject constructor(
                     receivedAt = it.getString(RECEIVED_AT),
                     countryCode = it.getString(COUNTRY_CODE),
                     workflowName = it.getString(WORKFLOW_NAME),
-                    referenceId = it.getString(REFERENCE_ID),
-                    referenceIds = it.getJsonObject(REFERENCE_IDS)
+                    referenceId = it.getString(REFERENCE_ID)
 
                 )
             }
@@ -95,8 +92,7 @@ class DocumentDbDataRepository @Inject constructor(
                     countryCode = country,
                     receivedAt = it.getString(RECEIVED_AT),
                     workflowName = it.getString(WORKFLOW_NAME),
-                    referenceId = it.getString(REFERENCE_ID),
-                    referenceIds = it.getJsonObject(REFERENCE_IDS)
+                    referenceId = it.getString(REFERENCE_ID)
                 )
             }
     }

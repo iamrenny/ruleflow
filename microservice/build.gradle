@@ -20,7 +20,16 @@ apply plugin: 'com.github.johnrengelman.shadow'
 repositories {
     mavenCentral()
     jcenter()
-    maven { url "https://plugins.gradle.org/m2/" }
+    maven {
+
+        def nexusHome = System.getenv("NEXUS_URL_REPOSITORY")
+        url = uri("${nexusHome}/repository/maven2-group/")
+
+        credentials {
+            username System.getenv("NEXUS_USERNAME_REPOSITORY")
+            password System.getenv("NEXUS_PASSWORD_REPOSITORY")
+        }
+    }
 }
 
 sourceCompatibility = 1.8
@@ -63,7 +72,6 @@ dependencies {
 
     compile group: 'io.vertx', name: 'vertx-jdbc-client', version: vertx_version
     compile group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.0.0'
-    compile group: 'com.zaxxer', name: 'HikariCP', version: '2.3.2'
 
     compile group: "io.vertx", name: "vertx-core", version: vertx_version
     compile group: "io.vertx", name: "vertx-web", version: vertx_version
@@ -124,7 +132,7 @@ dependencies {
     testCompile 'com.jayway.restassured:rest-assured:2.4.0'
     testCompile 'org.assertj:assertj-core:2.0.0'
 
-    implementation project(':rules-interpreter')
+    implementation group: 'com.rappi', name: 'analang-interpreter', version: '1.0.0'
 
     ktlint "com.pinterest:ktlint:0.34.2"
 

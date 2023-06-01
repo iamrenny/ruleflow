@@ -9,6 +9,7 @@ import com.rappi.fraud.rules.entities.serializers.LocalDateTimeSerializer
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.services.WorkflowEditionService
 import io.reactiverse.reactivex.pgclient.Row
+import io.vertx.core.json.JsonArray
 import java.time.LocalDateTime
 
 data class GetAllWorkflowRequest(
@@ -47,8 +48,7 @@ data class Workflow(
     @JsonDeserialize(using = LocalDateTimeDeserializer::class)
     @JsonSerialize(using = LocalDateTimeSerializer::class)
     val createdAt: LocalDateTime? = null,
-    val active: Boolean? = null,
-    val referenceIds: List<String>
+    val active: Boolean? = null
 ) {
     constructor(row: Row) : this(
         id = row.getLong("id"),
@@ -59,8 +59,7 @@ data class Workflow(
         userId = row.getString("user_id"),
         createdAt = row.getValue("created_at") as? LocalDateTime,
         lists = listOf<RulesEngineList>(),
-        active = row.getBoolean("is_active"),
-        referenceIds = row.getArray("reference_ids").toList<String>()
+        active = row.getBoolean("is_active")
     )
 
     val evaluator @JsonIgnore get() = WorkflowEvaluator(this.workflowAsString!!)

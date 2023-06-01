@@ -1,4 +1,4 @@
 rootProject.name = 'fraud-rules-engine'
-include 'rules-interpreter'
+include 'analang-interpreter'
 include 'microservice'
 

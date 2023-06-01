@@ -25,11 +25,9 @@ class ActionVisitor {
     fun visit(action: ANAParser.ActionContext): Map<String, String> {
 
         return if (action.action_params() != null)
-            action.action_params().string_literal().asSequence().withIndex()
-                .map { (i, node) -> IndexedValue<String>(i, node.text) }
-                .map { (i, name) ->  IndexedValue(i, name.replace("'","")) }
-                .map { (i, name) ->
-                    Pair(name, action.action_params().validValue(i).text.replace("'", ""))
+            action.action_params().param_pairs().param_pair()
+                .map { a ->
+                    Pair(a.field_name.text.replace("'",""), a.field_value.text.replace("'",""))
                 }
                 .toMap()
         else mapOf()

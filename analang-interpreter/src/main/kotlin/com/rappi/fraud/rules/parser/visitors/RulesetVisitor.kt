@@ -24,6 +24,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                 ruleSet.rules()
                     .forEach { rule ->
                         try {
+                            // if(rule.name() == "CA_FALOPA_" AND ESTA EN GC )
                             val visitedRule = ruleEvaluator.visit(rule.expr())
                             if (visitedRule is Boolean && visitedRule) {
                                 val result = WorkflowEvaluatorResult(
@@ -63,7 +64,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
             workflow = ctx.workflow_name().text.removeSingleQuote(),
             ruleSet = "default",
             rule = "default",
-            risk = ctx.defaultResult.result.text,
+            risk = ctx.default_result().result.text,
             warnings = warnings
         )
     }
