@@ -20,8 +20,9 @@ import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.entities.WorkflowResult
 import com.rappi.fraud.rules.entities.GetVersionRequest
+import com.rappi.fraud.rules.exceptions.ErrorRequestException
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
-import com.rappi.fraud.rules.parser.errors.ErrorRequestException
+
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
@@ -121,7 +122,7 @@ class WorkflowService @Inject constructor(
                     workflow = name,
                     rule = result.rule,
                     ruleSet = result.ruleSet,
-                    risk = result.risk,
+                    risk = result.result,
                     actionsWithParams = result.actionsWithParams,
                     actions = result.actions,
                     warnings = result.warnings,

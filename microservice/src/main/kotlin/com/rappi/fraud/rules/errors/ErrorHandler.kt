@@ -2,7 +2,7 @@ package com.rappi.fraud.rules.errors
 
 import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.SignalFx
-import com.rappi.fraud.rules.parser.errors.ErrorRequestException
+import com.rappi.fraud.rules.exceptions.ErrorRequestException
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.Handler

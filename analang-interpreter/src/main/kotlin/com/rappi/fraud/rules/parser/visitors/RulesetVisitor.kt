@@ -31,7 +31,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                                     workflow = ctx.workflow_name().text.removeSingleQuote(),
                                     ruleSet = ruleSet.name().text.removeSingleQuote(),
                                     rule = rule.name().text.removeSingleQuote(),
-                                    risk = rule.result.text,
+                                    result = rule.result.text,
                                     warnings = warnings
                                 )
 
@@ -64,7 +64,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
             workflow = ctx.workflow_name().text.removeSingleQuote(),
             ruleSet = "default",
             rule = "default",
-            risk = ctx.default_result().result.text,
+            result = ctx.default_result().result.text,
             warnings = warnings
         )
     }

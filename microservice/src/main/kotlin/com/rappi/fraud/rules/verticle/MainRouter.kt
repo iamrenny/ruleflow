@@ -16,8 +16,7 @@ import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
 import com.rappi.fraud.rules.entities.GetVersionRequest
 import com.rappi.fraud.rules.errors.ErrorHandler
-import com.rappi.fraud.rules.parser.errors.ErrorRequestException
-import com.rappi.fraud.rules.parser.errors.NotFoundException
+import com.rappi.fraud.rules.exceptions.ErrorRequestException
 import com.rappi.fraud.rules.services.ListService
 import com.rappi.fraud.rules.services.WorkflowService
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -30,6 +29,7 @@ import io.vertx.reactivex.ext.web.Router
 import io.vertx.reactivex.ext.web.RoutingContext
 import io.vertx.reactivex.ext.web.handler.BodyHandler
 import io.vertx.reactivex.ext.web.handler.LoggerHandler
+import net.snowflake.client.jdbc.internal.amazonaws.services.kms.model.NotFoundException
 import java.net.URLDecoder
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -108,7 +108,7 @@ class MainRouter @Inject constructor(
                 logger.error("Error retrieving risk detail data for $requestId", ex)
                 ctx.fail(ex)
             }, {
-                ctx.fail(NotFoundException("$requestId was not found", "not.found"))
+                ctx.fail(NotFoundException("$requestId was not found"))
             })
     }
 

@@ -4,7 +4,7 @@ import com.nhaarman.mockito_kotlin.*
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.WorkflowResponse
 import com.rappi.fraud.rules.entities.*
-import com.rappi.fraud.rules.parser.errors.ErrorRequestException
+import com.rappi.fraud.rules.exceptions.ErrorRequestException
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository

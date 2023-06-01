@@ -9,7 +9,6 @@ import com.rappi.fraud.rules.entities.serializers.LocalDateTimeSerializer
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.services.WorkflowEditionService
 import io.reactiverse.reactivex.pgclient.Row
-import io.vertx.core.json.JsonArray
 import java.time.LocalDateTime
 
 data class GetAllWorkflowRequest(

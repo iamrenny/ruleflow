@@ -20,7 +20,7 @@ class WorkflowEvaluatorRappiPayPrepaidTest {
                 // Not purchase
                 Arguments.of(
                     "samples/data/prepaid_not_purchase.json",
-                    WorkflowEvaluatorResult(workflow = "rappi_pay_prepaid", risk = "allow", ruleSet = "default", rule = "default")
+                    WorkflowEvaluatorResult(workflow = "rappi_pay_prepaid", result = "allow", ruleSet = "default", rule = "default")
                 ),
 
                 // Hard Cap
@@ -141,7 +141,7 @@ class WorkflowEvaluatorRappiPayPrepaidTest {
                 // Allow
                 Arguments.of(
                     "samples/data/prepaid_allow.json",
-                    WorkflowEvaluatorResult(workflow = "rappi_pay_prepaid", risk = "allow", ruleSet = "default", rule = "default")
+                    WorkflowEvaluatorResult(workflow = "rappi_pay_prepaid", result = "allow", ruleSet = "default", rule = "default")
                 )
             )
         }

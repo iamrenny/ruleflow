@@ -52,7 +52,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                             workflow = "add_card",
                             ruleSet = "default",
                             rule = "default",
-                            risk = "allow")
+                            result = "allow")
                     ),
 
                     // Has more than allowed per day
@@ -78,7 +78,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per day",
-                                    risk = "block"
+                                    result = "block"
                                     )
                     ),
 
@@ -110,7 +110,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per week",
-                                    risk = "block"
+                                    result = "block"
                                     )
                     ),
 
@@ -142,7 +142,7 @@ class WorkflowEvaluatorAddCardVelocityTest {
                                     workflow = "add_card",
                                     ruleSet = "Registration velocity",
                                     rule = "Has more than allowed per month",
-                                    risk = "block"
+                                    result = "block"
                                     )
                     )
             )

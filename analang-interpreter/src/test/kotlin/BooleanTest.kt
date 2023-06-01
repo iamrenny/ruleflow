@@ -135,6 +135,6 @@ class BooleanTest {
             setOf("y field cannot be found"),
             evaluation.warnings
         )
-        Assertions.assertEquals("allow", evaluation.risk)
+        Assertions.assertEquals("allow", evaluation.result)
     }
 }

@@ -5,8 +5,8 @@ import com.rappi.fraud.rules.apm.SignalFx
 import com.rappi.fraud.rules.entities.ListItem
 import com.rappi.fraud.rules.entities.ListStatus
 import com.rappi.fraud.rules.entities.RulesEngineList
-import com.rappi.fraud.rules.parser.errors.ErrorRequestException
-import com.rappi.fraud.rules.parser.errors.NotFoundException
+import com.rappi.fraud.rules.exceptions.ErrorRequestException
+import com.rappi.fraud.rules.exceptions.NotFoundException
 import com.rappi.fraud.rules.verticle.LoggerDelegate
 import io.reactiverse.reactivex.pgclient.Tuple
 import io.reactivex.Completable
