@@ -1,5 +1,5 @@
-import com.rappi.fraud.rules.parser.Workflow
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.analang.Workflow
+import com.rappi.analang.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -696,7 +696,8 @@ class ListTest {
             end
         """
         val result = Workflow(workflow).evaluate(mapOf())
-        Assertions.assertEquals(WorkflowResult(
+        Assertions.assertEquals(
+            WorkflowResult(
                 workflow = "test",
                 ruleSet = "default",
                 rule = "default",
@@ -715,7 +716,8 @@ class ListTest {
             end
         """
         val result = Workflow(workflow).evaluate(mapOf("item" to "value4"))
-        Assertions.assertEquals(WorkflowResult(
+        Assertions.assertEquals(
+            WorkflowResult(
                 workflow = "test",
                 ruleSet = "dummy",
                 rule = "rule_a",

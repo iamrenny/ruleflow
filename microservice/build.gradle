@@ -132,7 +132,7 @@ dependencies {
     testCompile 'com.jayway.restassured:rest-assured:2.4.0'
     testCompile 'org.assertj:assertj-core:2.0.0'
 
-    implementation group: 'com.rappi.fraud', name: 'analang-sdk', version: '1.0.0'
+    implementation group: 'com.rappi', name: 'analang-sdk', version: '0.0.1'
 
     ktlint "com.pinterest:ktlint:0.34.2"
 

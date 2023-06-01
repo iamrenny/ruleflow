@@ -1,6 +1,6 @@
-import com.rappi.fraud.rules.parser.Workflow
-import com.rappi.fraud.rules.parser.vo.Action
-import com.rappi.fraud.rules.parser.vo.WorkflowResult
+import com.rappi.analang.Workflow
+import com.rappi.analang.vo.Action
+import com.rappi.analang.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

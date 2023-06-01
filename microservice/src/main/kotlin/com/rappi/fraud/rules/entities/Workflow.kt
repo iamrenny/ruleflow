@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.rappi.fraud.rules.entities.serializers.LocalDateTimeDeserializer
 import com.rappi.fraud.rules.entities.serializers.LocalDateTimeSerializer
-import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.services.WorkflowEditionService
 import io.reactiverse.reactivex.pgclient.Row
 import java.time.LocalDateTime
@@ -61,7 +60,7 @@ data class Workflow(
         active = row.getBoolean("is_active")
     )
 
-    val evaluator @JsonIgnore get() = WorkflowEvaluator(this.workflowAsString!!)
+    val evaluator @JsonIgnore get() = com.rappi.analang.Workflow(this.workflowAsString!!)
 
     fun activate(): Workflow = this.copy(active = true)
 }

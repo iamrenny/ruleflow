@@ -15,13 +15,13 @@ import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
 import com.rappi.fraud.rules.entities.Workflow
+
 import com.rappi.fraud.rules.entities.WorkflowVersion
 import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.entities.WorkflowResult
 import com.rappi.fraud.rules.entities.GetVersionRequest
 import com.rappi.fraud.rules.exceptions.ErrorRequestException
-import com.rappi.fraud.rules.parser.WorkflowEvaluator
 
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
@@ -50,7 +50,7 @@ class WorkflowService @Inject constructor(
     fun save(request: CreateWorkflowRequest): Single<Workflow> {
         val workflow = Workflow(
             countryCode = request.countryCode,
-            name = WorkflowEvaluator(request.workflow).validateAndGetWorkflowName(),
+            name = com.rappi.analang.Workflow(request.workflow).validateAndGetWorkflowName(),
             workflowAsString = request.workflow,
             userId = request.userId
         )
