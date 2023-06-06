@@ -24,14 +24,19 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                 ruleSet.rules()
                     .forEach { rule ->
                         try {
-                            // if(rule.name() == "CA_FALOPA_" AND ESTA EN GC )
                             val visitedRule = ruleEvaluator.visit(rule.expr())
-                            if (visitedRule is Boolean && visitedRule) {
+                            if (visitedRule  is Boolean && visitedRule) {
+                                val res = if(rule.return_result().expr() != null) {
+                                    ruleEvaluator.visit(rule.return_result().expr())
+                                } else {
+                                    rule.return_result().state().ID().text
+                                }
+
                                 val result = WorkflowResult(
                                     workflow = ctx.workflow_name().text.removeSingleQuote(),
                                     ruleSet = ruleSet.name().text.removeSingleQuote(),
                                     rule = rule.name().text.removeSingleQuote(),
-                                    result = rule.result.text,
+                                    result = res.toString(),
                                     warnings = warnings
                                 )
 

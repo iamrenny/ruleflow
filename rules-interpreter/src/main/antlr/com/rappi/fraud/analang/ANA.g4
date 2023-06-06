@@ -20,15 +20,17 @@ STRING_NOT_SPECIAL_CHARS: '\'' [a-zA-Z0-9_-]+ '\'';
 
 rulesets: K_RULESET name rules*;
 
-rules: name expr (K_THEN|K_RETURN) result = state actions?;
+rules: name expr ((K_THEN (K_WITH| K_AND)?  then_result = actions) | (K_RETURN result = return_result actions? ));
 
 name: string_literal;
 
-default_result: K_DEFAULT (K_THEN | K_RETURN)? result=state;
+default_result: K_DEFAULT (K_THEN | K_RETURN)? result=state?;
+
+return_result: (state | expr);
 
 state: ID;
 
-actions: K_WITH action (K_AND action)*?;
+actions: (K_WITH|K_AND)? action (K_AND action)*?;
 
 action: K_ACTION '(' param_value=string_literal (COMMA action_params)? ')'
       | action_id=ID ('(' action_params ')')?;
@@ -52,8 +54,9 @@ expr: L_PAREN expr R_PAREN                                                      
     | op=ABS L_PAREN left=expr R_PAREN                                          #unary
     | left=expr op=K_AND right=expr                                             #binaryAnd
     | left=expr op=K_OR right=expr                                              #binaryOr
-    | validProperty                                                              #property
-    | validValue                                                                 #value;
+    | validValue                                                                 #value
+    | validProperty                                                              #property;
+
 
 listElems: storedList=K_LIST L_PAREN string_literal R_PAREN
          | literalList=string_literal (COMMA string_literal)*
@@ -61,6 +64,7 @@ listElems: storedList=K_LIST L_PAREN string_literal R_PAREN
 
 validValue: string = string_literal
           | number=NUMERIC_LITERAL
+          | booleanLiteral=BOOLEAN_LITERAL
           | nullValue=K_NULL
           | currentDate=CURRENT_DATE;
 
@@ -124,10 +128,11 @@ DAY_OF_WEEK: D A Y O F W E E K;
 
 
 ID: [a-zA-Z_] [a-zA-Z_0-9]*;
- NUMERIC_LITERAL
+NUMERIC_LITERAL
   : MINUS? DIGIT+ ( '.' DIGIT* )? ( E [-+]? DIGIT+ )?
   | '.' DIGIT+ ( E [-+]? DIGIT+ )?
   ;
+BOOLEAN_LITERAL: T R U E | F A L S E;
 DQUOTA_STRING: '"' ('\\'. | '\\"' | ~['"\\'])* '"';
 SQUOTA_STRING: '\'' ('\\'. | '\'\'' | ~('\'' | '\\'))* '\'';
 
