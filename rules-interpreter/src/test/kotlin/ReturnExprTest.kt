@@ -10,7 +10,7 @@ class ReturnExprTest {
             workflow 'test'
                 ruleset 'dummy'
                     'item_a' bucket = '4' return courier_model_response.score * city_features.percentile_q1
-                default allow
+                default 0
             end
         """
             val ruleEngine = Workflow(workflow)

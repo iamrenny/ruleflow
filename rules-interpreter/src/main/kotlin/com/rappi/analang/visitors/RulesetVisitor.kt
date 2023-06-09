@@ -69,7 +69,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
             workflow = ctx.workflow_name().text.removeSingleQuote(),
             ruleSet = "default",
             rule = "default",
-            result = ctx.default_result().result.text,
+            result = ctx.default_clause().result.text,
             warnings = warnings
         )
     }

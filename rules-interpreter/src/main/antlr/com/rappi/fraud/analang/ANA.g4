@@ -10,7 +10,7 @@ error: UNEXPECTED_CHAR {
     throw new RuntimeException("UNEXPECTED_CHAR= " + $UNEXPECTED_CHAR.text);
 };
 
-workflow: K_WORKFLOW workflow_name rulesets* default_result K_END;
+workflow: K_WORKFLOW workflow_name rulesets* default_clause K_END;
 
 workflow_name: STRING_NOT_SPECIAL_CHARS;
 
@@ -24,7 +24,9 @@ rules: name expr ((K_THEN (K_WITH| K_AND)?  then_result = actions) | (K_RETURN r
 
 name: string_literal;
 
-default_result: K_DEFAULT (K_THEN | K_RETURN)? result=state?;
+default_clause: K_DEFAULT (K_THEN | K_RETURN)? result = default_result;
+
+default_result: state|validProperty|validValue;
 
 return_result: (state | expr);
 
