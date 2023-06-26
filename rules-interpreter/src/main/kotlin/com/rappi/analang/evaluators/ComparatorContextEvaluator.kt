@@ -24,11 +24,29 @@ class ComparatorContextEvaluator : ContextEvaluator<ComparatorContext> {
                 left = left.toString().toBigDecimal().setScale(10, RoundingMode.DOWN),
                 right = right.toString().toBigDecimal().setScale(10, RoundingMode.DOWN)
             )
+            left is String && right is String -> compareString(
+                operator = ctx.op,
+                left = left.toString(),
+                right = right.toString()
+            )
             else -> compareAny(
                 operator = ctx.op,
                 left = left,
                 right = right
             )
+        }
+    }
+
+    private fun compareString(operator: Token, left: String, right: String): Boolean {
+        return when (operator.type) {
+            EQ, EQ_IC -> left == right
+            NOT_EQ -> left != right
+            LT -> left < right
+            LT_EQ -> left <= right
+            GT -> left > right
+            GT_EQ -> left >= right
+
+            else -> throw RuntimeException("Invalid condition ${operator.text}")
         }
     }
 
