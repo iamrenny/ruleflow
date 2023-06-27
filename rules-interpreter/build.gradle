@@ -137,7 +137,6 @@ def getLatestGitTag() {
 
 def latestTag = getLatestGitTag() ?: '1.0.0'
 
-tagVersion = latestTag
 
 
 compileKotlin.dependsOn(generateGrammarSource)

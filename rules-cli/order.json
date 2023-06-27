@@ -1,0 +1,11 @@
+{
+  "order_id": "102931",
+  "payment_method": {
+    "payment_type": "credit_card"
+  },
+  "order": {
+    "store": {
+      "store_type": "restaurants"
+    }
+  }
+}
