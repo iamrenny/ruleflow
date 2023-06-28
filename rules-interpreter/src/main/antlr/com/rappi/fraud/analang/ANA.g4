@@ -20,7 +20,9 @@ STRING_NOT_SPECIAL_CHARS: '\'' [a-zA-Z0-9_-]+ '\'';
 
 rulesets: K_RULESET name rules*;
 
-rules: name expr ((K_THEN (K_WITH| K_AND)?  then_result = actions) | (K_RETURN result = return_result actions? ));
+rules: name rule_body;
+
+rule_body: expr ((K_THEN (K_WITH| K_AND)?  then_result = actions) | (K_RETURN result = return_result actions? ));
 
 name: string_literal;
 

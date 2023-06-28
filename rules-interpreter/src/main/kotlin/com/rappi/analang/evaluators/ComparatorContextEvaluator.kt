@@ -1,5 +1,7 @@
 package com.rappi.fraud.rules.parser.evaluators
 
+import com.rappi.analang.evaluators.ContextEvaluator
+import com.rappi.analang.visitors.Visitor
 import com.rappi.fraud.analang.ANAParser.ComparatorContext
 import com.rappi.fraud.analang.ANAParser.EQ
 import com.rappi.fraud.analang.ANAParser.EQ_IC
@@ -9,7 +11,6 @@ import com.rappi.fraud.analang.ANAParser.K_NULL
 import com.rappi.fraud.analang.ANAParser.LT
 import com.rappi.fraud.analang.ANAParser.LT_EQ
 import com.rappi.fraud.analang.ANAParser.NOT_EQ
-import com.rappi.fraud.rules.parser.visitors.Visitor
 import org.antlr.v4.runtime.Token
 import java.math.RoundingMode
 

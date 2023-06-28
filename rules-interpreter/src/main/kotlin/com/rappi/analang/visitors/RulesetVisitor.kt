@@ -24,12 +24,12 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                 ruleSet.rules()
                     .forEach { rule ->
                         try {
-                            val visitedRule = ruleEvaluator.visit(rule.expr())
+                            val visitedRule = ruleEvaluator.visit(rule.rule_body().expr())
                             if (visitedRule  is Boolean && visitedRule) {
-                                val res = if(rule.return_result().expr() != null) {
-                                    ruleEvaluator.visit(rule.return_result().expr())
+                                val res = if(rule.rule_body().return_result().expr() != null) {
+                                    ruleEvaluator.visit(rule.rule_body().return_result().expr())
                                 } else {
-                                    rule.return_result().state().ID().text
+                                    rule.rule_body().return_result().state().ID().text
                                 }
 
                                 val result = WorkflowResult(
@@ -40,7 +40,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                                     warnings = warnings
                                 )
 
-                                return if (rule.actions() == null) {
+                                return if (rule.rule_body().actions() == null) {
                                     result
                                 } else {
                                     val (actionsList, actionsMap) = visitActions(rule)
@@ -75,7 +75,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
     }
 
     private fun visitActions(rule: ANAParser.RulesContext): Pair<List<Action>, Map<String, Map<String, String>>> {
-        val actions = ActionsVisitor().visit(rule.actions())
+        val actions = ActionsVisitor().visit(rule.rule_body().actions())
         val actionsList = actions.map { action -> Action(action.first, action.second) }
         val actionsMap = actions.toMap()
         return Pair(actionsList, actionsMap)

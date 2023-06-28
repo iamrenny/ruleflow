@@ -1,23 +1,23 @@
 package com.rappi.analang.visitors
 
-import com.rappi.fraud.analang.ANABaseVisitor
-import com.rappi.fraud.analang.ANAParser
 import com.rappi.analang.evaluators.AggregationContextEvaluator
 import com.rappi.analang.evaluators.BinaryAndContextEvaluator
 import com.rappi.analang.evaluators.BinaryOrContextEvaluator
-import com.rappi.analang.evaluators.ComparatorContextEvaluator
 import com.rappi.analang.evaluators.ContextEvaluator
 import com.rappi.analang.evaluators.DateDiffContextEvaluator
+import com.rappi.analang.evaluators.DayOfWeekContextEvaluator
 import com.rappi.analang.evaluators.ListContextEvaluator
 import com.rappi.analang.evaluators.MathAddContextEvaluator
 import com.rappi.analang.evaluators.MathMulContextEvaluator
 import com.rappi.analang.evaluators.ParenthesisContextEvaluator
 import com.rappi.analang.evaluators.PropertyContextEvaluator
+import com.rappi.analang.evaluators.RegexContextEvaluator
 import com.rappi.analang.evaluators.UnaryContextEvaluator
 import com.rappi.analang.evaluators.ValidPropertyContextEvaluator
 import com.rappi.analang.evaluators.ValueContextEvaluator
-import com.rappi.analang.evaluators.DayOfWeekContextEvaluator
-import com.rappi.analang.evaluators.RegexContextEvaluator
+import com.rappi.fraud.analang.ANABaseVisitor
+import com.rappi.fraud.analang.ANAParser
+import com.rappi.fraud.rules.parser.evaluators.ComparatorContextEvaluator
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 
