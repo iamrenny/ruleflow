@@ -88,4 +88,25 @@ class CompareTest {
             )
         )
     }
+
+    @Test
+    fun `given a string when operating ne operation must go ok`() {
+        val workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'x_greater' x <> '7.53'  return block
+                default allow
+            end
+        """
+
+        val ruleEngine = Workflow(workflow)
+        Assertions.assertEquals(
+            WorkflowResult( "test", "dummy", "x_greater", "block"),
+            ruleEngine.evaluate(
+                mapOf(
+                    "x" to "7.52"
+                )
+            )
+        )
+    }
 }
