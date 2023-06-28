@@ -1,5 +1,5 @@
-import com.rappi.analang.Workflow
-import com.rappi.analang.vo.WorkflowResult
+import com.rappi.fraud.rules.parser.WorkflowEvaluator
+import com.rappi.fraud.rules.parser.vo.WorkflowEvaluatorResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -15,9 +15,9 @@ class CompareTest {
             end
         """
 
-        val ruleEngine = Workflow(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult( "test", "dummy", "x_is_lesser", "block"),
+            WorkflowEvaluatorResult( "test", "dummy", "x_is_lesser", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to "7.52.2.19911"
@@ -36,9 +36,9 @@ class CompareTest {
             end
         """
 
-        val ruleEngine = Workflow(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult( "test", "dummy", "x_is_lesser", "block"),
+            WorkflowEvaluatorResult( "test", "dummy", "x_is_lesser", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to "7.52.2.19911"
@@ -56,9 +56,9 @@ class CompareTest {
             end
         """
 
-        val ruleEngine = Workflow(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult( "test", "dummy", "x_greater", "block"),
+            WorkflowEvaluatorResult( "test", "dummy", "x_greater", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to "7.53.2.19911"
@@ -77,9 +77,9 @@ class CompareTest {
             end
         """
 
-        val ruleEngine = Workflow(workflow)
+        val ruleEngine = WorkflowEvaluator(workflow)
         Assertions.assertEquals(
-            WorkflowResult( "test", "dummy", "x_greater", "block"),
+            WorkflowEvaluatorResult( "test", "dummy", "x_greater", "block"),
             ruleEngine.evaluate(
                 mapOf(
                     "x" to "7.53.2.19911"

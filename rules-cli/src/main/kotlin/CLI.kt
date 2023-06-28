@@ -1,7 +1,7 @@
+import com.rappi.analang.listeners.ErrorListener
+import com.rappi.analang.visitors.RulesetVisitor
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.fraud.rules.parser.listeners.ErrorListener
-import com.rappi.fraud.rules.parser.visitors.RulesetVisitor
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.tree.Tree
+import org.antlr.v4.runtime.tree.ParseTreeWalker
 import java.io.File
 
 fun main(args: Array<String>) {
@@ -61,78 +61,23 @@ fun evaluate(inputData: String, workflow: String): String {
         Execution Result for Workflow: ${result.workflow}:
             Matched Ruleset: ${result.ruleSet}
             Matched Rule: ${result.rule}
-            Risk: ${result.risk}
+            Risk: ${result.result}
             Actions With Params: ${result.actionsWithParams}
             Warnings: ${result.warnings.ifEmpty { "None" }}
             Is Error?: ${result.error}
     """.trimIndent()
 }
 
-fun formatter(workflow: String): String {
+fun formatter(workflow: String) {
     val input = CharStreams.fromString(workflow)
     val lexer = ANALexer(input)
     val tokens = CommonTokenStream(lexer)
     val parser = ANAParser(tokens)
     parser.addErrorListener(ErrorListener())
     val tree = parser.parse()
-    return TreeUtils.toString(tree)
+
+    val printer = PrettyPrinter(tokens)
+    val walker = ParseTreeWalker()
+    walker.walk(printer, tree)
 }
 
-object TreeUtils {
-    /** Platform dependent end-of-line marker  */
-    val Eol = System.lineSeparator()
-
-    /** The literal indent char(s) used for pretty-printing  */
-    const val Indents = " "
-    var level = 0
-
-
-    /**
-     * Pretty print out a whole tree. [.getNodeText] is used on the node payloads to get the text
-     * for the nodes. (Derived from Trees.toStringTree(....))
-     */
-    fun toPrettyTree(t: Tree): String {
-        return process(t.getChild(0))
-        .replace("(?m)^\\s+$".toRegex(), "").replace("\\r?\\n\\r?\\n".toRegex(), Eol)
-    }
-
-    fun toString(t: Tree): String {
-        val sb = StringBuilder()
-        if(t.childCount == 0)
-            return t.toString()
-
-        for(i in 0 until t.childCount) {
-            sb.append(" ")
-            sb.append(toString(t.getChild(i)))
-        }
-
-        return sb.toString()
-    }
-
-
-    private fun process(t: Tree): String {
-        if (t.childCount == 0)
-            return "$t"
-
-        val sb = StringBuilder()
-
-        level++
-        for(i in 0 until t.childCount) {
-            sb.append(process(t.getChild(i)))
-        }
-        level--
-        sb.append(lead(level))
-        return sb.toString()
-    }
-
-    private fun lead(level: Int): String? {
-        val sb = StringBuilder()
-        if (level > 0) {
-            sb.append(Eol)
-            for (cnt in 0 until level) {
-                sb.append(Indents)
-            }
-        }
-        return sb.toString()
-    }
-}
