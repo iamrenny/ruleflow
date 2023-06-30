@@ -30,7 +30,7 @@ default_clause: K_DEFAULT (K_THEN | K_RETURN)? result = default_result;
 
 default_result: state|validProperty|validValue;
 
-return_result: (state | expr);
+return_result: (state | K_EXPR L_PAREN expr R_PAREN);
 
 state: ID;
 
@@ -128,6 +128,7 @@ K_AVERAGE: A V E R A G E;
 K_DISTINCT: D I S T I N C T;
 K_NULL: N U L L;
 DAY_OF_WEEK: D A Y O F W E E K;
+K_EXPR : E X P R;
 
 
 
