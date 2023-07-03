@@ -30,7 +30,6 @@ class PrettyPrinter(val tokens: TokenStream) : ANABaseListener() {
 
     override fun enterRules(ctx: ANAParser.RulesContext) {
         printIndent()
-        val ruleName = ctx.name().text
         val exprTokens = tokens.getText(ctx.start, ctx.stop)
         println(exprTokens)
         indentLevel++
