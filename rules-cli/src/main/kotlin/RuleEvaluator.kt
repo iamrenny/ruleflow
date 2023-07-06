@@ -28,13 +28,7 @@ class RuleEvaluator(val inputRule: String, private val data: Map<String, *>, pri
         val ruleEvaluator = Visitor(data, lists, data)
 
         return try {
-            val visitedRule = ruleEvaluator.visit(ctx)
-            return if (visitedRule  is Boolean && visitedRule) {
-                "= true"
-            } else {
-                "= false"
-            }
-
+            return ruleEvaluator.visit(ctx).toString()
         }  catch (ex: Exception) {
             println(
                 "Error while evaluating rule ${tokens.getText(ctx.start, ctx.stop)}: ${ex.message}"

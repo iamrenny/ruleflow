@@ -5,13 +5,21 @@ import com.rappi.fraud.analang.ANAParser
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import java.io.File
+
+var inputFile: String? = null
+
 
 fun main(args: Array<String>) {
     val parser = ArgParser("ANA Lang CLI")
@@ -30,8 +38,9 @@ fun main(args: Array<String>) {
     val workflowFile = if(!workflowFilename.isNullOrEmpty())
         File(workflowFilename).readText() else null
 
-    val inputFile = if(!input.isNullOrEmpty())
+    inputFile = if(!inputFile.isNullOrEmpty())
         File(input).readText() else null
+
     when {
         isInteractive -> {
             interactive(inputFile)
@@ -46,7 +55,8 @@ fun main(args: Array<String>) {
                 throw RuntimeException("Workflow file is required for output")
             if(inputFile == null)
                 throw RuntimeException("Input file is required for output")
-            evaluate(inputFile, workflowFile)
+
+            evaluate(inputFile!!, workflowFile)
         }
     }
 }
@@ -56,44 +66,45 @@ fun main(args: Array<String>) {
 fun interactive(file: String?) {
     println("Enter input data or 'q' to quit:")
     while (true) {
-         val inputFile = if(file != null) {
+        inputFile = if(file != null) {
              getFile()
-         } else {file }
+         } else { inputFile }
 
         print("#>")
 
         val input = readln()
         if (input == "o" || input == "open") {
-            val inputData = File(inputFile).readText()
-            print(inputData)
+            inputFile = getFile()
+            println(Json.encodeToJsonElement(inputFile))
         } else if (input == "e" || input == "evaluate") {
             val inputData =  getFile()
             print("Enter workflow file name")
             val workflowName = readln()
             val workflowData = File(workflowName).readText()
-            evaluate(inputData, workflowData)
+            evaluate(inputData!!, workflowData)
         } else if (input == "r" || input == "run") {
             try {
-                var inputData = getFile()
-                println("Enter rule for evaluation")
+                if(inputFile == null)
+                    inputFile = getFile()
+                println("Enter rule for evaluation. Type \\h for help with commands or press Crtl + C to exit")
                 while (true) {
                     try {
                         print("run>")
                         val rule = readln()
                         if(rule == "\\j") {
-                            println(inputData)
-                        }
-                        if(rule == "\\o") {
-                            inputData = getFile()
-                        }
-                        if(rule == "\\h") {
+                            println(inputFile)
+                        } else if(rule == "\\o") {
+                            inputFile = getFile()
+                        } else if(rule == "\\h") {
                             println("""
                                 \h show this message
                                 \j shows the loaded json
                                 \o opens a new input file
                             """.trimIndent())
+                        } else if(rule == "\\q") {
+                            return
                         } else {
-                            println(run(inputData, rule))
+                            println(run(inputFile!!, rule))
                         }
                     } catch (e: Exception){
                         println(e.message)
@@ -110,12 +121,18 @@ fun interactive(file: String?) {
     }
 }
 
-private fun getFile(): String {
-    print("Enter input file name in JSON format: ")
-    val inputFileName = readln()
-    val inputData = File(inputFileName).readText()
+private fun getFile(): String? {
+    while(true) {
+        try {
+            print("Enter input file name in JSON format: ")
+            val inputFileName = readln()
+            val inputData = File(inputFileName).readText()
+            return inputData
+        } catch (e: Exception) {
+            println(e.message)
+        }
+}
 
-    return inputData
 }
 
 enum class Format {
@@ -130,7 +147,7 @@ fun evaluate(inputData: String, workflow: String): String {
     parser.addErrorListener(ErrorListener())
     val tree = parser.parse()
 
-    val inputMap = Json.decodeFromString<JsonObject>(inputData)
+    val inputMap = Json.decodeFromString< JsonObject>(inputData)
     val result = RulesetVisitor(inputMap, mapOf())
         .visit(tree)
 
@@ -147,12 +164,24 @@ fun evaluate(inputData: String, workflow: String): String {
 
 fun run(inputData: String, rule: String): String {
 
-    val inputMap = Json.decodeFromString<JsonObject>(inputData)
-    val result = RuleEvaluator(rule, inputMap, mapOf())
-        .evaluate()
+    val jsonObject = Json.decodeFromString<JsonObject>(inputData)
+    val map = serialize(jsonObject)
 
-    return result
+    return RuleEvaluator(rule, map, mapOf())
+        .evaluate()
 }
+
+fun serialize(jsonObject: JsonObject): Map<String, *> {
+    return jsonObject.jsonObject.mapValues { (_, jsonElement) ->
+        when (jsonElement) {
+            is JsonPrimitive -> jsonElement.content
+            is JsonObject -> jsonElement.toMap()
+            is JsonArray -> jsonElement.toList()
+            else -> throw IllegalArgumentException("Unsupported JSON element type: ${jsonElement::class}")
+        }
+    }
+}
+
 fun formatter(workflow: String) {
     val input = CharStreams.fromString(workflow)
     val lexer = ANALexer(input)
