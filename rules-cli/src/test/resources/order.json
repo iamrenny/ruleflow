@@ -1,5 +1,13 @@
 {
   "order_id": "102931",
+  "items": [
+    {
+      "item_id": "102930"
+    },
+    {
+      "item_id": "102932"
+    }
+  ],
   "payment_method": {
     "payment_type": "credit_card"
   },

@@ -9,6 +9,7 @@ import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
@@ -67,8 +68,8 @@ fun interactive(file: String?) {
     println("Enter input data or 'q' to quit:")
     while (true) {
         inputFile = if(file != null) {
-             getFile()
-         } else { inputFile }
+            getFile()
+        } else { inputFile }
 
         print("#>")
 
@@ -131,7 +132,7 @@ private fun getFile(): String? {
         } catch (e: Exception) {
             println(e.message)
         }
-}
+    }
 
 }
 
@@ -171,12 +172,15 @@ fun run(inputData: String, rule: String): String {
         .evaluate()
 }
 
-fun serialize(jsonObject: JsonObject): Map<String, *> {
+fun serialize(jsonObject: JsonElement): Map<String, *> {
     return jsonObject.jsonObject.mapValues { (_, jsonElement) ->
         when (jsonElement) {
             is JsonPrimitive -> jsonElement.content
-            is JsonObject -> jsonElement.toMap()
+            is JsonObject -> serialize(jsonElement)
             is JsonArray -> jsonElement.toList()
+                .map {
+                    serialize(it)
+                }
             else -> throw IllegalArgumentException("Unsupported JSON element type: ${jsonElement::class}")
         }
     }
