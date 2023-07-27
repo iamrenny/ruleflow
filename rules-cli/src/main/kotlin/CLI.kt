@@ -24,16 +24,16 @@ var inputFile: String? = null
 
 fun main(args: Array<String>) {
     val parser = ArgParser("ANA Lang CLI")
-    val input by parser.option(ArgType.String, shortName = "f", fullName = "input-file", description = "Input file")
+    val input by parser.option(ArgType.String, shortName = "F", fullName = "input-file", description = "Input file")
     val workflowFilename by parser.option(ArgType.String, shortName = "w", fullName = "workflow-file", description = "Workflow file")
     val output by parser.option(ArgType.String, shortName = "o", fullName = "output", description = "Output file name")
-    val format by parser.option(ArgType.Choice<Format>(), shortName = "F",
-        description = "Format for output file").default(Format.JSON)
+
     val prettyPrint by parser.option(ArgType.Boolean, shortName = "p", fullName = "pretty-print",
         description = "Workflow Indentation and Format").default(false)
     val debug by parser.option(ArgType.Boolean, shortName = "d", fullName = "debug", description = "Turn on debug mode").default(false)
     val isInteractive by parser.option(ArgType.Boolean, shortName = "i", fullName = "interactive", description = "Enable interactive terminal")
         .default(false)
+    val filter by parser.option(ArgType.String, shortName = "f", fullName = "filter")
 
     parser.parse(args)
     val workflowFile = if(!workflowFilename.isNullOrEmpty())
@@ -50,6 +50,11 @@ fun main(args: Array<String>) {
             if(workflowFile == null)
                 throw RuntimeException("Workflow file is required for pretty print")
             formatter(workflowFile)
+        }
+        filter != null -> {
+            if (workflowFile == null)
+                throw RuntimeException("Workflow file is required for pretty print")
+            filter(workflowFile, filter!!)
         }
         else ->  {
             if(workflowFile == null)
@@ -199,6 +204,18 @@ fun formatter(workflow: String) {
     walker.walk(printer, tree)
 }
 
+fun filter(workflow: String, criteria: String) {
+    val input = CharStreams.fromString(workflow)
+    val lexer = ANALexer(input)
+    val tokens = CommonTokenStream(lexer)
+    val parser = ANAParser(tokens)
+    parser.addErrorListener(ErrorListener())
+    val tree = parser.parse()
+
+    val printer = FilterListener(tokens, criteria)
+    val walker = ParseTreeWalker()
+    walker.walk(printer, tree)
+}
 fun json(input: String){
     println(input)
 }

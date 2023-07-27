@@ -2,8 +2,8 @@ import com.rappi.fraud.analang.ANABaseListener
 import com.rappi.fraud.analang.ANAParser
 import org.antlr.v4.runtime.TokenStream
 
-class PrettyPrinter(val tokens: TokenStream) : ANABaseListener() {
-    private var indentLevel: Int = 0
+open class PrettyPrinter(val tokens: TokenStream) : ANABaseListener() {
+    var indentLevel: Int = 0
 
     override fun enterWorkflow(ctx: ANAParser.WorkflowContext) {
         print("workflow ")
@@ -50,7 +50,7 @@ class PrettyPrinter(val tokens: TokenStream) : ANABaseListener() {
         printIndent()
         println("end")
     }
-    private fun printIndent() {
+    open fun printIndent() {
         repeat(indentLevel) { print("  ") }
     }
 }
