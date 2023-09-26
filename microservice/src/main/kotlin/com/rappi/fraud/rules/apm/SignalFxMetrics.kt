@@ -11,36 +11,39 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 
-class SignalFxMetrics @Inject constructor(private val config: Config) {
+class SignalFxMetrics @Inject constructor(val sfxMetrics: SfxMetrics, private val config: Config) {
 
     val logger by LoggerDelegate()
-    private val sfxMetrics: SfxMetrics
 
-    init {
-        val ingestUrl = URL(config.ingestUrl)
-        val signalFxEndpoint: SignalFxReceiverEndpoint =
-            SignalFxEndpoint(ingestUrl.protocol, ingestUrl.host, ingestUrl.port)
-        val metricRegistry = MetricRegistry()
-        val signalFxReporter = SignalFxReporter.Builder(
-            metricRegistry,
-            config.token
-        ).setEndpoint(signalFxEndpoint).build()
-        signalFxReporter.start(config.timePeriodSeconds, TimeUnit.MILLISECONDS)
-        sfxMetrics = SfxMetrics(metricRegistry, signalFxReporter.metricMetadata)
-    }
 
     fun reportMissingFields(warnings: Set<String>, event: String, country: String) {
         val fields = warnings.map { it.split(" ")[0] }
         for(field in fields) {
+            val replacedFields = replaceFields(field)
             sfxMetrics.counter("fraud_rules_engine_missing_fields",
-                mapOf("event" to event, "field_name" to field, "country" to country, "env" to  if(config.country == "dev") "dev" else "prod")
+                mapOf("event" to event, "field_name" to replacedFields, "country" to country, "env" to  if(config.country == "dev") "dev" else "prod")
             ).inc()
         }
+    }
+
+    /**
+     * This method replaces the field names in the SignalFx metrics to avoid unnecessary metrics.
+     */
+    private fun replaceFields(field: String): String {
+        val sortedNames = config.featureGroups.sortedByDescending { it.length }
+
+        for (name in sortedNames) {
+            if (field.startsWith(name)) {
+                return name
+            }
+        }
+        return field
     }
     data class Config(
         val country: String,
         val ingestUrl: String,
         val token: String,
-        val timePeriodSeconds: Long
+        val timePeriodSeconds: Long,
+        val featureGroups: Set<String>
     )
 }
