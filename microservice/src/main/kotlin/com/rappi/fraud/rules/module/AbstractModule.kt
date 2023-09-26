@@ -18,6 +18,8 @@ import com.signalfx.codahale.SfxMetrics
 import com.signalfx.codahale.reporter.SignalFxReporter
 import com.signalfx.endpoint.SignalFxEndpoint
 import com.signalfx.endpoint.SignalFxReceiverEndpoint
+import com.signalfx.metrics.auth.AuthToken
+import com.signalfx.metrics.auth.StaticAuthToken
 import io.vertx.core.json.JsonObject
 import io.vertx.reactivex.core.Vertx
 import io.vertx.reactivex.ext.jdbc.JDBCClient
@@ -133,9 +135,11 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
         val signalFxEndpoint: SignalFxReceiverEndpoint =
             SignalFxEndpoint(ingestUrl.protocol, ingestUrl.host, ingestUrl.port)
         val metricRegistry = MetricRegistry()
+        val defaultSourceName = "fraud-rules-engine"
         val signalFxReporter = SignalFxReporter.Builder(
             metricRegistry,
-            config.token
+            StaticAuthToken(config.token),
+            defaultSourceName
         ).setEndpoint(signalFxEndpoint).build()
         signalFxReporter.start(config.timePeriodSeconds, TimeUnit.MILLISECONDS)
         return SfxMetrics(metricRegistry, signalFxReporter.metricMetadata)
