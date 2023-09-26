@@ -1,0 +1,3 @@
+signal-fx:
+  SIGNALFX_METRICS_AUTH_TOKEN: "abcd"
+  SIGNALFX_INGEST_URL: "http://localhost:8095"

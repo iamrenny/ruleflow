@@ -1,6 +1,7 @@
 settings:
   APP_RESPONSE_TIMEOUT: 1500
   ADDED_REQUEST_AUTH_TOKEN: "8FAC54A0EE1203E6B81833875F8D6064E65C249796ACD13B05BC8D49A65495DA"
+  APP_COUNTRY_CODE: 'dev'
 database:
   DB_URL: "jdbc:postgresql://postgres:5432/fraud-rules-engine"
   DB_USER: "fraud-rules-engine"
@@ -24,3 +25,6 @@ documentdb:
   COLLECTIONS:
     REQUEST_DATA: "workflow_responses"
     REQUEST_DATA_OLD: "workflow_responses_old"
+signal-fx:
+  SIGNALFX_METRICS_AUTH_TOKEN: "abcd"
+  SIGNALFX_INGEST_URL: "https://ingest.us0.signalfx.com/v2/datapoint"

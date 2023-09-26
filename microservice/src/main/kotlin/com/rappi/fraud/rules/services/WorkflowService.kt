@@ -20,6 +20,7 @@ import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.entities.WorkflowResult
 import com.rappi.fraud.rules.entities.GetVersionRequest
+import com.rappi.fraud.rules.apm.SignalFxMetrics
 import com.rappi.fraud.rules.parser.WorkflowEvaluator
 import com.rappi.fraud.rules.parser.errors.ErrorRequestException
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
@@ -38,7 +39,8 @@ class WorkflowService @Inject constructor(
     private val workflowRepository: WorkflowRepository,
     private val listRepository: ListRepository,
     private val workFlowEditionService: WorkflowEditionService,
-    private val documentDbDataRepository: DocumentDbDataRepository
+    private val documentDbDataRepository: DocumentDbDataRepository,
+    private val signalFxMetrics: SignalFxMetrics
 ) {
 
     private val logger by LoggerDelegate()
@@ -136,7 +138,7 @@ class WorkflowService @Inject constructor(
                         countryCode = countryCode,
                         workflowName = name
                     )
-
+                    signalFxMetrics.reportMissingFields(result.warnings, name, countryCode)
                     Grafana.warn(result.warnings, result.workflow, version?.toString() ?: "active", countryCode)
 
                     documentDbDataRepository.save(workflowResponse)

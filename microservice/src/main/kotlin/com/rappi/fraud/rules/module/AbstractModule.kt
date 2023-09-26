@@ -3,11 +3,13 @@ package com.rappi.fraud.rules.module
 import com.google.inject.AbstractModule
 import com.google.inject.Provides
 import com.google.inject.multibindings.Multibinder
+import com.google.inject.name.Named
 import com.rappi.fraud.rules.db.JdbcClientProvider
 import com.rappi.fraud.rules.documentdb.DocumentDb
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.DocumentDbProvider
 import com.rappi.fraud.rules.entities.DocumentDbRepository
+import com.rappi.fraud.rules.apm.SignalFxMetrics
 import com.rappi.fraud.rules.repositories.Database
 import com.rappi.fraud.rules.verticle.MainRouter
 import com.rappi.fraud.rules.verticle.MainVerticle
@@ -106,4 +108,19 @@ abstract class AbstractModule(private val vertx: Vertx, private val config: Json
             addRequestToken = config.getJsonObject("settings").getString("ADDED_REQUEST_AUTH_TOKEN")
         )
     }
+
+    @Provides
+    fun signalFxMetricsConfig(): SignalFxMetrics.Config {
+        return SignalFxMetrics.Config(
+            country = getCountry(),
+            ingestUrl = config.getJsonObject("signal-fx").getString("SIGNALFX_INGEST_URL"),
+            token = config.getJsonObject("signal-fx").getString("SIGNALFX_METRICS_AUTH_TOKEN"),
+            timePeriodSeconds = 1500
+        )
+    }
+
+    @Provides
+    @Named("countryCode")
+    private fun getCountry() = config.getJsonObject("settings").getString("APP_COUNTRY_CODE")
+
 }
