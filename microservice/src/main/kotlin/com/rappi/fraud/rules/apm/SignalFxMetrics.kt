@@ -20,7 +20,7 @@ class SignalFxMetrics @Inject constructor(val sfxMetrics: SfxMetrics, private va
         val fields = warnings.map { it.split(" ")[0] }
         for(field in fields) {
             val replacedFields = replaceFields(field)
-            sfxMetrics.counter("fraud_rules_engine_missing_fields",
+            sfxMetrics.incrementalCounter("fraud_rules_engine_missing_fields",
                 mapOf("event" to event, "field_name" to replacedFields, "country" to country, "env" to  if(config.country == "dev") "dev" else "prod")
             ).inc()
         }

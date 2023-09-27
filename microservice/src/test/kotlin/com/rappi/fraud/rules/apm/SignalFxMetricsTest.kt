@@ -1,11 +1,11 @@
 package com.rappi.fraud.rules.apm
 
-import com.codahale.metrics.Counter
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.signalfx.codahale.SfxMetrics
+import com.signalfx.codahale.reporter.IncrementalCounter
 import org.junit.jupiter.api.Test
 
 class SignalFxMetricsTest {
@@ -15,10 +15,10 @@ class SignalFxMetricsTest {
         val sfxMetrics = mock<SfxMetrics>()
         val signalFxMetrics = SignalFxMetrics(sfxMetrics, config)
 
-        whenever(sfxMetrics.counter(any<String>(), any<Map<String,String>>())).thenReturn(mock<Counter>())
+        whenever(sfxMetrics.incrementalCounter(any<String>(), any<Map<String,String>>())).thenReturn(mock<IncrementalCounter>())
         signalFxMetrics.reportMissingFields(setOf("mk_payer_address_approved_qty_1d"), "an_event", "dev")
 
-       verify(sfxMetrics).counter("fraud_rules_engine_missing_fields",
+       verify(sfxMetrics).incrementalCounter("fraud_rules_engine_missing_fields",
             mapOf("event" to "an_event", "field_name" to "mk_payer_address", "country" to "dev", "env" to "dev")
         )
     }
@@ -29,10 +29,10 @@ class SignalFxMetricsTest {
         val sfxMetrics = mock<SfxMetrics>()
         val signalFxMetrics = SignalFxMetrics(sfxMetrics, config)
 
-        whenever(sfxMetrics.counter(any<String>(), any<Map<String,String>>())).thenReturn(mock<Counter>())
+        whenever(sfxMetrics.incrementalCounter(any<String>(), any<Map<String,String>>())).thenReturn(mock<IncrementalCounter>())
         signalFxMetrics.reportMissingFields(setOf("mk_payer_address_approved_qty_1d"), "an_event", "dev")
 
-        verify(sfxMetrics).counter("fraud_rules_engine_missing_fields",
+        verify(sfxMetrics).incrementalCounter("fraud_rules_engine_missing_fields",
             mapOf("event" to "an_event", "field_name" to "mk_payer_address", "country" to "dev", "env" to "prod")
         )
     }
