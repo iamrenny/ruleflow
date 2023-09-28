@@ -35,6 +35,11 @@ class ComparatorContextEvaluator : ContextEvaluator<ComparatorContext> {
                 left = left,
                 right = right
             )
+            left is Boolean && listOf("true", "false").contains((right as String).toLowerCase())-> compareComparable(
+                operator = ctx.op,
+                left = left,
+                right = right.toBoolean()
+            )
             left is Comparable<*> && right is Comparable<*> -> compareComparable(
                 operator = ctx.op,
                 left = left as Comparable<Any>,
