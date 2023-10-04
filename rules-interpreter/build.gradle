@@ -132,13 +132,6 @@ publishing {
     }
 }
 
-def getLatestGitTag() {
-    def process = "git describe --tags --abbrev=0".execute()
-    process.text.trim()
-}
-
-def latestTag = getLatestGitTag() ?: '1.0.0'
-
 
 
 compileKotlin.dependsOn(generateGrammarSource)
