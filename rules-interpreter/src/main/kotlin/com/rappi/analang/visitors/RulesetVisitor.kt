@@ -9,7 +9,7 @@ import com.rappi.analang.vo.WorkflowResult
 import org.slf4j.LoggerFactory
 
 class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<String, Set<String>>) : ANABaseVisitor<WorkflowResult>() {
-    private val logger = LoggerFactory.getLogger(this::class.java)
+    val logger = LoggerFactory.getLogger(RulesetVisitor::class.java)
 
     override fun visitParse(ctx: ANAParser.ParseContext): WorkflowResult {
         return visitWorkflow(ctx.workflow())

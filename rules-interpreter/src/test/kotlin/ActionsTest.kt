@@ -4,8 +4,7 @@ import com.rappi.analang.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class
-ActionsTest {
+class ActionsTest {
     @Test
     fun `given a workflow with actions without params must return valid response`() {
         val workflow = """
