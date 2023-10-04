@@ -132,6 +132,4 @@ publishing {
     }
 }
 
-
-
 compileKotlin.dependsOn(generateGrammarSource)

@@ -2,6 +2,12 @@ version: '3'
 services:
   test:
     image: openjdk:11.0-jdk-slim
+    environment:
+      USERNAME_REPOSITORY: ${USERNAME_REPOSITORY}
+      PASSWORD_REPOSITORY: ${PASSWORD_REPOSITORY}
+      NEXUS_USERNAME_REPOSITORY: ${NEXUS_USERNAME}
+      NEXUS_PASSWORD_REPOSITORY: ${NEXUS_PASSWORD}
+      NEXUS_URL_REPOSITORY: ${NEXUS_URL}
     volumes:
       - ${MY_WORKSPACE}:/ws
     working_dir: /ws${WORKSPACE_PATH:-/}
