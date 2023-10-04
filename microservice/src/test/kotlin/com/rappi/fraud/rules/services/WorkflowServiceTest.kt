@@ -1,9 +1,30 @@
 package com.rappi.fraud.rules.services
 
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.doNothing
+import com.nhaarman.mockito_kotlin.eq
+import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.reset
+import com.nhaarman.mockito_kotlin.times
+import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockito_kotlin.verifyZeroInteractions
+import com.nhaarman.mockito_kotlin.whenever
+import com.rappi.fraud.rules.apm.SignalFxMetrics
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.WorkflowResponse
-import com.rappi.fraud.rules.entities.*
+import com.rappi.fraud.rules.entities.ActivateRequest
+import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
+import com.rappi.fraud.rules.entities.CreateWorkflowRequest
+import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.GetVersionRequest
+import com.rappi.fraud.rules.entities.LockWorkflowEditionRequest
+import com.rappi.fraud.rules.entities.RiskDetail
+import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
+import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
+import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
+import com.rappi.fraud.rules.entities.Workflow
+import com.rappi.fraud.rules.entities.WorkflowEditionResponse
+import com.rappi.fraud.rules.entities.WorkflowVersion
 import com.rappi.fraud.rules.exceptions.ErrorRequestException
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
@@ -17,13 +38,12 @@ import io.reactivex.Single
 import io.vertx.core.json.JsonObject
 import io.vertx.micrometer.MicrometerMetricsOptions
 import io.vertx.micrometer.backends.BackendRegistries
-import java.lang.Exception
-import java.time.LocalDateTime
-import java.util.UUID
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.LocalDateTime
+import java.util.*
 
 class WorkflowServiceTest {
 
@@ -33,8 +53,9 @@ class WorkflowServiceTest {
     private val listRepository = mock<ListRepository>()
     private val workFlowEditionService = mock<WorkflowEditionService>()
     private val documentDbDataRepository = mock<DocumentDbDataRepository>()
+    private val signalFxMetrics = mock<SignalFxMetrics>()
     private val service = WorkflowService(activeWorkflowRepository, activeWorkflowHistoryRepository,
-        workflowRepository, listRepository, workFlowEditionService, documentDbDataRepository)
+        workflowRepository, listRepository, workFlowEditionService, documentDbDataRepository, signalFxMetrics)
 
     @BeforeEach
     fun cleanUp() {
@@ -89,6 +110,48 @@ class WorkflowServiceTest {
             .dispose()
     }
 
+    @Test
+    fun testSaveFailed() {
+        val expected = baseWorkflow()
+
+        whenever(workflowRepository
+            .save(
+                Workflow(
+                    countryCode = expected.countryCode,
+                    name = expected.name,
+                    workflowAsString = expected.workflowAsString,
+                    userId = expected.userId)
+            ))
+            .thenReturn(Single.error(RuntimeException("error")))
+
+        whenever(workflowRepository
+            .exists(any(), any()))
+            .thenReturn(Single.just(true))
+
+        whenever(workFlowEditionService
+            .getUserEditing(any(), any()))
+            .thenReturn(Single.just(expected.userId))
+
+        whenever(workFlowEditionService
+            .cancelWorkflowEditing(any(), any()))
+            .thenReturn(Single.just(WorkflowEditionService.WorkflowEditionStatus(
+                "OK",
+                "workflow edition canceled"
+            )))
+
+        service
+            .save(
+                CreateWorkflowRequest(
+                    countryCode = expected.countryCode!!,
+                    workflow = expected.workflowAsString!!,
+                    userId = expected.userId!!)
+            )
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertError(RuntimeException::class.java)
+            .dispose()
+    }
     @Test
     fun testSaveNoExists() {
         val expected = baseWorkflow()
@@ -514,6 +577,52 @@ class WorkflowServiceTest {
     }
 
     @Test
+    fun testActivateFailingSave() {
+        val expected = baseWorkflow().activate()
+
+        val request = ActivateRequest(
+            countryCode = expected.countryCode!!,
+            name = expected.name,
+            version = expected.version!!,
+            userId = UUID.randomUUID().toString()
+        )
+
+        whenever(workflowRepository
+            .getWorkflow(
+                countryCode = expected.countryCode!!,
+                name = expected.name,
+                version = expected.version!!
+            )
+        )
+            .thenReturn(Single.just(expected))
+
+        whenever(activeWorkflowRepository.save(expected))
+            .thenReturn(Single.error(RuntimeException("error")))
+
+        whenever(activeWorkflowHistoryRepository
+            .save(
+                ActiveWorkflowHistory(
+                    workflowId = expected.id!!,
+                    userId = request.userId
+                )
+            ))
+            .thenReturn(Single.just(ActiveWorkflowHistory(
+                id = 1,
+                workflowId = expected.id!!,
+                userId = request.userId,
+                createdAt = LocalDateTime.now()
+            )))
+
+        service
+            .activate(request)
+            .test()
+            .assertSubscribed()
+            .await()
+            .assertFailure(RuntimeException::class.java)
+            .dispose()
+    }
+
+    @Test
     fun testEvaluateFromCache() {
         val workflow = baseWorkflow()
 
@@ -740,7 +849,8 @@ class WorkflowServiceTest {
             }
     }
 
-    fun testGetHistoryFromDb() {
+   @Test
+   fun testGetHistoryFromDb() {
         val request = RulesEngineHistoryRequest(LocalDateTime.now(),
             LocalDateTime.now(),
             "create_order",
@@ -885,6 +995,53 @@ class WorkflowServiceTest {
             .assertComplete()
             .dispose()
         verify(documentDbDataRepository).findInList(any(), any(), any(),eq(false))
+    }
+
+
+    @Test
+    fun `given a workflow info without warnings when evaluating then it should go ok`() {
+        val expected = baseWorkflow()
+
+        val data = JsonObject()
+            .put("d", 101)
+
+        whenever(activeWorkflowRepository.get(expected.countryCode!!, expected.name))
+            .thenReturn(Single.just(expected))
+
+
+        service.evaluate(countryCode = expected.countryCode!!, name = expected.name, data = data)
+            .test()
+            .assertSubscribed()
+            .assertNoErrors()
+            .await()
+
+        verify(signalFxMetrics).reportMissingFields(setOf(), expected.name, expected.countryCode!!)
+    }
+
+
+    @Test
+    fun `given a workflow info with warnings when evaluating then it should go ok`() {
+        val expected = baseWorkflow()
+
+
+        val data = JsonObject()
+            .put("e", 101)
+
+        whenever(activeWorkflowRepository.get(expected.countryCode!!, expected.name))
+            .thenReturn(Single.just(expected))
+
+        doNothing().`when`(signalFxMetrics).reportMissingFields(setOf(), expected.name, expected.countryCode!!)
+
+
+        service.evaluate(countryCode = expected.countryCode!!, name = expected.name, data = data)
+            .test()
+            .assertSubscribed()
+            .assertNoErrors()
+            .await()
+
+
+        verify(signalFxMetrics).reportMissingFields(setOf("d field cannot be found"), expected.name, expected.countryCode!!)
+
     }
 
     private fun baseWorkflow(): Workflow {

@@ -3,6 +3,7 @@ package com.rappi.fraud.rules.services
 import com.google.inject.Inject
 import com.rappi.fraud.rules.apm.Grafana
 import com.rappi.fraud.rules.apm.SignalFx
+import com.rappi.fraud.rules.apm.SignalFxMetrics
 import com.rappi.fraud.rules.documentdb.DocumentDbDataRepository
 import com.rappi.fraud.rules.documentdb.WorkflowResponse
 import com.rappi.fraud.rules.entities.Action
@@ -10,19 +11,17 @@ import com.rappi.fraud.rules.entities.ActivateRequest
 import com.rappi.fraud.rules.entities.ActiveWorkflowHistory
 import com.rappi.fraud.rules.entities.CreateWorkflowRequest
 import com.rappi.fraud.rules.entities.GetAllWorkflowRequest
+import com.rappi.fraud.rules.entities.GetVersionRequest
 import com.rappi.fraud.rules.entities.RiskDetail
 import com.rappi.fraud.rules.entities.RulesEngineHistoryRequest
 import com.rappi.fraud.rules.entities.RulesEngineOrderListHistoryRequest
 import com.rappi.fraud.rules.entities.UnlockWorkflowEditionRequest
 import com.rappi.fraud.rules.entities.Workflow
-
-import com.rappi.fraud.rules.entities.WorkflowVersion
 import com.rappi.fraud.rules.entities.WorkflowEditionResponse
 import com.rappi.fraud.rules.entities.WorkflowInfo
 import com.rappi.fraud.rules.entities.WorkflowResult
-import com.rappi.fraud.rules.entities.GetVersionRequest
+import com.rappi.fraud.rules.entities.WorkflowVersion
 import com.rappi.fraud.rules.exceptions.ErrorRequestException
-
 import com.rappi.fraud.rules.repositories.ActiveWorkflowHistoryRepository
 import com.rappi.fraud.rules.repositories.ActiveWorkflowRepository
 import com.rappi.fraud.rules.repositories.ListRepository
@@ -33,8 +32,8 @@ import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.vertx.core.json.JsonObject
-import java.time.LocalDateTime
 import org.bson.types.ObjectId
+import java.time.LocalDateTime
 
 class WorkflowService @Inject constructor(
     private val activeWorkflowRepository: ActiveWorkflowRepository,
@@ -42,7 +41,8 @@ class WorkflowService @Inject constructor(
     private val workflowRepository: WorkflowRepository,
     private val listRepository: ListRepository,
     private val workFlowEditionService: WorkflowEditionService,
-    private val documentDbDataRepository: DocumentDbDataRepository
+    private val documentDbDataRepository: DocumentDbDataRepository,
+    private val signalFxMetrics: SignalFxMetrics
 ) {
 
     private val logger by LoggerDelegate()
@@ -141,7 +141,7 @@ class WorkflowService @Inject constructor(
                         countryCode = countryCode,
                         workflowName = name
                     )
-
+                    signalFxMetrics.reportMissingFields(result.warnings, name, countryCode)
                     Grafana.warn(result.warnings, result.workflow, version?.toString() ?: "active", countryCode)
 
                     documentDbDataRepository.save(workflowResponse)
