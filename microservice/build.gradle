@@ -155,11 +155,10 @@ test {
 }
 
 jacocoTestReport {
-    dependsOn test
     reports {
         xml.enabled = true
         html.enabled = true
-        html.destination file("${buildDir}/jacocoHtml")
+        html.destination file("${buildDir}/reports/jacocoHtml")
     }
     afterEvaluate {
         getClassDirectories().setFrom(files(classDirectories.files.collect {
@@ -175,4 +174,7 @@ shadowJar {
 }
 
 tasks.build.dependsOn tasks.shadowJar
+
+tasks.test.finalizedBy tasks.jacocoTestReport
+
 
