@@ -26,31 +26,9 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                         try {
                             val visitedRule = ruleEvaluator.visit(rule.rule_body().expr())
                             if (visitedRule  is Boolean && visitedRule) {
-                                val res = if(rule.rule_body().return_result().expr() != null) {
-                                    ruleEvaluator.visit(rule.rule_body().return_result().expr())
-                                } else {
-                                    rule.rule_body().return_result().state().ID().text
-                                }
+                                val exprResult = resolveExpr(rule, ruleEvaluator)
 
-                                val result = WorkflowResult(
-                                    workflow = ctx.workflow_name().text.removeSingleQuote(),
-                                    ruleSet = ruleSet.name().text.removeSingleQuote(),
-                                    rule = rule.name().text.removeSingleQuote(),
-                                    result = res.toString(),
-                                    warnings = warnings
-                                )
-
-                                return if (rule.rule_body().actions() == null) {
-                                    result
-                                } else {
-                                    val (actionsList, actionsMap) = visitActions(rule)
-
-                                    result.copy(
-                                        actions = actionsMap.keys,
-                                        actionsWithParams = actionsMap,
-                                        actionsList = actionsList
-                                    )
-                                }
+                                return workflowResult(rule, ctx, ruleSet, exprResult, warnings)
                             }
                         } catch (ex: PropertyNotFoundException) {
                             logger.warn(ex.message)
@@ -72,6 +50,41 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
             result = ctx.default_clause().result.text,
             warnings = warnings
         )
+    }
+
+    private fun RulesetVisitor.workflowResult(
+        rule: ANAParser.RulesContext,
+        ctx: ANAParser.WorkflowContext,
+        ruleSet: ANAParser.RulesetsContext,
+        expr: Any?,
+        warnings: MutableSet<String>
+    ): WorkflowResult {
+        val result =  WorkflowResult(
+            workflow = ctx.workflow_name().text.removeSingleQuote(),
+            ruleSet = ruleSet.name().text.removeSingleQuote(),
+            rule = rule.name().text.removeSingleQuote(),
+            result = expr.toString(),
+            warnings = warnings
+        )
+        return if (rule.rule_body().actions() == null) {
+            result
+        } else {
+            val (actionsList, actionsMap) = visitActions(rule)
+            result.copy(
+                actions = actionsMap.keys,
+                actionsWithParams = actionsMap,
+                actionsList = actionsList
+            )
+        }
+    }
+
+    private fun resolveExpr(
+        rule: ANAParser.RulesContext,
+        ruleEvaluator: Visitor
+    ): Any? = if (rule.rule_body().return_result().expr() != null) {
+        ruleEvaluator.visit(rule.rule_body().return_result().expr())
+    } else {
+        rule.rule_body().return_result().state().ID().text
     }
 
     private fun visitActions(rule: ANAParser.RulesContext): Pair<List<Action>, Map<String, Map<String, String>>> {
