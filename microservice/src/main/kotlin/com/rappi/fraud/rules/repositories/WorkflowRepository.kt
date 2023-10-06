@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit
 class WorkflowRepository @Inject constructor(private val database: Database) {
 
     fun save(workflow: Workflow): Single<Workflow> {
-        // TODO: Change versioning for is extremely inefficient
         val insertWorkflow = """
             INSERT INTO workflows (name, version, workflow, country_code, user_id) 
                  VALUES ($1::VARCHAR, (SELECT COALESCE(MAX(w.version), 0) + 1 FROM workflows w WHERE w.country_code = $3 AND w.name = $1::VARCHAR), $2, $3, $4) 

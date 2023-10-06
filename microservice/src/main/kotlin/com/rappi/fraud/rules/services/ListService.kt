@@ -82,7 +82,6 @@ class ListService @Inject constructor(
     }
 
     fun deleteList(listId: Long): Completable {
-        // TODO definir si es borrado lógico o físico, dependiendo si se puede volver a crear otra lista con el mismo nombre
         return Completable.complete()
     }
 

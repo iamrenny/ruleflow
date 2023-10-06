@@ -33,7 +33,6 @@ class ListContextEvaluator : ContextEvaluator<ANAParser.ListContext> {
             }
             ctx.values.storedList != null -> {
 
-                // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                 val list = visitor.lists[ctx.values.string_literal()[0].text.replace("\'", "")]
 
                 list?.contains(value.toString()) ?: false
@@ -57,7 +56,6 @@ class ListContextEvaluator : ContextEvaluator<ANAParser.ListContext> {
             }
             ctx.values.storedList != null -> {
                 val value = visitor.visit(ctx.value)
-                // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                 val list = visitor.lists[ctx.values.string_literal()[0].text.replace("\'", "")]
 
                 list?.any {
