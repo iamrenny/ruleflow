@@ -61,7 +61,6 @@ class AggregationContextEvaluator : ContextEvaluator<AggregationContext> {
         return if (predicate == null) {
             list.count().toBigDecimal()
         } else {
-            //TODO: REFACTOR THIS FOR BETTER READABILITY
             list.count { data ->
                 Visitor(data as Map<String, Any?> , lists, root as Map<String, Any?>)
                     .visit(predicate) as Boolean
@@ -71,7 +70,6 @@ class AggregationContextEvaluator : ContextEvaluator<AggregationContext> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    //TODO: Both data and root might be Map<String, Any>
     private fun evalPredicate(data: Any?, root: Any?, lists: Map<String, Set<String>>, ctx: ANAParser.ExprContext) =
         Visitor(data as Map<String, Any>, lists, root as Map<String, Any>).visit(ctx)
 }
