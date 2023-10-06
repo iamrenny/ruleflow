@@ -74,7 +74,6 @@ class ListContextEvaluator : ContextEvaluator<ANAParser.ListContext> {
                     .map{it.text.replace("'", "", true)}
             }
             ctx.values.storedList != null -> {
-                // TODO: STRING REPLACE MUST BE DONE IN LANGUAGE LEVEL USING STRING LITERAL
                visitor.lists[ctx.values.string_literal()[0].text.replace("\'", "")]
             }
             ctx.values.validProperty() != null -> (ValidPropertyContextEvaluator().evaluate(ctx.values.validProperty(), visitor) as List<*>)
