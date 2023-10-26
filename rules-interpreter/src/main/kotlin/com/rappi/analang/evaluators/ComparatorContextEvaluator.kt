@@ -62,7 +62,7 @@ class ComparatorContextEvaluator : ContextEvaluator<ComparatorContext> {
             else -> throw RuntimeException("Invalid condition ${operator.text}")
         }
     }
-    private fun compareNull(operator: Token, left: Any?, right: Any?): Boolean {
+    private fun  compareNull(operator: Token, left: Any?, right: Any?): Boolean {
         return when (operator.type) {
             EQ -> left == right
             EQ_IC -> (left?.toString() ?: "").compareTo(right?.toString() ?: "", true) == 0

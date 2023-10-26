@@ -16,7 +16,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
     }
 
     override fun visitWorkflow(ctx: ANAParser.WorkflowContext): WorkflowResult {
-        val ruleEvaluator = Visitor(data, lists, data)
+        val visitor = Visitor(data, lists, data)
         val warnings: MutableSet<String> = mutableSetOf()
 
         ctx.rulesets()
@@ -24,10 +24,14 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                 ruleSet.rules()
                     .forEach { rule ->
                         try {
-                            val visitedRule = ruleEvaluator.visit(rule.rule_body().expr())
+                            val visitedRule = visitor.visit(rule.rule_body().expr())
                             if (visitedRule  is Boolean && visitedRule) {
-                                val exprResult = resolveExpr(rule, ruleEvaluator)
 
+                                val exprResult = if (rule.rule_body().return_result().expr() != null) {
+                                    visitor.visit(rule.rule_body().return_result().expr())
+                                } else {
+                                    rule.rule_body().return_result().state().ID().text
+                                }
                                 return workflowResult(rule, ctx, ruleSet, exprResult, warnings)
                             }
                         } catch (ex: PropertyNotFoundException) {
@@ -43,16 +47,54 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
                     }
             }
 
-        return WorkflowResult(
-            workflow = ctx.workflow_name().text.removeSingleQuote(),
-            ruleSet = "default",
-            rule = "default",
-            result = ctx.default_clause().result.text,
-            warnings = warnings
-        )
+        return resolveDefaultResult(ctx, warnings, visitor)
     }
 
-    private fun RulesetVisitor.workflowResult(
+    private fun resolveDefaultResult(
+        ctx: ANAParser.WorkflowContext,
+        warnings: MutableSet<String>,
+        evaluator: Visitor
+    ): WorkflowResult {
+        val (actionsList, actionsMap) = if (ctx.default_clause().actions() != null) {
+            resolveActions(ctx.default_clause().actions())
+        } else {
+            Pair(listOf(), mapOf())
+        }
+
+        if (ctx.default_clause().return_result().expr() != null) {
+
+
+            val solvedExpr = evaluator.visit(ctx.default_clause().return_result().expr())
+
+            return WorkflowResult(
+                workflow = ctx.workflow_name().text.removeSingleQuote(),
+                ruleSet = "default",
+                rule = "default",
+                result = solvedExpr.toString(),
+                actions = actionsMap.keys,
+                actionsWithParams = actionsMap,
+                actionsList = actionsList,
+                warnings = warnings
+            )
+        } else if(ctx.default_clause().return_result().state() != null) {
+            return WorkflowResult(
+                workflow = ctx.workflow_name().text.removeSingleQuote(),
+                ruleSet = "default",
+                rule = "default",
+                result = ctx.default_clause().return_result().state().ID().text,
+                warnings = warnings,
+                actions = actionsMap.keys,
+                actionsWithParams = actionsMap,
+                actionsList = actionsList,
+            )
+        } else {
+            throw RuntimeException("No default result found")
+        }
+    }
+
+
+
+    private fun workflowResult(
         rule: ANAParser.RulesContext,
         ctx: ANAParser.WorkflowContext,
         ruleSet: ANAParser.RulesetsContext,
@@ -69,7 +111,7 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
         return if (rule.rule_body().actions() == null) {
             result
         } else {
-            val (actionsList, actionsMap) = visitActions(rule)
+            val (actionsList, actionsMap) = resolveActions(rule.rule_body().actions())
             result.copy(
                 actions = actionsMap.keys,
                 actionsWithParams = actionsMap,
@@ -78,17 +120,8 @@ class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<S
         }
     }
 
-    private fun resolveExpr(
-        rule: ANAParser.RulesContext,
-        ruleEvaluator: Visitor
-    ): Any? = if (rule.rule_body().return_result().expr() != null) {
-        ruleEvaluator.visit(rule.rule_body().return_result().expr())
-    } else {
-        rule.rule_body().return_result().state().ID().text
-    }
-
-    private fun visitActions(rule: ANAParser.RulesContext): Pair<List<Action>, Map<String, Map<String, String>>> {
-        val actions = ActionsVisitor().visit(rule.rule_body().actions())
+    private fun resolveActions(rule: ANAParser.ActionsContext): Pair<List<Action>, Map<String, Map<String, String>>> {
+        val actions = ActionsVisitor().visit(rule)
         val actionsList = actions.map { action -> Action(action.first, action.second) }
         val actionsMap = actions.toMap()
         return Pair(actionsList, actionsMap)

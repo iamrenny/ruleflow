@@ -12,6 +12,7 @@ class ActionsVisitor {
                     action.K_ACTION() != null -> action.param_value.text.replace("'", "")
                     action.action_id.text == "manual_review" -> action.action_id.text.replace("'", "")
                     action.action_id.text == "apply_restriction" -> action.action_id.text.replace("'", "")
+                    action.action_id.text != null -> action.action_id.text.replace("'", "")
                     else -> error("Cannot find action name or identifier in ${action.text}")
                 }
                 Pair(name, ActionVisitor().visit(action))

@@ -26,11 +26,9 @@ rule_body: expr ((K_THEN (K_WITH| K_AND)?  then_result = actions) | (K_RETURN re
 
 name: string_literal;
 
-default_clause: K_DEFAULT (K_THEN | K_RETURN)? result = default_result;
+default_clause: K_DEFAULT (K_THEN | K_RETURN)? default_result = return_result actions?;
 
-default_result: state|validProperty|validValue;
-
-return_result: (state | K_EXPR L_PAREN expr R_PAREN);
+return_result: (state | validProperty| validValue | K_EXPR L_PAREN expr R_PAREN);
 
 state: ID;
 
@@ -46,7 +44,7 @@ param_pairs: param_pair (COMMA param_pair)*;
 param_pair: field_name = string_literal ':' field_value = validValue;
 
 expr: L_PAREN expr R_PAREN                                                      #parenthesis
-    | left=expr op=(MULTIPLY | DIVIDE | MODULO) right=expr                               #mathMul
+    | left=expr op=(MULTIPLY | DIVIDE | MODULO) right=expr                      #mathMul
     | left=expr op=(ADD | MINUS) right=expr                                     #mathAdd
     | left=expr op=(LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right=expr   #comparator
     | value=expr not=K_NOT? op=(K_CONTAINS | K_IN | K_STARTS_WITH) values=listElems #list

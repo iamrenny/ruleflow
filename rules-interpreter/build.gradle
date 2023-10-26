@@ -20,7 +20,7 @@ apply plugin: 'antlr'
 apply plugin: "maven-publish"
 
 group 'com.rappi'
-version '0.0.2-dev'
+version '0.0.2-nightly'
 
 repositories {
     mavenCentral()
