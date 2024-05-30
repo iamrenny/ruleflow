@@ -1,7 +1,7 @@
 package com.rappi.fraud.rules.parser.evaluators.context
 
-import com.rappi.analang.Workflow
-import com.rappi.analang.vo.WorkflowResult
+import com.github.iamrenny.rulesflow.Workflow
+import com.github.iamrenny.rulesflow.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

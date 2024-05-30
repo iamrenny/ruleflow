@@ -1,7 +1,7 @@
-package com.rappi.analang.evaluators
+package com.github.iamrenny.rulesflow.evaluators
 
-import com.rappi.analang.removeSingleQuote
-import com.rappi.analang.visitors.Visitor
+import com.github.iamrenny.rulesflow.removeSingleQuote
+import com.github.iamrenny.rulesflow.visitors.Visitor
 import com.rappi.fraud.analang.ANAParser.ValueContext
 import java.time.LocalDateTime
 

@@ -1,6 +1,6 @@
-package com.rappi.analang.evaluators
+package com.github.iamrenny.rulesflow.evaluators
 
-import com.rappi.analang.visitors.Visitor
+import com.github.iamrenny.rulesflow.visitors.Visitor
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.RuleContext
 

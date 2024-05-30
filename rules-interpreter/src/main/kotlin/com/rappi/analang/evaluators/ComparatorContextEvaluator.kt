@@ -1,7 +1,7 @@
 package com.rappi.fraud.rules.parser.evaluators
 
-import com.rappi.analang.evaluators.ContextEvaluator
-import com.rappi.analang.visitors.Visitor
+import com.github.iamrenny.rulesflow.evaluators.ContextEvaluator
+import com.github.iamrenny.rulesflow.visitors.Visitor
 import com.rappi.fraud.analang.ANAParser.ComparatorContext
 import com.rappi.fraud.analang.ANAParser.EQ
 import com.rappi.fraud.analang.ANAParser.EQ_IC

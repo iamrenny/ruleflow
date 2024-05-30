@@ -1,11 +1,11 @@
-package com.rappi.analang.visitors
+package com.github.iamrenny.rulesflow.visitors
 
 import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.analang.errors.PropertyNotFoundException
-import com.rappi.analang.removeSingleQuote
-import com.rappi.analang.vo.Action
-import com.rappi.analang.vo.WorkflowResult
+import com.github.iamrenny.rulesflow.errors.PropertyNotFoundException
+import com.github.iamrenny.rulesflow.removeSingleQuote
+import com.github.iamrenny.rulesflow.vo.Action
+import com.github.iamrenny.rulesflow.vo.WorkflowResult
 import org.slf4j.LoggerFactory
 
 class RulesetVisitor(private val data: Map<String, *>, private val lists:  Map<String, Set<String>>) : ANABaseVisitor<WorkflowResult>() {

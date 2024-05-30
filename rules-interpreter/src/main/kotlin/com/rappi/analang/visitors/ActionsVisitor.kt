@@ -1,4 +1,4 @@
-package com.rappi.analang.visitors
+package com.github.iamrenny.rulesflow.visitors
 
 import com.rappi.fraud.analang.ANAParser
 import kotlin.streams.toList

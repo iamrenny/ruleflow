@@ -1,7 +1,7 @@
-package com.rappi.analang.evaluators
+package com.github.iamrenny.rulesflow.evaluators
 
 import com.rappi.fraud.analang.ANAParser.RegexlikeContext
-import com.rappi.analang.visitors.Visitor
+import com.github.iamrenny.rulesflow.visitors.Visitor
 
 class RegexContextEvaluator: ContextEvaluator<RegexlikeContext> {
     override fun evaluate(ctx: RegexlikeContext, visitor: Visitor): Any {

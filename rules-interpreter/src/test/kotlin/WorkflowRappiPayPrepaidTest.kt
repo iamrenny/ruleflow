@@ -1,7 +1,7 @@
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.rappi.analang.Workflow
-import com.rappi.analang.vo.WorkflowResult
+import com.github.iamrenny.rulesflow.Workflow
+import com.github.iamrenny.rulesflow.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments

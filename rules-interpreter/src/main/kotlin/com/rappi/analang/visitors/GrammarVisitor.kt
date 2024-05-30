@@ -1,8 +1,8 @@
-package com.rappi.analang.visitors
+package com.github.iamrenny.rulesflow.visitors
 
 import com.rappi.fraud.analang.ANABaseVisitor
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.analang.removeSingleQuote
+import com.github.iamrenny.rulesflow.removeSingleQuote
 
 class GrammarVisitor : ANABaseVisitor<String>() {
 

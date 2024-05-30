@@ -1,5 +1,0 @@
-{
-  "country_code": "co",
-  "workflow": "workflow 'Sample workflow' ruleset 'Sample rule set' 'sample_rule' subtotal >= 100 return allow default block end",
-  "userId": "bdea2323-d85b-4aab-b654-8cd19c3139f9"
-}

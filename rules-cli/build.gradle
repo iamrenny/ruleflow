@@ -20,20 +20,6 @@ group 'com.rappi'
 
 version '0.0.1'
 
-repositories {
-    mavenCentral()
-    maven {
-
-        def nexusHome = System.getenv("NEXUS_URL_REPOSITORY")
-        url = uri("${nexusHome}/repository/maven2-group/")
-
-        credentials {
-            username System.getenv("NEXUS_USERNAME_REPOSITORY")
-            password System.getenv("NEXUS_PASSWORD_REPOSITORY")
-        }
-    }
-}
-
 sourceCompatibility = 1.8
 
 compileKotlin {

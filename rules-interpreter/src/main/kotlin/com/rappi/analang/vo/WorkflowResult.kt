@@ -1,4 +1,4 @@
-package com.rappi.analang.vo
+package com.github.iamrenny.rulesflow.vo
 
 data class WorkflowResult(
     val workflow: String,

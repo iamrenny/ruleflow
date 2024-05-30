@@ -1,4 +1,4 @@
-import com.rappi.analang.visitors.Visitor
+import com.github.iamrenny.rulesflow.visitors.Visitor
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
 import org.antlr.v4.runtime.BaseErrorListener

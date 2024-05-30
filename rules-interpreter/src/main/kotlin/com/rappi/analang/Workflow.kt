@@ -1,12 +1,12 @@
-package com.rappi.analang
+package com.github.iamrenny.rulesflow
 
 
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.analang.visitors.GrammarVisitor
-import com.rappi.analang.visitors.RulesetVisitor
-import com.rappi.analang.listeners.ErrorListener
-import com.rappi.analang.vo.WorkflowResult
+import com.github.iamrenny.rulesflow.visitors.GrammarVisitor
+import com.github.iamrenny.rulesflow.visitors.RulesetVisitor
+import com.github.iamrenny.rulesflow.listeners.ErrorListener
+import com.github.iamrenny.rulesflow.vo.WorkflowResult
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 

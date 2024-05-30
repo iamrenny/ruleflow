@@ -1,8 +1,8 @@
-package com.rappi.analang.evaluators
+package com.github.iamrenny.rulesflow.evaluators
 
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
-import com.rappi.analang.visitors.Visitor
+import com.github.iamrenny.rulesflow.visitors.Visitor
 
 
 class ListContextEvaluator : ContextEvaluator<ANAParser.ListContext> {

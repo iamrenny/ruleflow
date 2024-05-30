@@ -1,5 +1,5 @@
-import com.rappi.analang.listeners.ErrorListener
-import com.rappi.analang.visitors.RulesetVisitor
+import com.github.iamrenny.rulesflow.listeners.ErrorListener
+import com.github.iamrenny.rulesflow.visitors.RulesetVisitor
 import com.rappi.fraud.analang.ANALexer
 import com.rappi.fraud.analang.ANAParser
 import kotlinx.cli.ArgParser

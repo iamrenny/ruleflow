@@ -1,7 +1,7 @@
-grammar ANA;
+grammar RulesFlowLanguage;
 
 @header {
-    package com.rappi.fraud.analang;
+    package com.github.iamrenny.rulesflow;
 }
 
 parse: (workflow | error) EOF;

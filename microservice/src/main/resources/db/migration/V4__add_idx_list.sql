@@ -1,1 +1,0 @@
-create index if not exists list_status_idx ON lists (status);

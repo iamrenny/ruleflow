@@ -1,6 +1,6 @@
 
-import com.rappi.analang.Workflow
-import com.rappi.analang.vo.WorkflowResult
+import com.github.iamrenny.rulesflow.Workflow
+import com.github.iamrenny.rulesflow.vo.WorkflowResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
