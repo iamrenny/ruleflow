@@ -22,7 +22,7 @@ Esta API se encarga de administrar y evaluar flujos de trabajo.
         127.0.0.1	redis
 3. Ejecutar `docker-compose -f docker-compose-local.yml up` para correr la imagen de Dockerfile con PostgreSQL
 4. Ejecutar `./gradlew run`
-5. Para probar hacer una http GET request a <localhost:8080/api/fraud-rules-engine/health-check>
+5. Para probar hacer una http GET request a <localhost:8080/api/ruleflow/health-check>
 
 ## Pasos para ejecutar los tests
 1. Ejecutar `docker-compose up` para correr la imagen de Dockerfile con PostgreSQL 
@@ -31,11 +31,11 @@ test de gradle, esto no es necesario.
 
 ## Documentación de la API
 #### Crear flujo de trabajo
-`POST api/fraud-rules-engine/workflow`: Ejecuta la creación de un flujo de trabajo, retornando el flujo de trabajo creado.
+`POST api/ruleflow/workflow`: Ejecuta la creación de un flujo de trabajo, retornando el flujo de trabajo creado.
 ##### Request
 ```
 curl -X POST \
-    http://localhost:8080/api/fraud-rules-engine/workflow \
+    http://localhost:8080/api/ruleflow/workflow \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache' \
     -H 'X-Auth-User: 191450503' \
@@ -58,11 +58,11 @@ curl -X POST \
 ```
 
 #### Obtener flujo de trabajo (por código de país, nombre y versión)
-`GET api/fraud-rules-engine/workflow/:countryCode/:name/:version`: Obtener un flujo de trabajo por código de país, nombre y versión 
+`GET api/ruleflow/workflow/:countryCode/:name/:version`: Obtener un flujo de trabajo por código de país, nombre y versión 
 ##### Request
 ``` 
 curl -X GET \
-    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/1 \
+    http://localhost:8080/api/ruleflow/workflow/co/Sample/1 \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache'
 ```
@@ -80,12 +80,12 @@ curl -X GET \
 ```
 
 #### Obtener flujos de trabajo (por código de país y nombre)
-`GET api/fraud-rules-engine/workflow/:countryCode/:name`: Obtener flujos de trabajo por código de país y nombre ordenados 
+`GET api/ruleflow/workflow/:countryCode/:name`: Obtener flujos de trabajo por código de país y nombre ordenados 
 de forma descendente por la fecha de creacion.   
 ##### Request
 ``` 
 curl -X GET \
-    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/1 \
+    http://localhost:8080/api/ruleflow/workflow/co/Sample/1 \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache'
 ```
@@ -105,14 +105,14 @@ curl -X GET \
 ```
 
 #### Activar flujo de trabajo
-`POST api/fraud-rules-engine/workflow/:countryCode/:name/activate`: Ejecuta la activación de un flujo de trabajo, retornando el flujo de trabajo activado.
+`POST api/ruleflow/workflow/:countryCode/:name/activate`: Ejecuta la activación de un flujo de trabajo, retornando el flujo de trabajo activado.
 
 `Notas:`
 * El parámetro `name` debe ser escapado.
 ##### Request
 ```
 curl -X POST \
-    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/activate \
+    http://localhost:8080/api/ruleflow/workflow/co/Sample/activate \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache' \
     -H 'X-Auth-User: 191450502' 
@@ -131,7 +131,7 @@ curl -X POST \
 ```
 
 #### Evaluar flujo de trabajo
-`POST api/fraud-rules-engine/workflow/:countryCode/:name/(:version)/evaluate`: Ejecuta la evaluación de un flujo de trabajo, retornando el resultado de la evaluación.
+`POST api/ruleflow/workflow/:countryCode/:name/(:version)/evaluate`: Ejecuta la evaluación de un flujo de trabajo, retornando el resultado de la evaluación.
 
 `Notas:`
 * El parámetro `name` debe ser escapado.
@@ -140,14 +140,14 @@ curl -X POST \
 ######Without version
 ```
 curl -X POST \
-    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/evaluate \
+    http://localhost:8080/api/ruleflow/workflow/co/Sample/evaluate \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache'
 ```
 ######With version
 ```
 curl -X POST \
-    http://localhost:8080/api/fraud-rules-engine/workflow/co/Sample/1/evaluate \
+    http://localhost:8080/api/ruleflow/workflow/co/Sample/1/evaluate \
     -H 'Content-Type: application/json' \
     -H 'cache-control: no-cache'
 ```
@@ -164,7 +164,7 @@ curl -X POST \
     ]
 }
 ```
-## ANA Language Reference
+## RuleFlowLanguage Language Reference
 
 ### Basic Workflow Syntax
 A workflow is a collection of rules that return a risk

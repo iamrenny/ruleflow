@@ -1,64 +1,39 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 plugins {
-    id "org.jetbrains.kotlin.jvm"
-    id 'com.github.johnrengelman.shadow' version '5.0.0'
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2' // Ensure this version matches your needs
 }
 
-apply plugin: 'application'
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'com.github.johnrengelman.shadow'
+group = 'com.github.iamrenny.ruleflow'
+version = '0.0.1'
 
-group 'com.rappi'
-
-version '0.0.1'
-
-sourceCompatibility = 1.8
-
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.allWarningsAsErrors = false
+repositories {
+    mavenCentral()
 }
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.allWarningsAsErrors = false
-}
-
 
 dependencies {
-
     implementation "org.antlr:antlr4-runtime:$antlr_version"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5"
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
-
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-
+    implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation project(":rules-interpreter")
 
-    testCompile "org.junit.jupiter:junit-jupiter-engine:$junit_version"
-    testCompile "org.junit.jupiter:junit-jupiter-params:$junit_version"
-    testCompile "org.mockito:mockito-junit-jupiter:$mockito_version"
-    testCompile "org.mockito:mockito-core:$mockito_version"
-    testCompile "com.google.code.gson:gson:$gson_version"
-    testCompile "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junit_version"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
+    testImplementation "org.mockito:mockito-core:$mockito_version"
+    testImplementation "com.google.code.gson:gson:$gson_version"
+    testImplementation "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
 }
 
-mainClassName = 'CLIKt'
+application {
+    mainClass = 'CLIKt'
+}
 
-shadowJar {
-    setArchiveBaseName('rules-cli')
-    setArchiveClassifier('shadow')
+tasks.named('shadowJar') {
+    archiveBaseName.set('rules-cli')
+    archiveClassifier.set('shadow')
     zip64 = true
 }
 
-tasks.build.dependsOn tasks.shadowJar
+tasks.build {
+    dependsOn tasks.named('shadowJar')
+}

@@ -1,33 +1,47 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.7.0'
+    id 'jacoco'
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-    }
-}
+group = 'com.github.iamrenny.ruleflow'
+version = '0.0.1-SNAPSHOT'
 
+repositories {
+    mavenCentral()
+}
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = true
     }
+    finalizedBy jacocoTestCoverageVerification
 }
 
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.85
+            }
+        }
     }
-}
-
-ext {
-    kotlin_version = '1.7.0'
-    vertx_version = '3.9.7'
-    micrometer_version = '1.4.1'
 }

@@ -1,6 +1,6 @@
-import com.github.iamrenny.rulesflow.visitors.Visitor
-import com.rappi.fraud.analang.ANALexer
-import com.rappi.fraud.analang.ANAParser
+import com.github.iamrenny.ruleflow.visitors.Visitor
+import com.github.iamrenny.ruleflow.RuleFlowLanguageLexer
+import com.github.iamrenny.ruleflow.RuleFlowLanguageParser
 import org.antlr.v4.runtime.BaseErrorListener
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
@@ -13,9 +13,9 @@ class RuleEvaluator(val inputRule: String, private val data: Map<String, *>, pri
 
     fun evaluate(): String {
         val input = CharStreams.fromString(inputRule)
-        val lexer = ANALexer(input)
+        val lexer = RuleFlowLanguageLexer(input)
         val tokens = CommonTokenStream(lexer)
-        val parser = ANAParser(tokens)
+        val parser = RuleFlowLanguageParser(tokens)
         parser.removeErrorListeners()  // Remove the default error listeners
         parser.addErrorListener(syntaxErrorListener)
         val ctx = parser.expr()

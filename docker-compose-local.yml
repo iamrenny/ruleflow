@@ -4,9 +4,9 @@ services:
     restart: always
     image: "postgres:10.4-alpine"
     environment:
-      POSTGRES_DB: fraud-rules-engine
-      POSTGRES_USER: fraud-rules-engine
-      POSTGRES_PASSWORD: fraud-rules-engine
+      POSTGRES_DB: ruleflow
+      POSTGRES_USER: ruleflow
+      POSTGRES_PASSWORD: ruleflow
     ports:
       - "5432:5432"
   redis:

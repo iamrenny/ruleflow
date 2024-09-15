@@ -1,7 +1,7 @@
-import com.github.iamrenny.rulesflow.listeners.ErrorListener
-import com.github.iamrenny.rulesflow.visitors.RulesetVisitor
-import com.rappi.fraud.analang.ANALexer
-import com.rappi.fraud.analang.ANAParser
+import com.github.iamrenny.ruleflow.listeners.ErrorListener
+import com.github.iamrenny.ruleflow.visitors.RulesetVisitor
+import com.github.iamrenny.ruleflow.RuleFlowLanguageLexer
+import com.github.iamrenny.ruleflow.RuleFlowLanguageParser
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -23,7 +23,7 @@ var inputFile: String? = null
 
 
 fun main(args: Array<String>) {
-    val parser = ArgParser("ANA Lang CLI")
+    val parser = ArgParser("RuleFlowLanguage Lang CLI")
     val input by parser.option(ArgType.String, shortName = "F", fullName = "input-file", description = "Input file")
     val workflowFilename by parser.option(ArgType.String, shortName = "w", fullName = "workflow-file", description = "Workflow file")
     val output by parser.option(ArgType.String, shortName = "o", fullName = "output", description = "Output file name")
@@ -147,9 +147,9 @@ enum class Format {
 }
 fun evaluate(inputData: String, workflow: String): String {
     val input = CharStreams.fromString(workflow)
-    val lexer = ANALexer(input)
+    val lexer = RuleFlowLanguageLexer(input)
     val tokens = CommonTokenStream(lexer)
-    val parser = ANAParser(tokens)
+    val parser = RuleFlowLanguageParser(tokens)
     parser.addErrorListener(ErrorListener())
     val tree = parser.parse()
 
@@ -193,9 +193,9 @@ fun serialize(jsonObject: JsonElement): Map<String, *> {
 
 fun formatter(workflow: String) {
     val input = CharStreams.fromString(workflow)
-    val lexer = ANALexer(input)
+    val lexer = RuleFlowLanguageLexer(input)
     val tokens = CommonTokenStream(lexer)
-    val parser = ANAParser(tokens)
+    val parser = RuleFlowLanguageParser(tokens)
     parser.addErrorListener(ErrorListener())
     val tree = parser.parse()
 
@@ -206,9 +206,9 @@ fun formatter(workflow: String) {
 
 fun filter(workflow: String, criteria: String) {
     val input = CharStreams.fromString(workflow)
-    val lexer = ANALexer(input)
+    val lexer = RuleFlowLanguageLexer(input)
     val tokens = CommonTokenStream(lexer)
-    val parser = ANAParser(tokens)
+    val parser = RuleFlowLanguageParser(tokens)
     parser.addErrorListener(ErrorListener())
     val tree = parser.parse()
 

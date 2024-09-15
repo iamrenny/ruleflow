@@ -1,6 +1,6 @@
 @Library('devops-pipelines-libraries') _
 
-def flow = new com.rappi.util();
+def flow = new com.github.iamrenny.util();
 
 pipeline {
     agent { node { label '!master' } }
