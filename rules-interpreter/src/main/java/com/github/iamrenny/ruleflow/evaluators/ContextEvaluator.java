@@ -5,5 +5,5 @@ import com.github.iamrenny.ruleflow.visitors.Visitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 public interface ContextEvaluator<T extends ParserRuleContext> {
-    Comparable<?> evaluate(T ctx, Visitor visitor) throws PropertyNotFoundException;
+    Object evaluate(T ctx, Visitor visitor) throws PropertyNotFoundException;
 }

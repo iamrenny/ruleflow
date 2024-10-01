@@ -3,12 +3,15 @@ package com.github.iamrenny.ruleflow.visitors;
 import com.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
 import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import com.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import com.github.iamrenny.ruleflow.util.ActionsVisitor;
+import com.github.iamrenny.ruleflow.utils.Pair;
 import com.github.iamrenny.ruleflow.vo.Action;
 import com.github.iamrenny.ruleflow.vo.WorkflowResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> {
     private static final Logger logger = LoggerFactory.getLogger(RulesetVisitor.class);
@@ -30,26 +33,25 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
         Visitor visitor = new Visitor(data, lists, data);
         Set<String> warnings = new HashSet<>();
 
-        ctx.rulesets().forEach(ruleSet -> ruleSet.rules().forEach(rule -> {
-        try {
-            Object visitedRule = visitor.visit(rule.rule_body().expr());
-            if (visitedRule instanceof Boolean && (Boolean) visitedRule) {
-                Object exprResult;
-                if (rule.rule_body().return_result().expr() != null) {
-                    exprResult = visitor.visit(rule.rule_body().return_result().expr());
-                } else {
-                    exprResult = rule.rule_body().return_result().state().ID().getText();
+        for (RuleFlowLanguageParser.RulesetsContext ruleSet : ctx.rulesets()) {
+            for (RuleFlowLanguageParser.RulesContext rule : ruleSet.rules()) {
+                try {
+                    Object visitedRule = visitor.visit(rule.rule_body().expr());
+                    if (visitedRule instanceof Boolean && (Boolean) visitedRule) {
+                        Object exprResult;
+                        if (rule.rule_body().return_result().expr() != null) {
+                            exprResult = visitor.visit(rule.rule_body().return_result().expr());
+                        } else {
+                            exprResult = rule.rule_body().return_result().state().ID().getText();
+                        }
+                        return workflowResult(rule, ctx, ruleSet, exprResult, warnings);
+                    }
+                } catch (Exception ex) {
+                    logger.error("Error while evaluating rule {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
+                    warnings.add(ex.getMessage() != null ? ex.getMessage() : "Unexpected Exception at " + rule.getText());
                 }
-                return workflowResult(rule, ctx, ruleSet, exprResult, warnings);
             }
-        } catch (PropertyNotFoundException ex) {
-            logger.warn(ex.getMessage());
-            warnings.add(ex.getMessage());
-        } catch (Exception ex) {
-            logger.error("Error while evaluating rule " + ctx.workflow_name().getText() + " " + rule.name().getText(), ex);
-            warnings.add(ex.getMessage() != null ? ex.getMessage() : "Unexpected Exception at " + rule.getText());
         }
-    }));
 
         return resolveDefaultResult(ctx, warnings, visitor);
     }
@@ -71,24 +73,28 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
             Object solvedExpr = evaluator.visit(ctx.default_clause().return_result().expr());
             return new WorkflowResult(
                 ctx.workflow_name().getText().replace("'", ""),
-            "default",
-            "default",
-            solvedExpr.toString(),
-            actionsMap.keySet(),
-            actionsMap,
-            actionsList,
-            warnings
+                "default",
+                "default",
+                solvedExpr.toString(),
+                actionsMap.keySet(),
+                warnings,
+                actionsMap,
+                null,
+                actionsList,
+                false
             );
         } else if (ctx.default_clause().return_result().state() != null) {
             return new WorkflowResult(
                 removeSingleQuote(ctx.workflow_name().getText()),
-            "default",
-            "default",
-            ctx.default_clause().return_result().state().ID().getText(),
-            actionsMap.keySet(),
-            actionsMap,
-            actionsList,
-            warnings
+                "default",
+                "default",
+                ctx.default_clause().return_result().state().ID().getText(),
+                actionsMap.keySet(),
+                warnings,
+                actionsMap,
+                null,
+                actionsList,
+                true
             );
         } else {
             throw new RuntimeException("No default result found");
@@ -112,40 +118,24 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
             return result;
         } else {
             Pair<List<Action>, Map<String, Map<String, String>>> resolvedActions = resolveActions(rule.rule_body().actions());
-            result.setActions(resolvedActions.getValue().keySet());
             result.setActionsWithParams(resolvedActions.getValue());
-            result.setActionsList(resolvedActions.getKey());
             return result;
         }
     }
 
     private Pair<List<Action>, Map<String, Map<String, String>>> resolveActions(RuleFlowLanguageParser.ActionsContext rule) {
-        List<Pair<String, Map<String, String>>> actions = new ActionsVisitor().visit(rule);
+        List<com.github.iamrenny.ruleflow.utils.Pair<String, Map<String, String>>> actions = new ActionsVisitor().visit(rule);
         List<Action> actionsList = actions.stream().map(action -> new Action(action.getKey(), action.getValue())).collect(Collectors.toList());
-        Map<String, Map<String, String>> actionsMap = actions.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        Map<String, Map<String, String>> actionsMap = actions.stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                (existing, replacement) -> {
+                    existing.putAll(replacement); // merging the two maps
+                    return existing;
+                }));
         return new Pair<>(actionsList, actionsMap);
     }
 
     private String removeSingleQuote(String text) {
         return text.replace("'", "");
-    }
-
-    // Pair class for Java, as Java doesn't have a built-in Pair class like Kotlin
-    private static class Pair<K, V> {
-        private final K key;
-        private final V value;
-
-        public Pair(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public K getKey() {
-            return key;
-        }
-
-        public V getValue() {
-            return value;
-        }
     }
 }

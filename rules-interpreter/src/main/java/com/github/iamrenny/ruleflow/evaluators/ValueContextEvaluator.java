@@ -14,7 +14,7 @@ public class ValueContextEvaluator implements ContextEvaluator<ValueContext> {
         if (ctx.validValue().string != null) {
             return (ctx.validValue().string.getText()).replace("'", "");
         } else if (ctx.validValue().number != null) {
-            return new BigDecimal(ctx.validValue().number.getText());
+            return Double.valueOf(ctx.validValue().number.getText());
         } else if (ctx.validValue().nullValue != null) {
             return ctx.validValue().nullValue;
         } else if (ctx.validValue().currentDate != null) {

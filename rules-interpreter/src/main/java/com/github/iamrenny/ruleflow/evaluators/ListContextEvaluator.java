@@ -2,6 +2,7 @@ package com.github.iamrenny.ruleflow.evaluators;
 
 import com.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
 import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import com.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
 import com.github.iamrenny.ruleflow.visitors.Visitor;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.ListContext> {
 
     @Override
-    public Object evaluate(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) {
+    public Object evaluate(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) throws PropertyNotFoundException {
         if (ctx.not == null && ctx.op.getType() == RuleFlowLanguageLexer.K_CONTAINS) {
             return evalContains(ctx, visitor);
         } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_CONTAINS) {
@@ -29,13 +30,13 @@ public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguagePa
         }
     }
 
-    private Object evalIn(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) {
+    private Object evalIn(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) throws PropertyNotFoundException {
         Object value = visitor.visit(ctx.value);
 
         if (ctx.values.literalList != null) {
             List<String> literals = ctx.values.string_literal().stream()
                 .map(literal -> literal.getText().replace("'", ""))
-                .collect(Collectors.toList());
+                .toList();
             return literals.contains(value);
         } else if (ctx.values.storedList != null) {
             String listKey = ctx.values.string_literal(0).getText().replace("'", "");
@@ -66,7 +67,7 @@ public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguagePa
         }
     }
 
-    private Object evalStartsWith(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) {
+    private Object evalStartsWith(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) throws PropertyNotFoundException {
         String value = visitor.visit(ctx.value).toString();
         List<?> list;
 

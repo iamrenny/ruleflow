@@ -14,19 +14,19 @@ public class MathMulContextEvaluator implements ContextEvaluator<RuleFlowLanguag
         Object leftVal = visitor.visit(ctx.left);
         Object rightVal = visitor.visit(ctx.right);
 
-        BigDecimal left = new BigDecimal(leftVal.toString()).setScale(2, RoundingMode.DOWN);
-        BigDecimal right = new BigDecimal(rightVal.toString()).setScale(2, RoundingMode.DOWN);
+        Double left = Double.valueOf(leftVal.toString());
+        Double right = Double.valueOf(rightVal.toString());
 
         switch (ctx.op.getType()) {
             case RuleFlowLanguageLexer.MULTIPLY:
-                return left.multiply(right);
+                return left * right;
             case RuleFlowLanguageLexer.DIVIDE:
-                if (right.compareTo(BigDecimal.ZERO) == 0) {
-                    return BigDecimal.ZERO;
+                if (right  == 0) {
+                    return 0.00d;
                 }
-                return left.divide(right, 2, RoundingMode.DOWN);
+                return left / right;
             case RuleFlowLanguageLexer.MODULO:
-                return left.remainder(right);
+                return left % right;
             default:
                 throw new IllegalArgumentException("Operation not supported: " + ctx.op.getText());
         }

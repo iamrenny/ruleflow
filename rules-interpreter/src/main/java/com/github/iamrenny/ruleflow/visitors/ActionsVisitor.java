@@ -1,6 +1,7 @@
-package com.github.iamrenny.ruleflow.visitors;
+package com.github.iamrenny.ruleflow.util;
 
 import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import com.github.iamrenny.ruleflow.utils.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -41,24 +42,5 @@ class ActionVisitor {
         } else {
             return Map.of();
         }
-    }
-}
-
-// Pair class for Java, as Java doesn't have a built-in Pair class like Kotlin
-class Pair<K, V> {
-    private final K key;
-    private final V value;
-
-    public Pair(K key, V value) {
-        this.key = key;
-        this.value = value;
-    }
-
-    public K getKey() {
-        return key;
-    }
-
-    public V getValue() {
-        return value;
     }
 }

@@ -6,7 +6,7 @@ public class Action {
     private String name;
     private Map<String, String> params;
 
-    Action(String name, Map<String, String> params) {
+    public Action(String name, Map<String, String> params) {
         this.name = name;
         this.params = params;
     }

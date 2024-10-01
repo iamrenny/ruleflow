@@ -23,7 +23,7 @@ jacoco {
     toolVersion = "0.8.11"
 }
 
-def baseFolder = 'com/rappi/fraud/rules'
+def baseFolder = 'com/iamrenny/ruleflow'
 def jacocoExcludedDirs = [
         "$baseFolder/config/**",
         "$baseFolder/vo/**",
@@ -34,16 +34,19 @@ dependencies {
     antlr "org.antlr:antlr4:$antlr_version"
 
     implementation "org.antlr:antlr4-runtime:$antlr_version"
+
+    implementation 'ch.qos.logback:logback-classic:1.5.0'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 
 
 
-    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junit_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:$junit_version"
-    testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
-    testImplementation "org.mockito:mockito-core:$mockito_version"
-    testImplementation "com.google.code.gson:gson:$gson_version"
-    testImplementation "com.nhaarman:mockito-kotlin:$mockito_kotlin_version"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.3'
+
+    testImplementation "org.mockito:mockito-junit-jupiter:3.12.4"
+    testImplementation "org.mockito:mockito-core:3.12.4"
+    testImplementation "com.google.code.gson:gson:2.8.9"
 }
 
 test {
