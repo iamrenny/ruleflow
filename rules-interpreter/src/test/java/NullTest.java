@@ -44,8 +44,8 @@ class NullTest {
 
         Workflow ruleEngine = new Workflow(workflow);
         WorkflowResult expectedResult = new WorkflowResult(
-            "test", "dummy", "item_a", "block",
-            Set.of()
+                "test", "default", "default", "allow",
+                Set.of("x field cannot be found")
         );
 
         WorkflowResult result = ruleEngine.evaluate(Map.of(

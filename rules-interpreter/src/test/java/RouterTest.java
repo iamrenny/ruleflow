@@ -44,10 +44,10 @@ class RouterTest {
         String workflow = """
           workflow 'router'
                ruleset 'providers' 
-               'Cybersourse1-rappi_master' country in 'ar', 'cl', 'co', 'ec', 'pe' return route with route({'provider':'cybersource', 'merchant_id': 'rappi_master'})
-               'Cybersourse3-rappi_master2' country in 'br', 'cr', 'mx', 'uy' return route with route({'provider': 'cybersource', 'merchant_id': 'rappi_master2'})
-               'Cybersourse4-rappi_dm_bwl' user_is_whitelisted = true OR user_is_blacklisted = true return route with route({'provider': 'cybersource', 'merchant_id': 'rappi_dm_bwl'})
-               'Cybersourse4-rappi_dm_rest_5a15_tkt' order.vertical in 'restaurants', 'travel' return route with route({'provider': 'cybersource', 'merchant_id': 'rappi_dm_rest_5a15_tkt'})
+               'provider1' country in 'ar' return route with route({'provider':'provider1', 'merchant_id': 'master'})
+               'provider2' country in 'us' return route with route({'provider': 'provider2', 'merchant_id': 'master2'})
+               'provider3' user.type = 'premium' OR user_is_blacklisted = false return route with route({'provider': 'provider3', 'merchant_id': 'master3'})
+               'provider4' order.vertical in 'restaurants', 'travel' return route with route({'provider': 'provider4', 'merchant_id': 'master4'})
            default do_not_route
            end
         """;
@@ -56,12 +56,12 @@ class RouterTest {
         WorkflowResult expectedResult = new WorkflowResult(
             "router",
             "providers",
-            "Cybersourse3-rappi_master2",
+            "provider2",
             "route",
-            Map.of("route", Map.of("provider", "cybersource", "merchant_id", "rappi_master2"))
+            Map.of("route", Map.of("provider", "provider2", "merchant_id", "master2"))
         );
 
-        WorkflowResult result = ruleEngine.evaluate(Map.of("country", "br"));
+        WorkflowResult result = ruleEngine.evaluate(Map.of("country", "us"));
 
         Assertions.assertEquals(expectedResult, result);
     }

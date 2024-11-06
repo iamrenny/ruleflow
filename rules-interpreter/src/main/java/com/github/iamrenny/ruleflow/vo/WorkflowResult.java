@@ -39,6 +39,8 @@ public class WorkflowResult {
         this.rule = rule;
         this.result = result;
         this.warnings = warnings;
+        this.actionsWithParams = new HashMap<>();
+        this.actions = new HashSet<>();
     }
 
     public WorkflowResult(String workflow, String ruleset, String rule, String result,  Map<String, Map<String, String>> actionsWithParams) {
@@ -47,6 +49,8 @@ public class WorkflowResult {
         this.rule = rule;
         this.result = result;
         this.actionsWithParams = actionsWithParams;
+        this.actions = actionsWithParams.keySet();
+        this.warnings = new HashSet<>();
     }
 
     public WorkflowResult(String workflow, String ruleset, String rule, String result) {
@@ -54,6 +58,9 @@ public class WorkflowResult {
         this.ruleSet = ruleset;
         this.rule = rule;
         this.result = result;
+        this.actions = Set.of();
+        this.warnings = Set.of();
+        this.actionsWithParams = new HashMap<>();
     }
 
     public <E, K, V> WorkflowResult(String workflow, String ruleset, String rule, String result, Set<String> warnings, Map<String, Map<String,String>> actionsWithParams) {
@@ -62,6 +69,7 @@ public class WorkflowResult {
         this.rule = rule;
         this.result = result;
         this.warnings = warnings;
+        this.actions = Set.of();
         this.actionsWithParams = actionsWithParams;
     }
 
@@ -132,6 +140,7 @@ public class WorkflowResult {
 
     public void setActionsWithParams(Map<String, Map<String, String>> actionsWithParams) {
         this.actionsWithParams = actionsWithParams;
+        this.actions = actionsWithParams.keySet();
     }
 
     public void setWorkflowInfo(WorkflowInfo workflowInfo) {

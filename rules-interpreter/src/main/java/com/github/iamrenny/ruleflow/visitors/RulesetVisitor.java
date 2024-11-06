@@ -30,30 +30,30 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
 
     @Override
     public WorkflowResult visitWorkflow(RuleFlowLanguageParser.WorkflowContext ctx) {
-        Visitor visitor = new Visitor(data, lists, data);
-        Set<String> warnings = new HashSet<>();
+            Visitor visitor = new Visitor(data, lists, data);
+            Set<String> warnings = new HashSet<>();
 
-        for (RuleFlowLanguageParser.RulesetsContext ruleSet : ctx.rulesets()) {
-            for (RuleFlowLanguageParser.RulesContext rule : ruleSet.rules()) {
-                try {
-                    Object visitedRule = visitor.visit(rule.rule_body().expr());
-                    if (visitedRule instanceof Boolean && (Boolean) visitedRule) {
-                        Object exprResult;
-                        if (rule.rule_body().return_result().expr() != null) {
-                            exprResult = visitor.visit(rule.rule_body().return_result().expr());
-                        } else {
-                            exprResult = rule.rule_body().return_result().state().ID().getText();
+            for (RuleFlowLanguageParser.RulesetsContext ruleSet : ctx.rulesets()) {
+                for (RuleFlowLanguageParser.RulesContext rule : ruleSet.rules()) {
+                    try {
+                        Object visitedRule = visitor.visit(rule.rule_body().expr());
+                        if (visitedRule instanceof Boolean && (Boolean) visitedRule) {
+                            Object exprResult;
+                            if (rule.rule_body().return_result().expr() != null) {
+                                exprResult = visitor.visit(rule.rule_body().return_result().expr());
+                            } else {
+                                exprResult = rule.rule_body().return_result().state().ID().getText();
+                            }
+                            return workflowResult(rule, ctx, ruleSet, exprResult, warnings);
                         }
-                        return workflowResult(rule, ctx, ruleSet, exprResult, warnings);
+                    } catch (Exception ex) {
+                        logger.error("Error while evaluating rule {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
+                        warnings.add(ex.getCause() != null ? ex.getCause().getMessage() : "Unexpected Exception at " + rule.getText());
                     }
-                } catch (Exception ex) {
-                    logger.error("Error while evaluating rule {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
-                    warnings.add(ex.getMessage() != null ? ex.getMessage() : "Unexpected Exception at " + rule.getText());
                 }
             }
-        }
 
-        return resolveDefaultResult(ctx, warnings, visitor);
+            return resolveDefaultResult(ctx, warnings, visitor);
     }
 
     private WorkflowResult resolveDefaultResult(
@@ -76,12 +76,8 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                 "default",
                 "default",
                 solvedExpr.toString(),
-                actionsMap.keySet(),
                 warnings,
-                actionsMap,
-                null,
-                actionsList,
-                false
+                actionsMap
             );
         } else if (ctx.default_clause().return_result().state() != null) {
             return new WorkflowResult(
@@ -94,7 +90,7 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                 actionsMap,
                 null,
                 actionsList,
-                true
+                false
             );
         } else {
             throw new RuntimeException("No default result found");

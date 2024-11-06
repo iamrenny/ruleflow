@@ -130,7 +130,6 @@ K_EXPR : E X P R;
 
 
 
-ID: [a-zA-Z_] [a-zA-Z_0-9]*;
 NUMERIC_LITERAL
   : MINUS? DIGIT+ ( '.' DIGIT* )? ( E [-+]? DIGIT+ )?
   | '.' DIGIT+ ( E [-+]? DIGIT+ )?
@@ -138,6 +137,8 @@ NUMERIC_LITERAL
 BOOLEAN_LITERAL: T R U E | F A L S E;
 DQUOTA_STRING: '"' ('\\'. | '\\"' | ~['"\\'])* '"';
 SQUOTA_STRING: '\'' ('\\'. | '\'\'' | ~('\'' | '\\'))* '\'';
+
+ID: [a-zA-Z_] [a-zA-Z_0-9]*;
 
 SINGLE_LINE_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 MULTILINE_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);

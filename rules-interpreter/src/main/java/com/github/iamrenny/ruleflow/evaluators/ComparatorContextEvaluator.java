@@ -57,23 +57,19 @@ public class ComparatorContextEvaluator implements ContextEvaluator<RuleFlowLang
         return compareValues(operator, Double::compareTo, leftNum, rightNum);
     }
 
-    // String comparison
     private Boolean compareStrings(Token operator, String left, String right) {
         return compareValues(operator, String::compareTo, left, right);
     }
 
-    // Boolean comparison
     private Boolean compareBooleans(Token operator, Boolean left, Boolean right) {
         return compareValues(operator, Boolean::compareTo, left, right);
     }
 
-    // Generic comparison for any Comparable
     @SuppressWarnings("unchecked")
     private Boolean compareComparables(Token operator, Comparable<?> left, Comparable<?> right) {
         return compareValues(operator, Comparable::compareTo, (Comparable<Object>) left, (Comparable<Object>) right);
     }
 
-    // Method to handle comparison results for different data types
     private <T> Boolean compareValues(Token operator, BiFunction<T, T, Integer> compareFunc, T left, T right) {
         int comparisonResult = compareFunc.apply(left, right);
         return switch (operator.getType()) {

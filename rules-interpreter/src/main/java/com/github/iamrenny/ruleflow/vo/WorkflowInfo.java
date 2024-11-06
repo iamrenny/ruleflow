@@ -1,5 +1,7 @@
 package com.github.iamrenny.ruleflow.vo;
 
+import java.util.Objects;
+
 public class WorkflowInfo {
     private final String country;
     private final String version;
@@ -26,4 +28,18 @@ public class WorkflowInfo {
     public String getWorkflowName() {
         return workflowName;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        WorkflowInfo that = (WorkflowInfo) object;
+        return Objects.equals(country, that.country) && Objects.equals(version, that.version) && Objects.equals(workflowName, that.workflowName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(country, version, workflowName);
+    }
+
 }

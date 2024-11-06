@@ -40,7 +40,7 @@ class ReturnExprTest {
         """;
 
         Workflow ruleEngine = new Workflow(workflow);
-        WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "item_a", "2.0000", Set.of());
+        WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "item_a", "2.0", Set.of());
         WorkflowResult result = ruleEngine.evaluate(Map.of(
             "bucket", "4",
             "courier_model_response", Map.of("score", 0.5),
@@ -61,7 +61,7 @@ class ReturnExprTest {
         """;
 
         Workflow ruleEngine = new Workflow(workflow);
-        WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "item_a", "37.00");
+        WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "item_a", "37.0");
         WorkflowResult result = ruleEngine.evaluate(Map.of(
             "x", 15,
             "y", 22,
