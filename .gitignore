@@ -23,3 +23,6 @@ rules-interpreter/**/*.class
 
 
 .gradle-cache/
+
+
+.DS_Store
