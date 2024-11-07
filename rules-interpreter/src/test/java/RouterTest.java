@@ -15,13 +15,13 @@ class RouterTest {
         String workflow = """
           workflow 'providers'
           ruleset 'routing' 
-               'Cybersourse1-rappi_master' user_id = '101000042449' return route with route({'provider':'cybersource', 'merchant_id': 'rappi_master2'})
-               'Cybersourse2-rappi_master2' user_id = '151000033978'  return route with route({'provider': 'cybersource', 'merchant_id': 'rappi_master2'})
-               'Cybersourse3-rappi_dm_bwl' user_id = '151000033979' return route with route({'provider': 'cybersource', 'merchant_id': 'rappi_dm_bwl'})
-               'Cybersourse4-rappi_dm_rest_5a15_tkt' user_id = '151000033977' return route with route({'provider': 'cybersource', 'merchant_id': 'rappi_dm_rest_5a15_tkt'})
-               'Riskified-rappi' user_id = '15100003391381823' return route with route({'provider': 'riskified', 'tag': 'rappi'})
-               'Fraud_rules_engine' user_id = '151000033976' return route with route({'provider': 'fraud_rules_engine'})
-           default route with route({'provider': 'fraud_rules_engine'})
+               'provider1_master1' user_id = '101000042449' return route with route({'provider':'provider1', 'merchant_id': 'master1'})
+               'provider1_master2' user_id = '151000033978'  return route with route({'provider': 'provider1', 'merchant_id': 'master1'})
+               'provider2_master1' user_id = '151000033979' return route with route({'provider': 'provider2', 'merchant_id': 'master3'})
+               'provider3' user_id = '151000033977' return route with route({'provider': 'provider3', 'merchant_id': 'merchant4'})
+               'provider4' user_id = '15100003391381823' return route with route({'provider': 'provider4', 'tag': 'merchant5'})
+               'provider5' user_id = '151000033976' return route with route({'provider': 'internal'})
+           default route with route({'provider': 'internal'})
            end
         """;
 
@@ -31,7 +31,7 @@ class RouterTest {
             "default",
             "default",
             "route",
-            Map.of("route", Map.of("provider", "fraud_rules_engine"))
+            Map.of("route", Map.of("provider", "internal"))
         );
 
         WorkflowResult result = ruleEngine.evaluate(Map.of("user_id", "4"));
