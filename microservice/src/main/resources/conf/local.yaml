@@ -1,5 +1,0 @@
-database:
-  DB_URL: "jdbc:postgresql://localhost:5432/fraud-gatekeeper"
-  DB_USER: "fraud-gatekeeper"
-  DB_PASSWORD: "fraud-gatekeeper"
-  DRIVER_CLASS: "org.postgresql.Driver"

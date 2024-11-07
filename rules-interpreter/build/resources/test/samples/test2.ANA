@@ -1,6 +1,0 @@
-workflow 'create-order'
-ruleset 'test2'
-    user_id = '401912' return 'looks_bad'
-    store_type = 'restaurant' AND payment_type = 'credit_card' return 'needs_validation'
-    default return 'looks_ok'
-end
