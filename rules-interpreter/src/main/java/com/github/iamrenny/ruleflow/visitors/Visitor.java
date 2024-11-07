@@ -1,9 +1,9 @@
-package com.github.iamrenny.ruleflow.visitors;
+package io.github.iamrenny.ruleflow.visitors;
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
-import com.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
-import com.github.iamrenny.ruleflow.evaluators.*;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import io.github.iamrenny.ruleflow.evaluators.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 

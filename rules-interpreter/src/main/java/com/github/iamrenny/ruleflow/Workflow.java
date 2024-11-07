@@ -1,11 +1,11 @@
-package com.github.iamrenny.ruleflow;
+package io.github.iamrenny.ruleflow;
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
-import com.github.iamrenny.ruleflow.listeners.ErrorListener;
-import com.github.iamrenny.ruleflow.visitors.GrammarVisitor;
-import com.github.iamrenny.ruleflow.visitors.RulesetVisitor;
-import com.github.iamrenny.ruleflow.vo.WorkflowResult;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.listeners.ErrorListener;
+import io.github.iamrenny.ruleflow.visitors.GrammarVisitor;
+import io.github.iamrenny.ruleflow.visitors.RulesetVisitor;
+import io.github.iamrenny.ruleflow.vo.WorkflowResult;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.CharStream;

@@ -1,7 +1,7 @@
-package com.github.iamrenny.ruleflow.evaluators;
+package io.github.iamrenny.ruleflow.evaluators;
 
-import com.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
-import com.github.iamrenny.ruleflow.visitors.Visitor;
+import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import io.github.iamrenny.ruleflow.visitors.Visitor;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 public interface ContextEvaluator<T extends ParserRuleContext> {

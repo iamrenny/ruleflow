@@ -1,8 +1,8 @@
-package com.github.iamrenny.ruleflow.evaluators;
+package io.github.iamrenny.ruleflow.evaluators;
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser.MathAddContext;
-import com.github.iamrenny.ruleflow.visitors.Visitor;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.MathAddContext;
+import io.github.iamrenny.ruleflow.visitors.Visitor;
 
 import java.math.RoundingMode;
 

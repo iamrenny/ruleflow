@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.github.iamrenny.ruleflow</groupId>
+        <groupId>io.github.iamrenny.ruleflow</groupId>
         <artifactId>ruleflow</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>

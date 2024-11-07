@@ -1,4 +1,4 @@
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import org.antlr.v4.runtime.TokenStream;
 
 public class FilterListener extends PrettyPrinter {

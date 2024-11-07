@@ -1,4 +1,4 @@
-package com.github.iamrenny.ruleflow.listeners;
+package io.github.iamrenny.ruleflow.listeners;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;

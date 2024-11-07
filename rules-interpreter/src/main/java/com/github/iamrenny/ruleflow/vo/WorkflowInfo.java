@@ -1,4 +1,4 @@
-package com.github.iamrenny.ruleflow.vo;
+package io.github.iamrenny.ruleflow.vo;
 
 import java.util.Objects;
 

@@ -1,8 +1,8 @@
-package com.github.iamrenny.ruleflow.evaluators;
+package io.github.iamrenny.ruleflow.evaluators;
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser.ValidPropertyContext;
-import com.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
-import com.github.iamrenny.ruleflow.visitors.Visitor;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.ValidPropertyContext;
+import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import io.github.iamrenny.ruleflow.visitors.Visitor;
 
 import java.util.Map;
 

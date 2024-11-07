@@ -2,10 +2,18 @@
 ![technology Maven](https://img.shields.io/badge/technology-Maven-blue.svg)
 ![technology ANTLR4](https://img.shields.io/badge/technology-ANTLR4-red.svg)
 # Ruleflow Engine and DSL
-This 
+This project provides a rule-based workflow engine with a custom Domain-Specific Language (DSL) for risk evaluation. The DSL supports defining workflows, rulesets, and complex conditions with various operators to evaluate risk and determine actions. Key features include support for mathematical, logical, list, date, and aggregate operators, along with customizable return states, tags, and actions to control behavior based on evaluation outcomes.
+## Installation
+In order to use 
+```xml
+<dependency>
+  <groupId>io.github.iamrenny.ruleflow</groupId>
+  <artifactId>rules-interpreter</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
 ## Prerrequisites
-1. Docker
-2. Java 17
+Java 17
 
 ## RuleFlowLanguage Language Reference
 

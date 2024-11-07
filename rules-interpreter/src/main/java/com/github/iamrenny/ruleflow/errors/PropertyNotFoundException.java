@@ -1,4 +1,4 @@
-package com.github.iamrenny.ruleflow.errors;
+package io.github.iamrenny.ruleflow.errors;
 
 public class PropertyNotFoundException extends Exception {
     public PropertyNotFoundException(String message) {

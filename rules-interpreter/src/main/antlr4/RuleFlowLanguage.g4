@@ -1,7 +1,7 @@
 grammar RuleFlowLanguage;
 
 @header {
-package com.github.iamrenny.ruleflow;
+package io.github.iamrenny.ruleflow;
 }
 
 parse: (workflow | error) EOF;

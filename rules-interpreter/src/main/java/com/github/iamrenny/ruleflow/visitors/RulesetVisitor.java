@@ -1,12 +1,12 @@
-package com.github.iamrenny.ruleflow.visitors;
+package io.github.iamrenny.ruleflow.visitors;
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
-import com.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
-import com.github.iamrenny.ruleflow.util.ActionsVisitor;
-import com.github.iamrenny.ruleflow.utils.Pair;
-import com.github.iamrenny.ruleflow.vo.Action;
-import com.github.iamrenny.ruleflow.vo.WorkflowResult;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import io.github.iamrenny.ruleflow.util.ActionsVisitor;
+import io.github.iamrenny.ruleflow.utils.Pair;
+import io.github.iamrenny.ruleflow.vo.Action;
+import io.github.iamrenny.ruleflow.vo.WorkflowResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,7 +120,7 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
     }
 
     private Pair<List<Action>, Map<String, Map<String, String>>> resolveActions(RuleFlowLanguageParser.ActionsContext rule) {
-        List<com.github.iamrenny.ruleflow.utils.Pair<String, Map<String, String>>> actions = new ActionsVisitor().visit(rule);
+        List<io.github.iamrenny.ruleflow.utils.Pair<String, Map<String, String>>> actions = new ActionsVisitor().visit(rule);
         List<Action> actionsList = actions.stream().map(action -> new Action(action.getKey(), action.getValue())).collect(Collectors.toList());
         Map<String, Map<String, String>> actionsMap = actions.stream()
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,

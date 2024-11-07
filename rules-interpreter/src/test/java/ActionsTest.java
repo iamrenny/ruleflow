@@ -1,5 +1,5 @@
-import com.github.iamrenny.ruleflow.vo.Action;
-import com.github.iamrenny.ruleflow.vo.WorkflowResult;
+import io.github.iamrenny.ruleflow.vo.Action;
+import io.github.iamrenny.ruleflow.vo.WorkflowResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of("manual_review", Map.of())
@@ -37,7 +37,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of("manual_review", Map.of())
@@ -55,7 +55,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of("manual_review", Map.of())
@@ -73,7 +73,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of("manual_review", Map.of(), "logout_user", Map.of())
@@ -91,7 +91,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of(
@@ -112,7 +112,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of("manual_review", Map.of("test", "me", "foo", "bar"))
@@ -130,7 +130,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of("manual_review", Map.of("test", "me", "foo", "bar"))
@@ -148,7 +148,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of(
@@ -169,7 +169,7 @@ class ActionsTest {
             end
         """;
         Map<String, Object> request = Map.of("user_id", 15);
-        WorkflowResult result = new com.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
         WorkflowResult expectedResult = new WorkflowResult(
             "test", "dummy", "rule_a", "block",
             Map.of("apply_restriction", Map.of("responsible", "homer", "test", "me", "foo", "bar"))

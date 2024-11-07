@@ -1,9 +1,9 @@
-package com.github.iamrenny.ruleflow.evaluators;
+package io.github.iamrenny.ruleflow.evaluators;
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
-import com.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
-import com.github.iamrenny.ruleflow.visitors.Visitor;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import io.github.iamrenny.ruleflow.visitors.Visitor;
 
 import java.util.List;
 import java.util.Set;

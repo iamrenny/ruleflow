@@ -1,8 +1,8 @@
-package com.github.iamrenny.ruleflow.visitors;
+package io.github.iamrenny.ruleflow.visitors;
 
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 
 public class GrammarVisitor extends RuleFlowLanguageBaseVisitor<String> {
 

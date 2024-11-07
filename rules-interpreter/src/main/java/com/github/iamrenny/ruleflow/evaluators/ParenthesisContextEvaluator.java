@@ -1,7 +1,7 @@
-package com.github.iamrenny.ruleflow.evaluators;
+package io.github.iamrenny.ruleflow.evaluators;
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser.ParenthesisContext;
-import com.github.iamrenny.ruleflow.visitors.Visitor;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.ParenthesisContext;
+import io.github.iamrenny.ruleflow.visitors.Visitor;
 
 public class ParenthesisContextEvaluator implements ContextEvaluator<ParenthesisContext> {
 

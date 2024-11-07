@@ -1,7 +1,7 @@
-package com.github.iamrenny.ruleflow.util;
+package io.github.iamrenny.ruleflow.util;
 
-import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
-import com.github.iamrenny.ruleflow.utils.Pair;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.utils.Pair;
 
 import java.util.List;
 import java.util.Map;
