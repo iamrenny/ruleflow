@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueContextEvaluator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rules-interpreter</a> &gt; <a href="index.source.html" class="el_package">com.github.iamrenny.ruleflow.evaluators</a> &gt; <span class="el_source">ValueContextEvaluator.java</span></div><h1>ValueContextEvaluator.java</h1><pre class="source lang-java linenums">package com.github.iamrenny.ruleflow.evaluators;
+
+import com.github.iamrenny.ruleflow.RuleFlowLanguageParser.ValueContext;
+import com.github.iamrenny.ruleflow.visitors.Visitor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+
+<span class="fc" id="L10">public class ValueContextEvaluator implements ContextEvaluator&lt;ValueContext&gt; {</span>
+
+    @Override
+    public Object evaluate(ValueContext ctx, Visitor visitor) {
+<span class="fc bfc" id="L14" title="All 2 branches covered.">        if (ctx.validValue().string != null) {</span>
+<span class="fc" id="L15">            return (ctx.validValue().string.getText()).replace(&quot;'&quot;, &quot;&quot;);</span>
+<span class="fc bfc" id="L16" title="All 2 branches covered.">        } else if (ctx.validValue().number != null) {</span>
+<span class="fc" id="L17">            return Double.valueOf(ctx.validValue().number.getText());</span>
+<span class="pc bpc" id="L18" title="1 of 2 branches missed.">        } else if (ctx.validValue().nullValue != null) {</span>
+<span class="nc" id="L19">            return ctx.validValue().nullValue;</span>
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        } else if (ctx.validValue().currentDate != null) {</span>
+<span class="nc" id="L21">            return LocalDateTime.now();</span>
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        } else if (ctx.validValue().booleanLiteral != null) {</span>
+<span class="fc" id="L23">            return Boolean.parseBoolean(ctx.validValue().booleanLiteral.getText());</span>
+        } else {
+<span class="nc" id="L25">            throw new IllegalArgumentException(&quot;Value not supported: &quot; + ctx.getText());</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

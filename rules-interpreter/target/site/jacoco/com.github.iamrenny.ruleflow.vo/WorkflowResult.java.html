@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WorkflowResult.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rules-interpreter</a> &gt; <a href="index.source.html" class="el_package">com.github.iamrenny.ruleflow.vo</a> &gt; <span class="el_source">WorkflowResult.java</span></div><h1>WorkflowResult.java</h1><pre class="source lang-java linenums">package com.github.iamrenny.ruleflow.vo;
+
+import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import com.github.iamrenny.ruleflow.utils.Pair;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class WorkflowResult {
+    private String workflow;
+    private String ruleSet;
+    private String rule;
+    private String result;
+    private Set&lt;String&gt; actions;
+    private Set&lt;String&gt; warnings;
+    private Map&lt;String, Map&lt;String, String&gt;&gt; actionsWithParams;
+    private WorkflowInfo workflowInfo;
+    private boolean error;
+
+<span class="fc" id="L20">    public WorkflowResult(String workflow, String ruleSet, String rule, String result, Set&lt;String&gt; actions, Set&lt;String&gt; warnings, Map&lt;String, Map&lt;String, String&gt;&gt; actionsWithParams, WorkflowInfo workflowInfo, List&lt;Action&gt; actionsList, boolean error) {</span>
+<span class="fc" id="L21">        this.workflow = workflow;</span>
+<span class="fc" id="L22">        this.ruleSet = ruleSet;</span>
+<span class="fc" id="L23">        this.rule = rule;</span>
+<span class="fc" id="L24">        this.result = result;</span>
+<span class="fc" id="L25">        this.actions = actions;</span>
+<span class="fc" id="L26">        this.warnings = warnings;</span>
+<span class="fc" id="L27">        this.actionsWithParams = actionsWithParams;</span>
+<span class="fc" id="L28">        this.workflowInfo = workflowInfo;</span>
+<span class="fc" id="L29">        this.error = error;</span>
+<span class="fc" id="L30">    }</span>
+
+    public WorkflowResult(String workflow, String result) {
+<span class="nc" id="L33">        this(workflow, null, null, result, null, null, Map.of(), null,null, false);</span>
+<span class="nc" id="L34">    }</span>
+
+<span class="fc" id="L36">    public WorkflowResult(String workflow, String ruleset, String rule, String result, Set&lt;String&gt; warnings) {</span>
+<span class="fc" id="L37">        this.workflow = workflow;</span>
+<span class="fc" id="L38">        this.ruleSet = ruleset;</span>
+<span class="fc" id="L39">        this.rule = rule;</span>
+<span class="fc" id="L40">        this.result = result;</span>
+<span class="fc" id="L41">        this.warnings = warnings;</span>
+<span class="fc" id="L42">        this.actionsWithParams = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L43">        this.actions = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L44">    }</span>
+
+<span class="fc" id="L46">    public WorkflowResult(String workflow, String ruleset, String rule, String result,  Map&lt;String, Map&lt;String, String&gt;&gt; actionsWithParams) {</span>
+<span class="fc" id="L47">        this.workflow = workflow;</span>
+<span class="fc" id="L48">        this.ruleSet = ruleset;</span>
+<span class="fc" id="L49">        this.rule = rule;</span>
+<span class="fc" id="L50">        this.result = result;</span>
+<span class="fc" id="L51">        this.actionsWithParams = actionsWithParams;</span>
+<span class="fc" id="L52">        this.actions = actionsWithParams.keySet();</span>
+<span class="fc" id="L53">        this.warnings = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L54">    }</span>
+
+<span class="fc" id="L56">    public WorkflowResult(String workflow, String ruleset, String rule, String result) {</span>
+<span class="fc" id="L57">        this.workflow = workflow;</span>
+<span class="fc" id="L58">        this.ruleSet = ruleset;</span>
+<span class="fc" id="L59">        this.rule = rule;</span>
+<span class="fc" id="L60">        this.result = result;</span>
+<span class="fc" id="L61">        this.actions = Set.of();</span>
+<span class="fc" id="L62">        this.warnings = Set.of();</span>
+<span class="fc" id="L63">        this.actionsWithParams = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L64">    }</span>
+
+<span class="fc" id="L66">    public &lt;E, K, V&gt; WorkflowResult(String workflow, String ruleset, String rule, String result, Set&lt;String&gt; warnings, Map&lt;String, Map&lt;String,String&gt;&gt; actionsWithParams) {</span>
+<span class="fc" id="L67">        this.workflow = workflow;</span>
+<span class="fc" id="L68">        this.ruleSet = ruleset;</span>
+<span class="fc" id="L69">        this.rule = rule;</span>
+<span class="fc" id="L70">        this.result = result;</span>
+<span class="fc" id="L71">        this.warnings = warnings;</span>
+<span class="fc" id="L72">        this.actions = Set.of();</span>
+<span class="fc" id="L73">        this.actionsWithParams = actionsWithParams;</span>
+<span class="fc" id="L74">    }</span>
+
+    public String getWorkflow() {
+<span class="fc" id="L77">        return workflow;</span>
+    }
+
+    public String getRuleSet() {
+<span class="fc" id="L81">        return ruleSet;</span>
+    }
+
+    public String getRule() {
+<span class="fc" id="L85">        return rule;</span>
+    }
+
+    public String getResult() {
+<span class="fc" id="L89">        return result;</span>
+    }
+
+    public Set&lt;String&gt; getActions() {
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">        if(actionsWithParams == null) {</span>
+<span class="nc" id="L94">            return null;</span>
+        }
+<span class="fc" id="L96">            Map&lt;String, Map&lt;String, String&gt;&gt; actionsMap = actionsWithParams.entrySet().stream()</span>
+<span class="fc" id="L97">                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,</span>
+                    (existing, replacement) -&gt; {
+<span class="nc" id="L99">                        existing.putAll(replacement); // merging the two maps</span>
+<span class="nc" id="L100">                        return existing;</span>
+                    }));
+<span class="fc" id="L102">            return actionsMap.keySet();</span>
+    }
+
+    public Set&lt;String&gt; getWarnings() {
+<span class="fc" id="L106">        return warnings;</span>
+    }
+
+    public Map&lt;String, Map&lt;String, String&gt;&gt; getActionsWithParams() {
+<span class="fc" id="L110">        return actionsWithParams;</span>
+    }
+
+    public WorkflowInfo getWorkflowInfo() {
+<span class="fc" id="L114">        return workflowInfo;</span>
+    }
+
+    public boolean isError() {
+<span class="fc" id="L118">        return error;</span>
+    }
+
+    public void setWorkflow(String workflow) {
+<span class="nc" id="L122">        this.workflow = workflow;</span>
+<span class="nc" id="L123">    }</span>
+
+    public void setRuleSet(String ruleSet) {
+<span class="nc" id="L126">        this.ruleSet = ruleSet;</span>
+<span class="nc" id="L127">    }</span>
+
+    public void setRule(String rule) {
+<span class="nc" id="L130">        this.rule = rule;</span>
+<span class="nc" id="L131">    }</span>
+
+    public void setResult(String result) {
+<span class="nc" id="L134">        this.result = result;</span>
+<span class="nc" id="L135">    }</span>
+
+    public void setWarnings(Set&lt;String&gt; warnings) {
+<span class="nc" id="L138">        this.warnings = warnings;</span>
+<span class="nc" id="L139">    }</span>
+
+    public void setActionsWithParams(Map&lt;String, Map&lt;String, String&gt;&gt; actionsWithParams) {
+<span class="fc" id="L142">        this.actionsWithParams = actionsWithParams;</span>
+<span class="fc" id="L143">        this.actions = actionsWithParams.keySet();</span>
+<span class="fc" id="L144">    }</span>
+
+    public void setWorkflowInfo(WorkflowInfo workflowInfo) {
+<span class="nc" id="L147">        this.workflowInfo = workflowInfo;</span>
+<span class="nc" id="L148">    }</span>
+
+    public void setError(boolean error) {
+<span class="nc" id="L151">        this.error = error;</span>
+<span class="nc" id="L152">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L156">        return &quot;WorkflowResult{&quot; +</span>
+            &quot;workflow='&quot; + workflow + '\'' +
+            &quot;, ruleSet='&quot; + ruleSet + '\'' +
+            &quot;, rule='&quot; + rule + '\'' +
+            &quot;, result='&quot; + result + '\'' +
+            &quot;, actions=&quot; + actions +
+            &quot;, warnings=&quot; + warnings +
+            &quot;, actionsWithParams=&quot; + actionsWithParams +
+            &quot;, workflowInfo=&quot; + workflowInfo +
+            &quot;, error=&quot; + error +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">        if (this == o) return true;</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">        if (!(o instanceof WorkflowResult that)) return false;</span>
+<span class="pc bpc" id="L173" title="9 of 18 branches missed.">        return isError() == that.isError() &amp;&amp; Objects.equals(getWorkflow(), that.getWorkflow()) &amp;&amp; Objects.equals(getRuleSet(), that.getRuleSet()) &amp;&amp; Objects.equals(getRule(), that.getRule()) &amp;&amp; Objects.equals(getResult(), that.getResult()) &amp;&amp; Objects.equals(getActions(), that.getActions()) &amp;&amp; Objects.equals(getWarnings(), that.getWarnings()) &amp;&amp; Objects.equals(getActionsWithParams(), that.getActionsWithParams()) &amp;&amp; Objects.equals(getWorkflowInfo(), that.getWorkflowInfo());</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L178">        return Objects.hash(getWorkflow(), getRuleSet(), getRule(), getResult(), getActions(), getWarnings(), getActionsWithParams(), getWorkflowInfo(), isError());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

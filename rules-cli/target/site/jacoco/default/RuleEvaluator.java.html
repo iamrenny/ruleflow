@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RuleEvaluator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rules-cli</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">RuleEvaluator.java</span></div><h1>RuleEvaluator.java</h1><pre class="source lang-java linenums">import com.github.iamrenny.ruleflow.visitors.Visitor;
+import com.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
+import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.tree.ParseTree;
+
+import java.util.Map;
+import java.util.Set;
+
+public class RuleEvaluator {
+    private final String inputRule;
+    private final Map&lt;String, ?&gt; data;
+    private final Map&lt;String, Set&lt;String&gt;&gt; lists;
+<span class="nc" id="L19">    private final SyntaxErrorListener syntaxErrorListener = new SyntaxErrorListener();</span>
+
+<span class="nc" id="L21">    public RuleEvaluator(String inputRule, Map&lt;String, ?&gt; data, Map&lt;String, Set&lt;String&gt;&gt; lists) {</span>
+<span class="nc" id="L22">        this.inputRule = inputRule;</span>
+<span class="nc" id="L23">        this.data = data;</span>
+<span class="nc" id="L24">        this.lists = lists;</span>
+<span class="nc" id="L25">    }</span>
+
+    public String evaluate() {
+<span class="nc" id="L28">        var input = CharStreams.fromString(inputRule);</span>
+<span class="nc" id="L29">        var lexer = new RuleFlowLanguageLexer(input);</span>
+<span class="nc" id="L30">        var tokens = new CommonTokenStream(lexer);</span>
+<span class="nc" id="L31">        var parser = new RuleFlowLanguageParser(tokens);</span>
+
+        // Remove default error listeners and add custom listener
+<span class="nc" id="L34">        parser.removeErrorListeners();</span>
+<span class="nc" id="L35">        parser.addErrorListener(syntaxErrorListener);</span>
+
+<span class="nc" id="L37">        ParseTree ctx = parser.expr();</span>
+<span class="nc" id="L38">        ParserRuleContext parserContext = (ParserRuleContext) ctx;</span>
+
+        // If there is a syntax error, return the error message
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        if (syntaxErrorListener.isFailed()) {</span>
+<span class="nc" id="L42">            return &quot;error: &quot; + syntaxErrorListener.getErrorMessage() +</span>
+<span class="nc" id="L43">                    &quot;\n&quot; + tokens.getText(parserContext.getStart(), parserContext.getStop());</span>
+        }
+
+<span class="nc" id="L46">        var ruleEvaluator = new Visitor(data, lists, data);</span>
+
+        try {
+<span class="nc" id="L49">            return ruleEvaluator.visit(ctx).toString();</span>
+<span class="nc" id="L50">        } catch (Exception ex) {</span>
+<span class="nc" id="L51">            System.out.println(&quot;Error while evaluating rule &quot; + tokens.getText(parserContext.getStart(), parserContext.getStop()) + &quot;: &quot; + ex.getMessage());</span>
+<span class="nc" id="L52">            return &quot;error: &quot; + ex.getMessage() + &quot;\n&quot; + tokens.getText(parserContext.getStart(), parserContext.getStop());</span>
+        }
+    }
+}
+
+<span class="nc" id="L57">class SyntaxErrorListener extends BaseErrorListener {</span>
+<span class="nc" id="L58">    private boolean failed = false;</span>
+    private String errorMessage;
+
+    public boolean isFailed() {
+<span class="nc" id="L62">        return failed;</span>
+    }
+
+    public String getErrorMessage() {
+<span class="nc" id="L66">        return errorMessage;</span>
+    }
+
+    @Override
+    public void syntaxError(Recognizer&lt;?, ?&gt; recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
+<span class="nc" id="L71">        errorMessage = &quot;Error at line &quot; + line + &quot;:&quot; + charPositionInLine + &quot; - &quot; + msg;</span>
+<span class="nc" id="L72">        failed = true;</span>
+<span class="nc" id="L73">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

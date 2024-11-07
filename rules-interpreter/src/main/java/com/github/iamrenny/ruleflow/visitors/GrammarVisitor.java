@@ -1,5 +1,6 @@
 package com.github.iamrenny.ruleflow.visitors;
 
+
 import com.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
 import com.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 

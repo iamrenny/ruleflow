@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValidPropertyContextEvaluator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">rules-interpreter</a> &gt; <a href="index.source.html" class="el_package">com.github.iamrenny.ruleflow.evaluators</a> &gt; <span class="el_source">ValidPropertyContextEvaluator.java</span></div><h1>ValidPropertyContextEvaluator.java</h1><pre class="source lang-java linenums">package com.github.iamrenny.ruleflow.evaluators;
+
+import com.github.iamrenny.ruleflow.RuleFlowLanguageParser.ValidPropertyContext;
+import com.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import com.github.iamrenny.ruleflow.visitors.Visitor;
+
+import java.util.Map;
+
+<span class="fc" id="L9">public class ValidPropertyContextEvaluator implements ContextEvaluator&lt;ValidPropertyContext&gt; {</span>
+
+    @Override
+    public Object evaluate(ValidPropertyContext ctx, Visitor visitor) throws PropertyNotFoundException {
+<span class="fc bfc" id="L13" title="All 2 branches covered.">        if (ctx.property != null) {</span>
+<span class="fc" id="L14">            Object value = visitor.getData().get(ctx.ID(0).getText());</span>
+<span class="fc bfc" id="L15" title="All 2 branches covered.">            if (value == null) {</span>
+<span class="fc" id="L16">                throw new PropertyNotFoundException(ctx.ID(0).getText() + &quot; field cannot be found&quot;);</span>
+            }
+<span class="fc" id="L18">            return value;</span>
+<span class="pc bpc" id="L19" title="1 of 2 branches missed.">        } else if (ctx.nestedProperty != null) {</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">            Map&lt;String, ?&gt; data = (ctx.root != null) ? visitor.getRoot() : visitor.getData();</span>
+<span class="fc" id="L21">            return getNestedValue(ctx, data);</span>
+        } else {
+<span class="nc" id="L23">            throw new PropertyNotFoundException(ctx.getText() + &quot; field cannot be found&quot;);</span>
+        }
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private Object getNestedValue(ValidPropertyContext ctx, Map&lt;String, ?&gt; data) throws PropertyNotFoundException {
+<span class="fc" id="L29">        Map&lt;String, ?&gt; currentData = data;</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        for (var id : ctx.ID()) {</span>
+<span class="fc" id="L31">            Object value = currentData.get(id.getText());</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">            if (value instanceof Map&lt;?, ?&gt;) {</span>
+<span class="fc" id="L33">                currentData = (Map&lt;String, ?&gt;) value;</span>
+            } else {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">                if (value == null) {</span>
+<span class="fc" id="L36">                    throw new PropertyNotFoundException(id.getText() + &quot; field cannot be found&quot;);</span>
+                }
+<span class="fc" id="L38">                return value;</span>
+            }
+<span class="fc" id="L40">        }</span>
+<span class="nc" id="L41">        throw new PropertyNotFoundException(ctx.getText() + &quot; cannot be found&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
