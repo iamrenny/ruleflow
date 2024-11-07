@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="RuleEvaluatorTest" time="0.066" tests="3" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="17"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/renny/workspace/ruleflow/rules-cli/target/test-classes:/Users/renny/workspace/ruleflow/rules-cli/target/classes:/Users/renny/.m2/repository/org/antlr/antlr4-runtime/4.9.2/antlr4-runtime-4.9.2.jar:/Users/renny/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar:/Users/renny/workspace/ruleflow/rules-interpreter/target/rules-interpreter-0.0.1-SNAPSHOT.jar:/Users/renny/.m2/repository/org/antlr/antlr4/4.9.2/antlr4-4.9.2.jar:/Users/renny/.m2/repository/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar:/Users/renny/.m2/repository/org/antlr/ST4/4.3/ST4-4.3.jar:/Users/renny/.m2/repository/org/abego/treelayout/org.abego.treelayout.core/1.0.3/org.abego.treelayout.core-1.0.3.jar:/Users/renny/.m2/repository/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar:/Users/renny/.m2/repository/com/ibm/icu/icu4j/61.1/icu4j-61.1.jar:/Users/renny/.m2/repository/ch/qos/logback/logback-classic/1.5.0/logback-classic-1.5.0.jar:/Users/renny/.m2/repository/ch/qos/logback/logback-core/1.5.0/logback-core-1.5.0.jar:/Users/renny/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.13.4.1/jackson-databind-2.13.4.1.jar:/Users/renny/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.13.4/jackson-annotations-2.13.4.jar:/Users/renny/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.13.4/jackson-core-2.13.4.jar:/Users/renny/.m2/repository/info/picocli/picocli/4.6.1/picocli-4.6.1.jar:/Users/renny/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.3/junit-jupiter-engine-5.9.3.jar:/Users/renny/.m2/repository/org/junit/platform/junit-platform-engine/1.9.3/junit-platform-engine-1.9.3.jar:/Users/renny/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/renny/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.3/junit-jupiter-params-5.9.3.jar:/Users/renny/.m2/repository/org/mockito/mockito-junit-jupiter/3.12.4/mockito-junit-jupiter-3.12.4.jar:/Users/renny/.m2/repository/org/mockito/mockito-core/3.12.4/mockito-core-3.12.4.jar:/Users/renny/.m2/repository/net/bytebuddy/byte-buddy/1.11.13/byte-buddy-1.11.13.jar:/Users/renny/.m2/repository/net/bytebuddy/byte-buddy-agent/1.11.13/byte-buddy-agent-1.11.13.jar:/Users/renny/.m2/repository/org/objenesis/objenesis/3.2/objenesis-3.2.jar:/Users/renny/.m2/repository/com/google/code/gson/gson/2.8.9/gson-2.8.9.jar:/Users/renny/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.3/junit-jupiter-api-5.9.3.jar:/Users/renny/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/renny/.m2/repository/org/junit/platform/junit-platform-commons/1.9.3/junit-platform-commons-1.9.3.jar:"/>
+    <property name="java.vm.vendor" value="Amazon.com Inc."/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://aws.amazon.com/corretto/"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="17"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="AR"/>
+    <property name="sun.boot.library.path" value="/Users/renny/.sdkman/candidates/java/17.0.12-amzn/lib"/>
+    <property name="sun.java.command" value="/Users/renny/workspace/ruleflow/rules-cli/target/surefire/surefirebooter468092344633770801.jar /Users/renny/workspace/ruleflow/rules-cli/target/surefire 2024-11-07T16-26-01_304-jvmRun1 surefire13844646294022689124tmp surefire_14839973290047134469tmp"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/Users/renny/workspace/ruleflow/rules-cli/target/test-classes:/Users/renny/workspace/ruleflow/rules-cli/target/classes:/Users/renny/.m2/repository/org/antlr/antlr4-runtime/4.9.2/antlr4-runtime-4.9.2.jar:/Users/renny/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar:/Users/renny/workspace/ruleflow/rules-interpreter/target/rules-interpreter-0.0.1-SNAPSHOT.jar:/Users/renny/.m2/repository/org/antlr/antlr4/4.9.2/antlr4-4.9.2.jar:/Users/renny/.m2/repository/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar:/Users/renny/.m2/repository/org/antlr/ST4/4.3/ST4-4.3.jar:/Users/renny/.m2/repository/org/abego/treelayout/org.abego.treelayout.core/1.0.3/org.abego.treelayout.core-1.0.3.jar:/Users/renny/.m2/repository/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar:/Users/renny/.m2/repository/com/ibm/icu/icu4j/61.1/icu4j-61.1.jar:/Users/renny/.m2/repository/ch/qos/logback/logback-classic/1.5.0/logback-classic-1.5.0.jar:/Users/renny/.m2/repository/ch/qos/logback/logback-core/1.5.0/logback-core-1.5.0.jar:/Users/renny/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.13.4.1/jackson-databind-2.13.4.1.jar:/Users/renny/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.13.4/jackson-annotations-2.13.4.jar:/Users/renny/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.13.4/jackson-core-2.13.4.jar:/Users/renny/.m2/repository/info/picocli/picocli/4.6.1/picocli-4.6.1.jar:/Users/renny/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.3/junit-jupiter-engine-5.9.3.jar:/Users/renny/.m2/repository/org/junit/platform/junit-platform-engine/1.9.3/junit-platform-engine-1.9.3.jar:/Users/renny/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/renny/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.3/junit-jupiter-params-5.9.3.jar:/Users/renny/.m2/repository/org/mockito/mockito-junit-jupiter/3.12.4/mockito-junit-jupiter-3.12.4.jar:/Users/renny/.m2/repository/org/mockito/mockito-core/3.12.4/mockito-core-3.12.4.jar:/Users/renny/.m2/repository/net/bytebuddy/byte-buddy/1.11.13/byte-buddy-1.11.13.jar:/Users/renny/.m2/repository/net/bytebuddy/byte-buddy-agent/1.11.13/byte-buddy-agent-1.11.13.jar:/Users/renny/.m2/repository/org/objenesis/objenesis/3.2/objenesis-3.2.jar:/Users/renny/.m2/repository/com/google/code/gson/gson/2.8.9/gson-2.8.9.jar:/Users/renny/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.3/junit-jupiter-api-5.9.3.jar:/Users/renny/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/renny/.m2/repository/org/junit/platform/junit-platform-commons/1.9.3/junit-platform-commons-1.9.3.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/renny"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2024-07-16"/>
+    <property name="java.home" value="/Users/renny/.sdkman/candidates/java/17.0.12-amzn"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/Users/renny/workspace/ruleflow/rules-cli"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="surefire.real.class.path" value="/Users/renny/workspace/ruleflow/rules-cli/target/surefire/surefirebooter468092344633770801.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.runtime.version" value="17.0.12+7-LTS"/>
+    <property name="user.name" value="renny"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="14.6.1"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Corretto-17.0.12.7.1"/>
+    <property name="localRepository" value="/Users/renny/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/corretto/corretto-17/issues/"/>
+    <property name="java.io.tmpdir" value="/var/folders/rb/x90lcv117g5bcccp9v8__3k00000gn/T/"/>
+    <property name="java.version" value="17.0.12"/>
+    <property name="user.dir" value="/Users/renny/workspace/ruleflow/rules-cli"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/renny/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Amazon.com Inc."/>
+    <property name="java.vm.version" value="17.0.12+7-LTS"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.class.version" value="61.0"/>
+  </properties>
+  <testcase name="givenRuleWhenValidatingShouldReturnFalse" classname="RuleEvaluatorTest" time="0.053"/>
+  <testcase name="givenExceptionRuleWhenValidatingShouldReturnErrorMessage" classname="RuleEvaluatorTest" time="0.006"/>
+  <testcase name="givenRuleWhenValidatingShouldReturnTrue" classname="RuleEvaluatorTest" time="0"/>
+</testsuite>
