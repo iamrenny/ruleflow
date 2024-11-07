@@ -1,7 +1,6 @@
-![tag jdk8](https://img.shields.io/badge/tag-jdk8-orange.svg)
-![technology Kotlin](https://img.shields.io/badge/technology-Kotlin-olive.svg)
-![technology VertX](https://img.shields.io/badge/technology-VertX-blue.svg)
-![technology Gradle](https://img.shields.io/badge/technology-Gradle-green.svg)
+![tag jdk17](https://img.shields.io/badge/tag-jdk17-orange.svg)
+![technology Maven](https://img.shields.io/badge/technology-Maven-blue.svg)
+![technology ANTLR4](https://img.shields.io/badge/technology-ANTLR4-red.svg)
 # Ruleflow Engine and DSL
 This 
 ## Prerrequisites
