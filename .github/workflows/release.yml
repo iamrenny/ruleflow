@@ -25,12 +25,12 @@ jobs:
             <servers>
               <server>
                 <id>central</id>
-                <username>secrets.nexus_central_username</username>
-                <password>secrets.nexus_central_password</password>
+                <username>${{secrets.NEXUS_CENTRAL_USERNAME}}</username>
+                <password>${{secrets.NEXUS_CENTRAL_PASSWORD}}</password>
               </server>
               <server>
                 <id>gpg.passphrase</id>
-                <passphrase>secrets.gpg_passphrase</passphrase>
+                <passphrase>${{secrets.GPG_PASSPHRASE}}</passphrase>
               </server>
             </servers>
           </settings>" > ~/.m2/settings.xml
