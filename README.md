@@ -4,7 +4,9 @@
 # Ruleflow Engine and DSL
 This project provides a rule-based workflow engine with a custom Domain-Specific Language (DSL) for risk evaluation. The DSL supports defining workflows, rulesets, and complex conditions with various operators to evaluate risk and determine actions. Key features include support for mathematical, logical, list, date, and aggregate operators, along with customizable return states, tags, and actions to control behavior based on evaluation outcomes.
 ## Installation
-In order to use 
+
+### Maven
+To use Ruleflow in your Maven project, add the following dependency to your pom.xml:
 ```xml
 <dependency>
   <groupId>io.github.iamrenny.ruleflow</groupId>
@@ -12,6 +14,14 @@ In order to use
   <version>0.0.1</version>
 </dependency>
 ```
+
+### Gradle
+For Gradle users, add the following to your build.gradle:
+
+```
+implementation 'io.github.iamrenny.ruleflow:rules-interpreter:0.0.1'
+```
+
 ## Prerrequisites
 Java 17
 
