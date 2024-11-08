@@ -9,7 +9,7 @@ In order to use
 <dependency>
   <groupId>io.github.iamrenny.ruleflow</groupId>
   <artifactId>rules-interpreter</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
 </dependency>
 ```
 ## Prerrequisites
