@@ -24,9 +24,13 @@ jobs:
           echo "<settings>
             <servers>
               <server>
-                <id>github</id>
-                <username>${{ github.actor }}</username>
-                <password>${{ secrets.PUBLISH_TOKEN }}</password>
+                <id>central</id>
+                <username>secrets.nexus_central_username</username>
+                <password>secrets.nexus_central_password</password>
+              </server>
+              <server>
+                <id>gpg.passphrase</id>
+                <passphrase>secrets.gpg_passphrase</passphrase>
               </server>
             </servers>
           </settings>" > ~/.m2/settings.xml

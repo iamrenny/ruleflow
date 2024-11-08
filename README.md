@@ -3,6 +3,15 @@
 ![technology ANTLR4](https://img.shields.io/badge/technology-ANTLR4-red.svg)
 # Ruleflow Engine and DSL
 This project provides a rule-based workflow engine with a custom Domain-Specific Language (DSL) for risk evaluation. The DSL supports defining workflows, rulesets, and complex conditions with various operators to evaluate risk and determine actions. Key features include support for mathematical, logical, list, date, and aggregate operators, along with customizable return states, tags, and actions to control behavior based on evaluation outcomes.
+
+## Latest Release
+
+[![Latest Release](https://img.shields.io/github/v/release/iamrenny/ruleflow)](https://github.com/iamrenny/ruleflow/releases/latest)
+
+## Prerequisites
+Java
+Maven or Gradle
+
 ## Installation
 
 ### Maven
@@ -11,7 +20,7 @@ To use Ruleflow in your Maven project, add the following dependency to your pom.
 <dependency>
   <groupId>io.github.iamrenny.ruleflow</groupId>
   <artifactId>rules-interpreter</artifactId>
-  <version>0.0.1</version>
+  <version>latest</version>
 </dependency>
 ```
 
@@ -22,8 +31,50 @@ For Gradle users, add the following to your build.gradle:
 implementation 'io.github.iamrenny.ruleflow:rules-interpreter:0.0.1'
 ```
 
-## Prerrequisites
-Java 17
+## Usage
+
+### Quick Start
+
+Here's how you can get started with **Ruleflow** in Java:
+
+#### 1. **Define a Workflow**
+Create a workflow with rules using the `Workflow` class.
+
+```java
+package com.example;
+
+import io.github.iamrenny.ruleflow.Workflow;
+import io.github.iamrenny.ruleflow.vo.WorkflowResult;
+
+import java.util.Map;
+
+public class MainClass {
+    public static void main(String[] args) {
+        Workflow wf = new Workflow("""
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' user_id = 15 return block with action('manual_review')
+                default allow
+            end
+        """);
+
+        WorkflowResult result = wf.evaluate(Map.of("user_id", 15));
+
+        System.out.println(result);
+    }
+}
+```
+
+#### 2. **Run and Evaluate the Workflow**
+The above code initializes a workflow with a simple rule that blocks a user with an ID of 15 and triggers a `manual_review` action. When evaluated with the input `user_id = 15`, the result will be:
+
+```
+WorkflowResult{workflow='test', ruleSet='dummy', rule='rule_a', result='block', actions=[manual_review], warnings=[], actionsWithParams={manual_review={}}, workflowInfo=null, error=false}
+```
+
+---
+
+
 
 ## RuleFlowLanguage Language Reference
 
