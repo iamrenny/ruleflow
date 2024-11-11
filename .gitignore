@@ -18,7 +18,9 @@ out
 rules-interpreter/**/gen/*
 rules-interpreter/**/*.class
 rules-interpreter/target/**
+rules-interpreter/.DS_Store
 rules-cli/target/**
+rules-cli/.DS_Store
 /splunk-otel-javaagent.jar
 
 /microservice/src/main/resources/conf/local-dev.yaml
