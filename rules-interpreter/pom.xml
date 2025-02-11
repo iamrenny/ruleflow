@@ -34,7 +34,7 @@
     <description>A lightweight rule engine SDK for defining workflows in a customizable DSL format.</description>
 
     <properties>
-        <antlr.version>4.9.2</antlr.version>
+        <antlr.version>4.13.2</antlr.version>
         <logback.version>1.5.0</logback.version>
         <slf4j.version>1.7.25</slf4j.version>
         <junit.version>5.9.3</junit.version>
