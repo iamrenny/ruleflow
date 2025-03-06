@@ -28,7 +28,9 @@ name: string_literal;
 
 default_clause: K_DEFAULT (K_THEN | K_RETURN)? default_result = return_result actions?;
 
-return_result: (state | validProperty| validValue | K_EXPR L_PAREN expr R_PAREN);
+return_result:  shadowed? (state | validProperty| validValue | K_EXPR L_PAREN expr R_PAREN);
+
+shadowed: K_SHADOWED;
 
 state: ID;
 
@@ -127,6 +129,7 @@ K_DISTINCT: D I S T I N C T;
 K_NULL: N U L L;
 DAY_OF_WEEK: D A Y O F W E E K;
 K_EXPR : E X P R;
+K_SHADOWED: S H A D O W E D;
 
 
 
