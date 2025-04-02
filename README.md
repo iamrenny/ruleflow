@@ -1,12 +1,13 @@
 ![tag jdk17](https://img.shields.io/badge/tag-jdk17-orange.svg)
 ![technology Maven](https://img.shields.io/badge/technology-Maven-blue.svg)
 ![technology ANTLR4](https://img.shields.io/badge/technology-ANTLR4-red.svg)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.iamrenny.ruleflow/rules-interpreter.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.iamrenny.ruleflow/rules-interpreter)
+
 # Ruleflow Engine and DSL
 This project provides a rule-based workflow engine with a custom Domain-Specific Language (DSL) for risk evaluation. The DSL supports defining workflows, rulesets, and complex conditions with various operators to evaluate risk and determine actions. Key features include support for mathematical, logical, list, date, and aggregate operators, along with customizable return states, tags, and actions to control behavior based on evaluation outcomes.
 
 ## Latest Release
 
-[![Latest Release](https://img.shields.io/github/v/release/iamrenny/ruleflow)](https://github.com/iamrenny/ruleflow/releases/latest)
 
 ## Prerequisites
 Java
