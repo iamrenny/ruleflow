@@ -21,7 +21,7 @@ class BooleanTest {
         """;
 
         Workflow ruleEngine = new Workflow(workflow);
-        WorkflowResult expectedResult = new WorkflowResult("test", "default", "default", "allow", new HashSet<>(), new HashMap<>());
+        WorkflowResult expectedResult = new WorkflowResult("test", "default", "default", "allow", new HashSet<>(), new HashMap<>(), false);
         WorkflowResult result = ruleEngine.evaluate(Map.of("x", false, "y", true, "z", false));
 
         Assertions.assertEquals(expectedResult, result);

@@ -1,7 +1,10 @@
 package io.github.iamrenny.ruleflow.visitors;
 
+import com.ibm.icu.text.RelativeDateTimeFormatter.RelativeUnit;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import io.github.iamrenny.ruleflow.errors.UnexpectedSymbolException;
 import io.github.iamrenny.ruleflow.utils.Pair;
 import io.github.iamrenny.ruleflow.vo.Action;
 import io.github.iamrenny.ruleflow.vo.WorkflowResult;
@@ -14,9 +17,9 @@ import java.util.stream.Collectors;
 public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> {
     private static final Logger logger = LoggerFactory.getLogger(RulesetVisitor.class);
     private final Map<String, ?> data;
-    private final Map<String, Set<String>> lists;
+    private final Map<String, List<?>> lists;
 
-    public RulesetVisitor(Map<String, ?> data, Map<String, Set<String>> lists) {
+    public RulesetVisitor(Map<String, ?> data, Map<String, List<?>> lists) {
         this.data = data;
         this.lists = lists;
     }
@@ -30,6 +33,7 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
     public WorkflowResult visitWorkflow(RuleFlowLanguageParser.WorkflowContext ctx) {
             Visitor visitor = new Visitor(data, lists, data);
             Set<String> warnings = new HashSet<>();
+            boolean error = false;
 
             for (RuleFlowLanguageParser.RulesetsContext ruleSet : ctx.rulesets()) {
                 for (RuleFlowLanguageParser.RulesContext rule : ruleSet.rules()) {
@@ -44,19 +48,31 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                             }
                             return workflowResult(rule, ctx, ruleSet, exprResult, warnings);
                         }
-                    } catch (Exception ex) {
-                        logger.error("Error while evaluating rule {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
-                        warnings.add(ex.getCause() != null ? ex.getCause().getMessage() : "Unexpected Exception at " + rule.getText());
+                    } catch (RuntimeException ex) {
+                        if (ex.getCause() != null && ex.getCause() instanceof PropertyNotFoundException) {
+                            logger.warn("Property not found: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
+                            warnings.add(ex.getCause().getMessage());
+                        } else if (ex.getCause() != null && ex.getCause() instanceof UnexpectedSymbolException) {
+                            logger.warn("Unexpected symbol: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
+                            warnings.add(ex.getCause().getMessage());
+                        } else {
+                            logger.error("Error while evaluating rule {} {}",
+                                ctx.workflow_name().getText(), rule.name().getText(), ex);
+                            warnings.add(ex.getCause() != null ? ex.getCause().getMessage()
+                                : "Unexpected Exception at " + rule.getText());
+                            error = true;
+                        }
                     }
                 }
             }
 
-            return resolveDefaultResult(ctx, warnings, visitor);
+            return resolveDefaultResult(ctx, warnings, error,  visitor);
     }
 
     private WorkflowResult resolveDefaultResult(
         RuleFlowLanguageParser.WorkflowContext ctx,
         Set<String> warnings,
+        boolean error,
         Visitor evaluator) {
         List<Action> actionsList = new ArrayList<>();
         Map<String, Map<String, String>> actionsMap = new HashMap<>();
@@ -75,7 +91,8 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                 "default",
                 solvedExpr.toString(),
                 warnings,
-                actionsMap
+                actionsMap,
+                error
             );
         } else if (ctx.default_clause().return_result().state() != null) {
             return new WorkflowResult(
@@ -88,7 +105,7 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                 actionsMap,
                 null,
                 actionsList,
-                false
+                error
             );
         } else {
             throw new RuntimeException("No default result found");

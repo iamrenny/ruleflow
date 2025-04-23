@@ -2,8 +2,11 @@ package io.github.iamrenny.ruleflow.visitors;
 
 import io.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.PropertyTupleContext;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import io.github.iamrenny.ruleflow.errors.UnexpectedSymbolException;
 import io.github.iamrenny.ruleflow.evaluators.*;
+import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -12,10 +15,10 @@ import java.util.Set;
 
 public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
     private final Map<String, ?> data;
-    private final Map<String, Set<String>> lists;
+    private final Map<String, List<?>> lists;
     private final Map<String, ?> root;
 
-    public Visitor(Map<String, ?> data, Map<String, Set<String>> lists, Map<String, ?> root) {
+    public Visitor(Map<String, ?> data, Map<String, List<?>> lists, Map<String, ?> root) {
         this.data = data;
         this.lists = lists != null ? lists : Map.of();
         this.root = root;
@@ -42,10 +45,15 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
                 return new PropertyContextEvaluator().evaluate((RuleFlowLanguageParser.PropertyContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.ValidPropertyContext) {
                 return new ValidPropertyContextEvaluator().evaluate((RuleFlowLanguageParser.ValidPropertyContext) ctx, this);
-            } else if (ctx instanceof RuleFlowLanguageParser.DateDiffContext) {
+            } else if (ctx instanceof PropertyTupleContext) {
+                return new PropertyTupleContextEvaluator().evaluate((PropertyTupleContext) ctx, this);
+            }
+            else if (ctx instanceof RuleFlowLanguageParser.DateDiffContext) {
                 return new DateDiffContextEvaluator().evaluate((RuleFlowLanguageParser.DateDiffContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.ListContext) {
                 return new ListContextEvaluator().evaluate((RuleFlowLanguageParser.ListContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.MultiValueslistContext) {
+                return new MultiValuesListContextEvaluator().evaluate((RuleFlowLanguageParser.MultiValueslistContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.UnaryContext) {
                 return new UnaryContextEvaluator().evaluate((RuleFlowLanguageParser.UnaryContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.BinaryAndContext) {
@@ -59,7 +67,7 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
             } else {
                 throw new IllegalArgumentException("Operation not supported: " + ctx.getClass());
             }
-        } catch (PropertyNotFoundException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -68,7 +76,7 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
         return data;
     }
 
-    public Map<String, Set<String>> getLists() {
+    public Map<String, List<?>> getLists() {
         return lists;
     }
 

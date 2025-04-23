@@ -70,4 +70,25 @@ class RegexTest {
 
         Assertions.assertEquals(expectedResult, result);
     }
+
+    @Test
+    public void givenEmailWhenStrippingDomainShouldMatchUserOnly() {
+        String workflow = """
+        workflow 'test'
+            ruleset 'dummy'
+                'item_a' regex_strip(x, '@.*') = 'user' return block
+            default allow
+        end
+    """;
+
+        Workflow ruleEngine = new Workflow(workflow);
+        WorkflowResult expectedResult = new WorkflowResult(
+            "test", "dummy", "item_a", "block", Set.of()
+        );
+        WorkflowResult result = ruleEngine.evaluate(Map.of(
+            "x", "user@nextmail.com"
+        ));
+
+        Assertions.assertEquals(expectedResult, result);
+    }
 }

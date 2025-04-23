@@ -60,14 +60,14 @@ class PropertyContextEvaluatorUnitTest {
 
         Map<String, Object> request = Map.of(
             "request", Map.of(
-        "order_id", "A",
-        "orders", List.of(
-        Map.of(
-            "order_id", "B",
-            "compare_order_id", "A"
-        )
-        )
-        )
+                "order_id", "A",
+                "orders", List.of(
+                    Map.of(
+                        "order_id", "B",
+                        "compare_order_id", "A"
+                    )
+                )
+            )
         );
 
         WorkflowResult result = new Workflow(workflow).evaluate(request);
@@ -91,14 +91,14 @@ class PropertyContextEvaluatorUnitTest {
 
         Map<String, Object> request = Map.of(
             "order_id", "A",
-        "request", Map.of(
-        "orders", List.of(
-        Map.of(
-            "order_id", "B",
-            "compare_order_id", "A"
-        )
-        )
-        )
+            "request", Map.of(
+                "orders", List.of(
+                    Map.of(
+                        "order_id", "B",
+                        "compare_order_id", "A"
+                    )
+                )
+            )
         );
 
         WorkflowResult result = new Workflow(workflow).evaluate(request);
@@ -122,13 +122,13 @@ class PropertyContextEvaluatorUnitTest {
 
         Map<String, Object> request = Map.of(
             "request", Map.of(
-        "orders", List.of(
-        Map.of(
-            "order_id", "B",
-            "compare_order_id", "A"
-        )
-        )
-        )
+                "orders", List.of(
+                    Map.of(
+                        "order_id", "B",
+                        "compare_order_id", "A"
+                    )
+                )
+            )
         );
 
         WorkflowResult result = new Workflow(workflow).evaluate(request);

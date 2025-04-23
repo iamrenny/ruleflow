@@ -3,6 +3,7 @@ package io.github.iamrenny.ruleflow.evaluators;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
+import io.github.iamrenny.ruleflow.errors.UnexpectedSymbolException;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
 
 import java.util.List;
@@ -12,7 +13,8 @@ import java.util.stream.Collectors;
 public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.ListContext> {
 
     @Override
-    public Object evaluate(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) throws PropertyNotFoundException {
+    public Object evaluate(RuleFlowLanguageParser.ListContext ctx, Visitor visitor)
+        throws PropertyNotFoundException, UnexpectedSymbolException {
         if (ctx.not == null && ctx.op.getType() == RuleFlowLanguageLexer.K_CONTAINS) {
             return evalContains(ctx, visitor);
         } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_CONTAINS) {
@@ -26,7 +28,7 @@ public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguagePa
         } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_STARTS_WITH) {
             return !(Boolean) evalStartsWith(ctx, visitor);
         } else {
-            throw new RuntimeException("Unexpected token near " + ctx.value.getText());
+            throw new UnexpectedSymbolException("Unexpected token near " + ctx.value.getText());
         }
     }
 
@@ -40,7 +42,7 @@ public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguagePa
             return literals.contains(value);
         } else if (ctx.values.storedList != null) {
             String listKey = ctx.values.string_literal(0).getText().replace("'", "");
-            Set<String> list = visitor.getLists().get(listKey);
+            List<?> list = visitor.getLists().get(listKey);
             return list != null && list.contains(value.toString());
         } else if (ctx.values.validProperty() != null) {
             List<?> validPropertyList = (List<?>) new ValidPropertyContextEvaluator().evaluate(ctx.values.validProperty(), visitor);
@@ -60,14 +62,15 @@ public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguagePa
             return literals.stream().anyMatch(literal -> value.toString().contains(literal));
         } else if (ctx.values.storedList != null) {
             String listKey = ctx.values.string_literal(0).getText().replace("'", "");
-            Set<String> list = visitor.getLists().get(listKey);
-            return list != null && list.stream().anyMatch(item -> value.toString().contains(item));
+            List<?> list = visitor.getLists().get(listKey);
+            return list != null && list.stream().anyMatch(item -> value.toString().contains((String) item));
         } else {
             throw new RuntimeException("Cannot find symbol");
         }
     }
 
-    private Object evalStartsWith(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) throws PropertyNotFoundException {
+    private Object evalStartsWith(RuleFlowLanguageParser.ListContext ctx, Visitor visitor)
+        throws PropertyNotFoundException, UnexpectedSymbolException {
         String value = visitor.visit(ctx.value).toString();
         List<?> list;
 
@@ -81,7 +84,7 @@ public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguagePa
         } else if (ctx.values.validProperty() != null) {
             list = (List<?>) new ValidPropertyContextEvaluator().evaluate(ctx.values.validProperty(), visitor);
         } else {
-            throw new RuntimeException("Unexpected symbol " + ctx.values);
+            throw new UnexpectedSymbolException("Unexpected symbol " + ctx.values);
         }
 
         return list.stream()

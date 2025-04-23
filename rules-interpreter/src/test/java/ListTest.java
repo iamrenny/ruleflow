@@ -159,6 +159,4 @@ class ListTest {
 
         Assertions.assertEquals(expectedResult, result);
     }
-
-    // The rest of the test methods can be converted similarly, following the pattern above.
 }
