@@ -48,6 +48,7 @@ expr: L_PAREN expr R_PAREN                                                      
     | left=expr op=(ADD | MINUS) right=expr                                     #mathAdd
     | left=expr op=(LT | LT_EQ | GT | GT_EQ | EQ | EQ_IC | NOT_EQ) right=expr   #comparator
     | value=expr not=K_NOT? op=(K_CONTAINS | K_IN | K_STARTS_WITH) values=listElems #list
+    | value=propertyTuple not=K_NOT? op=(K_CONTAINS | K_IN | K_STARTS_WITH) values=listElems #tuplesList
     | value=expr DOT op=(K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT | K_NONE)
       (L_BRACE predicate=expr R_BRACE | L_PAREN R_PAREN)                       #aggregation
     | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left=expr COMMA right=expr R_PAREN #dateDiff
@@ -59,9 +60,11 @@ expr: L_PAREN expr R_PAREN                                                      
     | validValue                                                                 #value
     | validProperty                                                              #property;
 
+propertyTuple: L_PAREN validProperty (COMMA validProperty)* R_PAREN;
 
 listElems: storedList=K_LIST L_PAREN string_literal R_PAREN
          | literalList=string_literal (COMMA string_literal)*
+         | literalTupleList= L_PAREN L_PAREN string_literal (COMMA string_literal)* R_PAREN( COMMA L_PAREN string_literal (COMMA string_literal)* R_PAREN)* R_PAREN
          | validProperty;
 
 validValue: string = string_literal

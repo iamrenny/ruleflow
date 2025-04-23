@@ -60,7 +60,7 @@ public class WorkflowResult {
         this.actionsWithParams = new HashMap<>();
     }
 
-    public <E, K, V> WorkflowResult(String workflow, String ruleset, String rule, String result, Set<String> warnings, Map<String, Map<String,String>> actionsWithParams) {
+    public <E, K, V> WorkflowResult(String workflow, String ruleset, String rule, String result, Set<String> warnings, Map<String, Map<String,String>> actionsWithParams, boolean error) {
         this.workflow = workflow;
         this.ruleSet = ruleset;
         this.rule = rule;
@@ -68,6 +68,7 @@ public class WorkflowResult {
         this.warnings = warnings;
         this.actions = Set.of();
         this.actionsWithParams = actionsWithParams;
+        this.error = error;
     }
 
     public String getWorkflow() {

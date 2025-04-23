@@ -42,7 +42,7 @@ public class AggregationContextEvaluator implements ContextEvaluator<RuleFlowLan
     private Object distinctBy(
         List<?> list,
         RuleFlowLanguageParser.ExprContext predicate,
-        Map<String, Set<String>> lists,
+        Map<String, List<?>> lists,
         Object root) {
         if (predicate == null) {
             return list;
@@ -56,7 +56,7 @@ public class AggregationContextEvaluator implements ContextEvaluator<RuleFlowLan
     private Object average(
         List<?> list,
         RuleFlowLanguageParser.ExprContext predicate,
-        Map<String, Set<String>> lists,
+        Map<String, List<?>> lists,
         Object root) {
         BigDecimal count = new BigDecimal(count(list, predicate, lists, root).toString());
         return count.divide(BigDecimal.valueOf(list.size()), 3, RoundingMode.DOWN);
@@ -65,7 +65,7 @@ public class AggregationContextEvaluator implements ContextEvaluator<RuleFlowLan
     private Object count(
         List<?> list,
         RuleFlowLanguageParser.ExprContext predicate,
-        Map<String, Set<String>> lists,
+        Map<String, List<?>> lists,
         Object root) {
         if (predicate == null) {
             return BigDecimal.valueOf(list.size());
@@ -77,7 +77,7 @@ public class AggregationContextEvaluator implements ContextEvaluator<RuleFlowLan
         }
     }
 
-    private Object evalPredicate(Object data, Object root, Map<String, Set<String>> lists, RuleFlowLanguageParser.ExprContext ctx) {
+    private Object evalPredicate(Object data, Object root, Map<String, List<?>> lists, RuleFlowLanguageParser.ExprContext ctx) {
         return new Visitor((Map<String, Object>) data, lists, (Map<String, Object>) root).visit(ctx);
     }
 }
