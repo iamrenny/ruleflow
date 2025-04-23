@@ -8,139 +8,104 @@ import io.github.iamrenny.ruleflow.visitors.Visitor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MultiValuesListContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.MultiValueslistContext> {
 
     @Override
     public Object evaluate(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) throws PropertyNotFoundException {
-        if (ctx.not == null && ctx.op.getType() == RuleFlowLanguageLexer.K_CONTAINS) {
-            return evalContains(ctx, visitor);
-        } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_CONTAINS) {
-            return !(Boolean) evalContains(ctx, visitor);
-        } else if (ctx.not == null && ctx.op.getType() == RuleFlowLanguageLexer.K_IN) {
-            return evalIn(ctx, visitor);
-        } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_IN) {
-            return !(Boolean) evalIn(ctx, visitor);
-        } else if (ctx.not == null && ctx.op.getType() == RuleFlowLanguageLexer.K_STARTS_WITH) {
-            return evalStartsWith(ctx, visitor);
-        } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_STARTS_WITH) {
-            return !(Boolean) evalStartsWith(ctx, visitor);
-        } else {
-            throw new RuntimeException("Unexpected token near " + ctx.values.getText());
-        }
+        int type = ctx.op.getType();
+        boolean isNegated = ctx.not != null;
+
+        boolean result = switch (type) {
+            case RuleFlowLanguageLexer.K_CONTAINS -> (Boolean) evalContains(ctx, visitor);
+            case RuleFlowLanguageLexer.K_IN -> (Boolean) evalIn(ctx, visitor);
+            case RuleFlowLanguageLexer.K_STARTS_WITH -> (Boolean) evalStartsWith(ctx, visitor);
+            default -> throw new RuntimeException("Unknown operation: " + ctx.op.getText());
+        };
+
+        return isNegated ? !result : result;
     }
 
-    private Object evalIn(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) throws PropertyNotFoundException {
+    private Object evalIn(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) {
+        List<String> inputTuple = resolvePropertyTuple(visitor, ctx.propertyTuple().validProperty());
 
         if (ctx.values.literalMultiList != null) {
-            List<String> propertiesValues = (List<String>) visitor.visit(ctx.value);
             List<String> literals = ctx.values.string_literal().stream()
-                .map(literal -> literal.getText().replace("'", ""))
+                .map(lit -> lit.getText().replace("'", ""))
                 .collect(Collectors.toList());
+            List<List<String>> tuples = resolveLiteralTuples(literals, inputTuple.size());
+            return tuples.stream().anyMatch(tuple -> tuple.equals(inputTuple));
 
-            int tupleSize = propertiesValues.size(); // or any other size based on your rule
-
-            List<List<String>> tuples = new ArrayList<>();
-            for (int i = 0; i < literals.size(); i += tupleSize) {
-                int end = Math.min(i + tupleSize, literals.size());
-                tuples.add(new ArrayList<>(literals.subList(i, end)));
-            }
-
-            boolean res = tuples.stream()
-                .anyMatch(tuple -> {
-                    if(tuple.size() != tupleSize) {
-                        throw new RuntimeException("Tuple size mismatch: expected " + tupleSize + " but got " + tuple.size());
-                    }
-                    for (int i = 0; i < tuple.size(); i++) {
-                        if (!propertiesValues.get(i).equals(tuple.get(i))) {
-                            return false;
-                        }
-                    }
-                    return true;
-                });
-            return res;
         } else if (ctx.values.storedList != null) {
             String listKey = ctx.values.string_literal(0).getText().replace("'", "");
-            List<?> list = visitor.getLists().get(listKey);
+            List<?> stored = visitor.getLists().get(listKey);
 
-            if (list != null && list.stream().allMatch(item -> item instanceof List<?>)) {
-                for (Object listItem : list) {
-                    if (listItem instanceof List<?>) {
-                        List<?> tuple = (List<?>) listItem;
-                        if(ctx.propertyTuple().validProperty().size() != tuple.size()) {
-                            throw new RuntimeException("Tuple size mismatch: expected " + ctx.propertyTuple().validProperty().size() + " but got " + tuple.size());
-                        }
-
-                        boolean matches = true;
-                        for(int j = 0; j < tuple.size(); j++) {
-                            Object item = tuple.get(j);
-                            if (item instanceof String) {
-                                String stringItem = (String) item;
-                                String validPropertyContext = (String) visitor.visit(ctx.propertyTuple().validProperty(j));
-                                if (!stringItem.equals(validPropertyContext)) {
-                                    matches = false;
-                                    break;
-                                }
-                            } else {
-                                throw new RuntimeException("Invalid type in tuple: " + item.getClass());
+            if (stored != null && stored.stream().allMatch(i -> i instanceof List<?> tuple && tuple.size() == inputTuple.size())) {
+                return stored.stream().map(i -> (List<?>) i)
+                    .anyMatch(tuple -> {
+                        for (int i = 0; i < tuple.size(); i++) {
+                            if (!tuple.get(i).equals(inputTuple.get(i))) {
+                                return false;
                             }
                         }
-
-                        if (matches) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            } else if (list != null && list.stream().anyMatch(item -> item instanceof String)) {
-
-                boolean contains = list.contains(null);
-                return contains;
-            } else {
-                return false;
+                        return true;
+                    });
             }
+            return false;
 
         } else if (ctx.values.validProperty() != null) {
-            List<?> validPropertyList = (List<?>) visitor.visit(ctx.values.validProperty());
-            return validPropertyList.contains(null);
-        } else {
-            throw new RuntimeException("Cannot find symbol " + ctx.values);
+            List<?> values = (List<?>) visitor.visit(ctx.values.validProperty());
+            return values.contains(null);
         }
+
+        throw new RuntimeException("Unsupported value type: " + ctx.values);
     }
 
     private Object evalContains(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) {
         Object value = visitor.visit(ctx);
-
-        if (ctx.values.literalList != null) {
-            List<String> literals = ctx.values.string_literal().stream()
-                .map(literal -> literal.getText().replace("'", ""))
-                .collect(Collectors.toList());
-            return literals.stream().anyMatch(literal -> value.toString().contains(literal));
-        } else if (ctx.values.storedList != null) {
-            String listKey = ctx.values.string_literal(0).getText().replace("'", "");
-            List<?> list =  visitor.getLists().get(listKey);
-            return list != null && list.stream().anyMatch(item -> value.toString().contains(item.toString()));
-        } else {
-            throw new RuntimeException("Cannot find symbol");
-        }
+        List<String> values = resolveStringList(ctx, visitor);
+        return values.stream().anyMatch(val -> value.toString().contains(val));
     }
 
     private Object evalStartsWith(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) throws PropertyNotFoundException {
         Object value = visitor.visit(ctx.values);
+        List<String> values = resolveStringList(ctx, visitor);
+        return values.stream().anyMatch(val -> value.toString().startsWith(val));
+    }
 
-        if (ctx.values.literalList != null) {
-            List<String> literals = ctx.values.string_literal().stream()
-                .map(literal -> literal.getText().replace("'", ""))
+    private List<String> resolvePropertyTuple(Visitor visitor, List<ValidPropertyContext> properties) {
+        return properties.stream()
+            .map(visitor::visit)
+            .map(String.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    private List<List<String>> resolveLiteralTuples(List<String> literals, int tupleSize) {
+        if (literals.size() % tupleSize != 0) {
+            throw new IllegalArgumentException("Literal count must be divisible by tuple size. Got " + literals.size() + " elements for tuple size " + tupleSize);
+        }
+
+        List<List<String>> tuples = new ArrayList<>();
+        for (int i = 0; i < literals.size(); i += tupleSize) {
+            tuples.add(new ArrayList<>(literals.subList(i, i + tupleSize)));
+        }
+        return tuples;
+    }
+
+    private List<String> resolveStringList(RuleFlowLanguageParser.MultiValueslistContext context, Visitor visitor) {
+        if (context.values != null) {
+            return context.values.string_literal().stream()
+                .map(lit -> lit.getText().replace("'", ""))
                 .collect(Collectors.toList());
-            return literals.stream().anyMatch(literal -> value.toString().startsWith(literal));
-        } else if (ctx.values.storedList != null) {
-            String listKey = ctx.values.string_literal(0).getText().replace("'", "");
-            List<?> list = visitor.getLists().get(listKey);
-            return list != null && list.stream().anyMatch(item -> value.toString().startsWith(item.toString()));
+        } else if (context.values.storedList != null) {
+            if (context.values.string_literal().isEmpty()) {
+                throw new RuntimeException("Expected at least one string literal in stored list");
+            }
+            List<?> listKey = visitor.getLists().get(context.values.storedList.getText());
+            return listKey != null ? listKey.stream().map(Object::toString).collect(Collectors.toList()) : List.of();
         } else {
-            throw new RuntimeException("Cannot find symbol");
+            throw new RuntimeException("Unknown list type");
         }
     }
 }

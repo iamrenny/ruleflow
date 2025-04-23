@@ -5,9 +5,7 @@ import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
 import io.github.iamrenny.ruleflow.errors.UnexpectedSymbolException;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
-
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.ListContext> {

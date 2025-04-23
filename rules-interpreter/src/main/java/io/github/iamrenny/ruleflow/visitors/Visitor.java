@@ -5,13 +5,27 @@ import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.PropertyTupleContext;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
 import io.github.iamrenny.ruleflow.errors.UnexpectedSymbolException;
-import io.github.iamrenny.ruleflow.evaluators.*;
+import io.github.iamrenny.ruleflow.evaluators.AggregationContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.BinaryAndContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.BinaryOrContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.ComparatorContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.DateDiffContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.DayOfWeekContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.ListContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.MathAddContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.MathMulContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.MultiValuesListContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.ParenthesisContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.PropertyContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.PropertyTupleContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.RegexContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.UnaryContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.ValidPropertyContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.ValueContextEvaluator;
 import java.util.List;
+import java.util.Map;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
-
-import java.util.Map;
-import java.util.Set;
 
 public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
     private final Map<String, ?> data;
@@ -67,7 +81,7 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
             } else {
                 throw new IllegalArgumentException("Operation not supported: " + ctx.getClass());
             }
-        } catch (Exception e) {
+        } catch (PropertyNotFoundException | UnexpectedSymbolException e) {
             throw new RuntimeException(e);
         }
     }

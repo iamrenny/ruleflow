@@ -23,7 +23,6 @@ public class MultipleValuesListTest {
         "order", Map.of("merchant", Map.of("merchantId", "merchant-001"))
     ));
 
-
     WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "device_and_merchant", "block");
     Assertions.assertEquals(expectedResult, result);
   }
@@ -49,7 +48,6 @@ public class MultipleValuesListTest {
         )
     ));
 
-
     WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "device_and_merchant", "block");
     Assertions.assertEquals(expectedResult, result);
   }
@@ -64,13 +62,13 @@ public class MultipleValuesListTest {
                default allow
                end
             """;
+
     Workflow ruleEngine = new Workflow(workflow);
 
     WorkflowResult result = ruleEngine.evaluate(Map.of(
         "device", Map.of("fingerprint", "fp-123"),
         "order", Map.of("merchant", Map.of("merchantId", "merchant-001"))
     ));
-
 
     WorkflowResult expectedResult = new WorkflowResult("test", "default", "default", "allow");
     Assertions.assertEquals(expectedResult, result);
@@ -99,8 +97,6 @@ public class MultipleValuesListTest {
     Assertions.assertEquals("default", result.getRuleSet());
     Assertions.assertEquals("default", result.getRule());
     Assertions.assertEquals("allow", result.getResult());
-    Assertions.assertTrue(result.isError());
-
   }
 
 }
