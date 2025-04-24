@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MultiValuesListContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.MultiValueslistContext> {
+public class TupleListContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.TupleListContext> {
 
     @Override
-    public Object evaluate(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) throws PropertyNotFoundException {
+    public Object evaluate(RuleFlowLanguageParser.TupleListContext ctx, Visitor visitor) throws PropertyNotFoundException {
         int type = ctx.op.getType();
         boolean isNegated = ctx.not != null;
 
@@ -27,10 +27,10 @@ public class MultiValuesListContextEvaluator implements ContextEvaluator<RuleFlo
         return isNegated ? !result : result;
     }
 
-    private Object evalIn(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) {
+    private Object evalIn(RuleFlowLanguageParser.TupleListContext ctx, Visitor visitor) {
         List<String> inputTuple = resolvePropertyTuple(visitor, ctx.propertyTuple().validProperty());
 
-        if (ctx.values.literalMultiList != null) {
+        if (ctx.values.literalTupleList != null) {
             List<String> literals = ctx.values.string_literal().stream()
                 .map(lit -> lit.getText().replace("'", ""))
                 .collect(Collectors.toList());
@@ -62,13 +62,13 @@ public class MultiValuesListContextEvaluator implements ContextEvaluator<RuleFlo
         throw new RuntimeException("Unsupported value type: " + ctx.values);
     }
 
-    private Object evalContains(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) {
+    private Object evalContains(RuleFlowLanguageParser.TupleListContext ctx, Visitor visitor) {
         Object value = visitor.visit(ctx);
         List<String> values = resolveStringList(ctx, visitor);
         return values.stream().anyMatch(val -> value.toString().contains(val));
     }
 
-    private Object evalStartsWith(RuleFlowLanguageParser.MultiValueslistContext ctx, Visitor visitor) throws PropertyNotFoundException {
+    private Object evalStartsWith(RuleFlowLanguageParser.TupleListContext ctx, Visitor visitor) throws PropertyNotFoundException {
         Object value = visitor.visit(ctx.values);
         List<String> values = resolveStringList(ctx, visitor);
         return values.stream().anyMatch(val -> value.toString().startsWith(val));
@@ -93,7 +93,7 @@ public class MultiValuesListContextEvaluator implements ContextEvaluator<RuleFlo
         return tuples;
     }
 
-    private List<String> resolveStringList(RuleFlowLanguageParser.MultiValueslistContext context, Visitor visitor) {
+    private List<String> resolveStringList(RuleFlowLanguageParser.TupleListContext context, Visitor visitor) {
         if (context.values != null) {
             return context.values.string_literal().stream()
                 .map(lit -> lit.getText().replace("'", ""))

@@ -14,11 +14,11 @@ import io.github.iamrenny.ruleflow.evaluators.DayOfWeekContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.ListContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.MathAddContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.MathMulContextEvaluator;
-import io.github.iamrenny.ruleflow.evaluators.MultiValuesListContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.ParenthesisContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.PropertyContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.PropertyTupleContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.RegexContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.TupleListContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.UnaryContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.ValidPropertyContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.ValueContextEvaluator;
@@ -66,8 +66,8 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
                 return new DateDiffContextEvaluator().evaluate((RuleFlowLanguageParser.DateDiffContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.ListContext) {
                 return new ListContextEvaluator().evaluate((RuleFlowLanguageParser.ListContext) ctx, this);
-            } else if (ctx instanceof RuleFlowLanguageParser.MultiValueslistContext) {
-                return new MultiValuesListContextEvaluator().evaluate((RuleFlowLanguageParser.MultiValueslistContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.TupleListContext) {
+                return new TupleListContextEvaluator().evaluate((RuleFlowLanguageParser.TupleListContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.UnaryContext) {
                 return new UnaryContextEvaluator().evaluate((RuleFlowLanguageParser.UnaryContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.BinaryAndContext) {
