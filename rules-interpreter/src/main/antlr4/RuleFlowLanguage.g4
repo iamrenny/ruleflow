@@ -10,7 +10,7 @@ error: UNEXPECTED_CHAR {
     throw new RuntimeException("UNEXPECTED_CHAR= " + $UNEXPECTED_CHAR.text);
 };
 
-workflow: K_WORKFLOW workflow_name rulesets* default_clause K_END;
+workflow: K_WORKFLOW workflow_name configuration? rulesets* default_clause  K_END;
 
 workflow_name: STRING_NOT_SPECIAL_CHARS;
 
@@ -18,7 +18,7 @@ string_literal: (STRING_NOT_SPECIAL_CHARS | SQUOTA_STRING);
 
 STRING_NOT_SPECIAL_CHARS: '\'' [a-zA-Z0-9_-]+ '\'';
 
-rulesets: K_RULESET name rules*;
+rulesets: K_RULESET name rules+;
 
 rules: name L_PAREN? rule_body R_PAREN?;
 
@@ -27,6 +27,10 @@ rule_body: expr ((K_THEN (K_WITH| K_AND)?  then_result = actions) | (K_RETURN re
 name: string_literal;
 
 default_clause: K_DEFAULT (K_THEN | K_RETURN)? default_result = return_result actions?;
+
+configuration: evaluation_mode?;
+
+evaluation_mode: K_EVALUATION_MODE (K_MULTI_MATCH | K_SINGLE_MATCH);
 
 return_result: (state | validProperty| validValue | K_EXPR L_PAREN expr R_PAREN);
 
@@ -130,6 +134,9 @@ K_DISTINCT: D I S T I N C T;
 K_NULL: N U L L;
 DAY_OF_WEEK: D A Y O F W E E K;
 K_EXPR : E X P R;
+K_EVALUATION_MODE: E V A L U A T I O N '_' M O D E;
+K_MULTI_MATCH: M U L T I '_' M A T C H;
+K_SINGLE_MATCH: S I N G L E '_' M A T C H;
 
 
 

@@ -1,6 +1,5 @@
 package io.github.iamrenny.ruleflow.visitors;
 
-import com.ibm.icu.text.RelativeDateTimeFormatter.RelativeUnit;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
@@ -8,11 +7,16 @@ import io.github.iamrenny.ruleflow.errors.UnexpectedSymbolException;
 import io.github.iamrenny.ruleflow.utils.Pair;
 import io.github.iamrenny.ruleflow.vo.Action;
 import io.github.iamrenny.ruleflow.vo.WorkflowResult;
+import io.github.iamrenny.ruleflow.vo.WorkflowResult.MatchedRuleListItem;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> {
     private static final Logger logger = LoggerFactory.getLogger(RulesetVisitor.class);
@@ -31,42 +35,65 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
 
     @Override
     public WorkflowResult visitWorkflow(RuleFlowLanguageParser.WorkflowContext ctx) {
-            Visitor visitor = new Visitor(data, lists, data);
-            Set<String> warnings = new HashSet<>();
-            boolean error = false;
+        Visitor visitor = new Visitor(data, lists, data);
+        Set<String> warnings = new HashSet<>();
+        List<WorkflowResult> matchedRules = new ArrayList<>();
+        boolean error = false;
+        boolean multiMatch = ctx.configuration() != null &&
+            ctx.configuration().evaluation_mode() != null &&
+            ctx.configuration().evaluation_mode().K_MULTI_MATCH() != null;
 
-            for (RuleFlowLanguageParser.RulesetsContext ruleSet : ctx.rulesets()) {
-                for (RuleFlowLanguageParser.RulesContext rule : ruleSet.rules()) {
-                    try {
-                        Object visitedRule = visitor.visit(rule.rule_body().expr());
-                        if (visitedRule instanceof Boolean && (Boolean) visitedRule) {
-                            Object exprResult;
-                            if (rule.rule_body().return_result().expr() != null) {
-                                exprResult = visitor.visit(rule.rule_body().return_result().expr());
-                            } else {
-                                exprResult = rule.rule_body().return_result().state().ID().getText();
-                            }
+        for (RuleFlowLanguageParser.RulesetsContext ruleSet : ctx.rulesets()) {
+            for (RuleFlowLanguageParser.RulesContext rule : ruleSet.rules()) {
+                try {
+                    Object visitedRule = visitor.visit(rule.rule_body().expr());
+                    if (visitedRule instanceof Boolean && (Boolean) visitedRule) {
+                        Object exprResult;
+                        if (rule.rule_body().return_result().expr() != null) {
+                            exprResult = visitor.visit(rule.rule_body().return_result().expr());
+                        } else {
+                            exprResult = rule.rule_body().return_result().state().ID().getText();
+                        }
+                        if(multiMatch) {
+                            matchedRules.add(workflowResult(rule, ctx, ruleSet, exprResult, warnings));
+                        } else {
                             return workflowResult(rule, ctx, ruleSet, exprResult, warnings);
                         }
-                    } catch (RuntimeException ex) {
-                        if (ex.getCause() != null && ex.getCause() instanceof PropertyNotFoundException) {
-                            logger.warn("Property not found: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
-                            warnings.add(ex.getCause().getMessage());
-                        } else if (ex.getCause() != null && ex.getCause() instanceof UnexpectedSymbolException) {
-                            logger.warn("Unexpected symbol: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
-                            warnings.add(ex.getCause().getMessage());
-                        } else {
-                            logger.error("Error while evaluating rule {} {}",
-                                ctx.workflow_name().getText(), rule.name().getText(), ex);
-                            warnings.add(ex.getCause() != null ? ex.getCause().getMessage()
-                                : "Unexpected Exception at " + rule.getText());
-                            error = true;
-                        }
+                    }
+                } catch (RuntimeException ex) {
+                    if (ex.getCause() != null && ex.getCause() instanceof PropertyNotFoundException) {
+                        logger.warn("Property not found: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
+                        warnings.add(ex.getCause().getMessage());
+                    } else if (ex.getCause() != null && ex.getCause() instanceof UnexpectedSymbolException) {
+                        logger.warn("Unexpected symbol: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
+                        warnings.add(ex.getCause().getMessage());
+                    } else {
+                        logger.error("Error while evaluating rule {} {}",
+                            ctx.workflow_name().getText(), rule.name().getText(), ex);
+                        warnings.add(ex.getCause() != null ? ex.getCause().getMessage()
+                            : "Unexpected Exception at " + rule.getText());
+                        error = true;
                     }
                 }
             }
+        }
+        if(!matchedRules.isEmpty()) {
+            return new WorkflowResult(
+                ctx.workflow_name().getText().replace("'", ""),
+                matchedRules.get(0).getRuleSet(),
+                matchedRules.get(0).getRule(),
+                matchedRules.get(0).getResult(),
+                matchedRules.get(0).getActionsWithParams(),
+                matchedRules.stream().map(it ->
+                        new MatchedRuleListItem(it.getRuleSet(), it.getRule(),
+                            it.getResult(), it.getActions(), it.getActionsWithParams()))
+                    .toList(),
+                warnings,
+                error
+            );
+        }
 
-            return resolveDefaultResult(ctx, warnings, error,  visitor);
+        return resolveDefaultResult(ctx, warnings, error,  visitor);
     }
 
     private WorkflowResult resolveDefaultResult(
