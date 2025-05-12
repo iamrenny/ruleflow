@@ -30,7 +30,7 @@ public class StoredListTest {
                 )
         ));
 
-        WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "deviceadd ", "block");
+        WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "device", "block");
         Assertions.assertEquals(expectedResult, result);
     }
 

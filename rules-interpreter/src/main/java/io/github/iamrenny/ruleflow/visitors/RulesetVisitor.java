@@ -62,7 +62,7 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                     }
                 } catch (RuntimeException ex) {
                     if (ex.getCause() != null && ex.getCause() instanceof PropertyNotFoundException) {
-                        logger.warn("Property not found: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
+                        logger.debug("Property not found: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
                         warnings.add(ex.getCause().getMessage());
                     } else if (ex.getCause() != null && ex.getCause() instanceof UnexpectedSymbolException) {
                         logger.warn("Unexpected symbol: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
