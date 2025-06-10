@@ -30,9 +30,14 @@ public class ComparatorContextEvaluator implements ContextEvaluator<RuleFlowLang
             return compareBooleans(ctx.op, (Boolean) left, (Boolean) right);
         }
 
+        if (left instanceof java.time.ZonedDateTime && right instanceof java.time.ZonedDateTime) {
+            return compareZonedDateTimes(ctx.op, (java.time.ZonedDateTime) left, (java.time.ZonedDateTime) right);
+        }
+
         if (left instanceof Comparable<?> && right instanceof Comparable<?>) {
             return compareComparables(ctx.op, (Comparable<?>) left, (Comparable<?>) right);
         }
+
 
         // If no comparator applies
         return false;
@@ -73,6 +78,20 @@ public class ComparatorContextEvaluator implements ContextEvaluator<RuleFlowLang
         return switch (operator.getType()) {
             case RuleFlowLanguageParser.EQ -> comparisonResult == 0;
             case RuleFlowLanguageParser.EQ_IC -> left.toString().equalsIgnoreCase(right.toString());
+            case RuleFlowLanguageParser.NOT_EQ -> comparisonResult != 0;
+            case RuleFlowLanguageParser.LT -> comparisonResult < 0;
+            case RuleFlowLanguageParser.LT_EQ -> comparisonResult <= 0;
+            case RuleFlowLanguageParser.GT -> comparisonResult > 0;
+            case RuleFlowLanguageParser.GT_EQ -> comparisonResult >= 0;
+            default -> throw new RuntimeException("Invalid condition " + operator.getText());
+        };
+    }
+
+    private Boolean compareZonedDateTimes(Token operator, java.time.ZonedDateTime left, java.time.ZonedDateTime right) {
+        int comparisonResult = left.compareTo(right);
+        return switch (operator.getType()) {
+            case RuleFlowLanguageParser.EQ -> comparisonResult == 0;
+            case RuleFlowLanguageParser.EQ_IC -> comparisonResult == 0;
             case RuleFlowLanguageParser.NOT_EQ -> comparisonResult != 0;
             case RuleFlowLanguageParser.LT -> comparisonResult < 0;
             case RuleFlowLanguageParser.LT_EQ -> comparisonResult <= 0;

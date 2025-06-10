@@ -70,7 +70,7 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                     } else {
                         logger.error("Error while evaluating rule {} {}",
                             ctx.workflow_name().getText(), rule.name().getText(), ex);
-                        warnings.add(ex.getCause() != null ? ex.getCause().getMessage()
+                        warnings.add(ex.getMessage() != null ? ex.getMessage()
                             : "Unexpected Exception at " + rule.getText());
                         error = true;
                     }

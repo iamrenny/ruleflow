@@ -55,14 +55,22 @@ expr: L_PAREN expr R_PAREN                                                      
     | value=propertyTuple not=K_NOT? op=(K_CONTAINS | K_IN | K_STARTS_WITH) values=listElems #tupleList
     | value=expr DOT op=(K_COUNT | K_AVERAGE | K_ANY | K_ALL | K_DISTINCT | K_NONE)
       (L_BRACE predicate=expr R_BRACE | L_PAREN R_PAREN)                       #aggregation
-    | DATE_DIFF L_PAREN (HOUR | DAY | MINUTE) COMMA left=expr COMMA right=expr R_PAREN #dateDiff
-    | op=DAY_OF_WEEK L_PAREN left=expr R_PAREN                                   #dayOfWeek
+    | dateExpr                                                                  #dateOperation
     | op = REGEX_STRIP L_PAREN value = validProperty COMMA regex = SQUOTA_STRING R_PAREN                       #regexlike
     | op=ABS L_PAREN left=expr R_PAREN                                          #unary
     | left=expr op=K_AND right=expr                                             #binaryAnd
     | left=expr op=K_OR right=expr                                              #binaryOr
+    | dateParse #dateParseExpr
     | validValue                                                                 #value
-    | validProperty                                                              #property;
+    | validProperty                                                              #property
+    ;
+
+dateExpr: DATE_DIFF L_PAREN left=dateValue COMMA right=dateValue COMMA (HOUR | DAY | MINUTE) R_PAREN #dateDiff
+    | op=DAY_OF_WEEK L_PAREN left=dateValue R_PAREN #dayOfWeek
+    | op=K_NOW L_PAREN R_PAREN #now
+    | op=K_DATE_ADD L_PAREN date=dateValue COMMA amount=expr COMMA unit=timeUnit R_PAREN #dateAdd
+    | op=K_DATE_SUBTRACT L_PAREN date=dateValue COMMA amount=expr COMMA unit=timeUnit R_PAREN #dateSubtract
+    ;
 
 propertyTuple: L_PAREN validProperty (COMMA validProperty)* R_PAREN;
 
@@ -76,6 +84,13 @@ validValue: string = string_literal
           | booleanLiteral=BOOLEAN_LITERAL
           | nullValue=K_NULL
           | currentDate=CURRENT_DATE;
+
+dateParse: K_DATE L_PAREN dateValue R_PAREN
+          | K_DATETIME L_PAREN dateValue R_PAREN;
+
+dateValue: string_literal | validProperty | K_NOW L_PAREN R_PAREN;
+
+timeUnit: DAY | HOUR | MINUTE;
 
 validProperty: root=DOT? property=ID
              | root=DOT? nestedProperty=ID (DOT ID)+;
@@ -98,7 +113,7 @@ HOUR: 'hour';
 DAY: 'day';
 CURRENT_DATE: 'currentDate' L_PAREN R_PAREN
              | 'currentdate' L_PAREN R_PAREN;
-DATE_DIFF: 'dateDiff' | 'datediff';
+DATE_DIFF: 'dateDiff' | 'datediff' | D A T E '_' D I F F;
 ABS: 'abs';
 REGEX_STRIP: 'regex_strip' | 'regexStrip' | 'regexstrip';
 MODULO: '%' | 'mod';
@@ -132,13 +147,16 @@ K_COUNT: C O U N T;
 K_AVERAGE: A V E R A G E;
 K_DISTINCT: D I S T I N C T;
 K_NULL: N U L L;
-DAY_OF_WEEK: D A Y O F W E E K;
+DAY_OF_WEEK: D A Y '_' O F '_' W E E K;
 K_EXPR : E X P R;
 K_EVALUATION_MODE: E V A L U A T I O N '_' M O D E;
 K_MULTI_MATCH: M U L T I '_' M A T C H;
 K_SINGLE_MATCH: S I N G L E '_' M A T C H;
-
-
+K_NOW: N O W;
+K_DATE: D A T E;
+K_DATETIME: D A T E T I M E;
+K_DATE_ADD: D A T E '_' A D D;
+K_DATE_SUBTRACT: D A T E '_' S U B T R A C T;
 
 NUMERIC_LITERAL
   : MINUS? DIGIT+ ( '.' DIGIT* )? ( E [-+]? DIGIT+ )?

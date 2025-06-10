@@ -91,4 +91,21 @@ class CompareTest {
 
         Assertions.assertEquals(expectedResult, result);
     }
+
+    @Test
+    public void givenDateTimeWithZoneWhenComparedMustMatch() {
+        String workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'dt_match' x = '2024-06-01T12:30Z' return block
+                default allow
+            end
+        """;
+
+        Workflow ruleEngine = new Workflow(workflow);
+        WorkflowResult expectedResult = new WorkflowResult("test", "dummy", "dt_match", "block");
+        WorkflowResult result = ruleEngine.evaluate(Map.of("x", "2024-06-01T12:30Z"));
+
+        Assertions.assertEquals(expectedResult, result);
+    }
 }

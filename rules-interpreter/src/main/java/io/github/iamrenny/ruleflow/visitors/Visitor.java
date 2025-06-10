@@ -10,6 +10,9 @@ import io.github.iamrenny.ruleflow.evaluators.BinaryAndContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.BinaryOrContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.ComparatorContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.DateDiffContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.DateOperationContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.DateParseExprContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.DateValueContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.DayOfWeekContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.ListContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.MathAddContextEvaluator;
@@ -61,9 +64,12 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
                 return new ValidPropertyContextEvaluator().evaluate((RuleFlowLanguageParser.ValidPropertyContext) ctx, this);
             } else if (ctx instanceof PropertyTupleContext) {
                 return new PropertyTupleContextEvaluator().evaluate((PropertyTupleContext) ctx, this);
-            }
-            else if (ctx instanceof RuleFlowLanguageParser.DateDiffContext) {
+            } else if (ctx instanceof RuleFlowLanguageParser.DateDiffContext) {
                 return new DateDiffContextEvaluator().evaluate((RuleFlowLanguageParser.DateDiffContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.DateAddContext) {
+                return new io.github.iamrenny.ruleflow.evaluators.DateAddContextEvaluator().evaluate((RuleFlowLanguageParser.DateAddContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.DateSubtractContext) {
+                return new io.github.iamrenny.ruleflow.evaluators.DateSubtractContextEvaluator().evaluate((RuleFlowLanguageParser.DateSubtractContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.ListContext) {
                 return new ListContextEvaluator().evaluate((RuleFlowLanguageParser.ListContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.TupleListContext) {
@@ -78,6 +84,14 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
                 return new DayOfWeekContextEvaluator().evaluate((RuleFlowLanguageParser.DayOfWeekContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.RegexlikeContext) {
                 return new RegexContextEvaluator().evaluate((RuleFlowLanguageParser.RegexlikeContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.DateValueContext) {
+                return new DateValueContextEvaluator().evaluate((RuleFlowLanguageParser.DateValueContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.DateParseExprContext) {
+                return new DateParseExprContextEvaluator().evaluate((RuleFlowLanguageParser.DateParseExprContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.DateOperationContext) {
+                return new DateOperationContextEvaluator().evaluate((RuleFlowLanguageParser.DateOperationContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.NowContext) {
+                return new io.github.iamrenny.ruleflow.evaluators.NowContextEvaluator().evaluate((RuleFlowLanguageParser.NowContext) ctx, this);
             } else {
                 throw new IllegalArgumentException("Operation not supported: " + ctx.getClass());
             }

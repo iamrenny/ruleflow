@@ -1,0 +1,26 @@
+package io.github.iamrenny.ruleflow.evaluators;
+
+import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
+import io.github.iamrenny.ruleflow.visitors.Visitor;
+import io.github.iamrenny.ruleflow.utils.DateTimeUtils;
+import java.time.ZonedDateTime;
+
+public class DateSubtractContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.DateSubtractContext> {
+    @Override
+    public Object evaluate(RuleFlowLanguageParser.DateSubtractContext ctx, Visitor visitor) {
+        java.time.ZonedDateTime zdt = (ZonedDateTime) new DateValueContextEvaluator().evaluate(ctx.dateValue(), visitor);
+        long amount = ((Double) visitor.visit(ctx.amount)).longValue();
+        Object unitObj = ctx.unit.getText();
+        String unit = unitObj.toString();
+        switch (unit.toLowerCase()) {
+            case "day":
+                return zdt.minusDays(amount);
+            case "hour":
+                return zdt.minusHours(amount);
+            case "minute":
+                return zdt.minusMinutes(amount);
+            default:
+                throw new IllegalArgumentException("Unsupported time unit: " + unit);
+        }
+    }
+} 
