@@ -64,14 +64,14 @@ The following functions are available for date and datetime operations:
 * `now()` — Returns the current system date and time as a datetime value.
 * `date_add(date, amount, unit)` — Adds the specified amount of the given unit (`day`, `hour`, `minute`) to the date or datetime value.
 * `date_subtract(date, amount, unit)` — Subtracts the specified amount of the given unit from the date or datetime value.
-* `dateDiff(unit, date1, date2)` — Returns the difference between two dates or datetimes in the specified unit (`day`, `hour`, `minute`).
+* `date_diff(unit, date1, date2)` — Returns the difference between two dates or datetimes in the specified unit (`day`, `hour`, `minute`).
 
 **Examples:**
 ```text
 'future_date' date_add(date('2024-06-01'), 5, day) = date('2024-06-06') return block
 'past_date' date_subtract(datetime('2024-06-01T12:00Z'), 2, hour) = datetime('2024-06-01T10:00Z') return block
 'now_check' now() > date('2024-06-01') return block
-'diff_check' dateDiff(day, date('2024-06-01'), date('2024-06-10')) = 9 return block
+'diff_check' date_diff(day, date('2024-06-01'), date('2024-06-10')) = 9 return block
 ```
 
 ---
