@@ -63,6 +63,11 @@ expr: L_PAREN expr R_PAREN                                                      
     | dateParse #dateParseExpr
     | validValue                                                                 #value
     | validProperty                                                              #property
+    | op=STRING_DISTANCE L_PAREN left=expr COMMA right=expr R_PAREN #stringDistance
+    | op=PARTIAL_RATIO L_PAREN left=expr COMMA right=expr R_PAREN #partialRatio
+    | op=TOKEN_SORT_RATIO L_PAREN left=expr COMMA right=expr R_PAREN #tokenSortRatio
+    | op=TOKEN_SET_RATIO L_PAREN left=expr COMMA right=expr R_PAREN #tokenSetRatio
+    | op=STRING_SIMILARITY_SCORE L_PAREN left=expr COMMA right=expr R_PAREN #stringSimilarityScore
     ;
 
 dateExpr: DATE_DIFF L_PAREN left=dateValue COMMA right=dateValue COMMA (HOUR | DAY | MINUTE) R_PAREN #dateDiff
@@ -157,6 +162,12 @@ K_DATE: D A T E;
 K_DATETIME: D A T E T I M E;
 K_DATE_ADD: D A T E '_' A D D;
 K_DATE_SUBTRACT: D A T E '_' S U B T R A C T;
+
+STRING_DISTANCE: 'string_distance' | 'stringDistance';
+PARTIAL_RATIO: 'partial_ratio' | 'partialRatio';
+TOKEN_SORT_RATIO: 'token_sort_ratio' | 'tokenSortRatio';
+TOKEN_SET_RATIO: 'token_set_ratio' | 'tokenSetRatio';
+STRING_SIMILARITY_SCORE: 'string_similarity_score' | 'stringSimilarityScore';
 
 NUMERIC_LITERAL
   : MINUS? DIGIT+ ( '.' DIGIT* )? ( E [-+]? DIGIT+ )?
