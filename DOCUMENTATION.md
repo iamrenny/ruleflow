@@ -167,3 +167,39 @@ END
 ### Conclusion
 
 The RuleFlow language provides a structured way to define workflows, rules, and actions. By following the syntax and examples provided, users can create complex workflows to evaluate conditions and execute corresponding actions efficiently.
+
+## String Similarity Scoring
+
+The RuleFlow engine provides advanced string similarity functions. These are useful for comparing names, usernames, or any text fields where exact matches are rare but close matches are meaningful.
+
+### Methods
+
+| Method                    | Description                                                        | Range   |
+|---------------------------|--------------------------------------------------------------------|---------|
+| string_distance           | Normalized Levenshtein similarity (0–100)                          | 0–100   |
+| partial_ratio             | Best substring match similarity (0–100)                            | 0–100   |
+| token_sort_ratio          | Ignores word order, compares sorted tokens (0–100)                 | 0–100   |
+| token_set_ratio           | Ignores word order and duplicates, set-based (0–100)               | 0–100   |
+| string_similarity_score   | **Best overall score (max of all above, 0–100)**                   | 0–100   |
+
+- All methods return 100 for a perfect match, 0 for completely different strings.
+- `string_similarity_score` is recommended for most use cases: it returns the highest similarity from all available algorithms, making it robust to formatting, order, and partial matches.
+
+### Example Usage
+
+```java
+String s1 = "ganchozojose572";
+String s2 = "JOSEGANCHOZO";
+int score = StringUtils.string_similarity_score(s1, s2);
+System.out.println("Similarity score: " + score); // e.g., 75
+```
+
+### How It Works
+
+- **string_distance**: Uses normalized Levenshtein distance.
+- **partial_ratio**: Finds the best matching substring.
+- **token_sort_ratio**: Sorts words before comparing.
+- **token_set_ratio**: Compares unique words, ignoring order and duplicates.
+- **string_similarity_score**: Returns the maximum score from all the above, so it is robust to extra digits, word order, and partial matches.
+
+**Recommended:** Use `string_similarity_score` for most fuzzy matching needs in rules, risk, or deduplication logic.
