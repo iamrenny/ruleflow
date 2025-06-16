@@ -1,5 +1,4 @@
 
-import io.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.ParseContext;

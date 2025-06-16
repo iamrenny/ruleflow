@@ -25,6 +25,7 @@ import io.github.iamrenny.ruleflow.evaluators.TupleListContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.UnaryContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.ValidPropertyContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.ValueContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.StringDistanceContextEvaluator;
 import java.util.List;
 import java.util.Map;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -92,6 +93,16 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
                 return new DateOperationContextEvaluator().evaluate((RuleFlowLanguageParser.DateOperationContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.NowContext) {
                 return new io.github.iamrenny.ruleflow.evaluators.NowContextEvaluator().evaluate((RuleFlowLanguageParser.NowContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.StringDistanceContext) {
+                return new StringDistanceContextEvaluator().evaluateStringDistance((RuleFlowLanguageParser.StringDistanceContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.PartialRatioContext) {
+                return new StringDistanceContextEvaluator().evaluatePartialRatio((RuleFlowLanguageParser.PartialRatioContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.TokenSortRatioContext) {
+                return new StringDistanceContextEvaluator().evaluateTokenSortRatio((RuleFlowLanguageParser.TokenSortRatioContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.TokenSetRatioContext) {
+                return new StringDistanceContextEvaluator().evaluateTokenSetRatio((RuleFlowLanguageParser.TokenSetRatioContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.StringSimilarityScoreContext) {
+                return new StringDistanceContextEvaluator().evaluateStringSimilarityScore((RuleFlowLanguageParser.StringSimilarityScoreContext) ctx, this);
             } else {
                 throw new IllegalArgumentException("Operation not supported: " + ctx.getClass());
             }
