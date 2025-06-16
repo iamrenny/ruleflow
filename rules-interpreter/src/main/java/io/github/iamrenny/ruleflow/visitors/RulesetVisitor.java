@@ -44,6 +44,12 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
             ctx.configuration().evaluation_mode().K_MULTI_MATCH() != null;
 
         for (RuleFlowLanguageParser.RulesetsContext ruleSet : ctx.rulesets()) {
+            if (ruleSet.ruleset_condition() != null) {
+                Object result = visitor.visit(ruleSet.ruleset_condition().expr());
+                if (!(result instanceof Boolean) || !((Boolean) result)) {
+                    continue;
+                }
+            }
             for (RuleFlowLanguageParser.RulesContext rule : ruleSet.rules()) {
                 try {
                     Object visitedRule = visitor.visit(rule.rule_body().expr());
