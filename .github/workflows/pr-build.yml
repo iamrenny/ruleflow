@@ -20,7 +20,7 @@ jobs:
           java-version: '22'
 
       - name: Build with Maven
-        run: mvn clean install
+        run: mvn clean install -Dgpg.skip=true
 
       - name: Run tests
-        run: mvn clean test
+        run: mvn clean test -Dgpg.skip=true
