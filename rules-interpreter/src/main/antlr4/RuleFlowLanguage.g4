@@ -18,7 +18,9 @@ string_literal: (STRING_NOT_SPECIAL_CHARS | SQUOTA_STRING);
 
 STRING_NOT_SPECIAL_CHARS: '\'' [a-zA-Z0-9_-]+ '\'';
 
-rulesets: K_RULESET name rules+;
+rulesets: K_RULESET name ruleset_condition? rules+;
+
+ruleset_condition: expr K_THEN | L_PAREN expr R_PAREN K_THEN;
 
 rules: name L_PAREN? rule_body R_PAREN?;
 
