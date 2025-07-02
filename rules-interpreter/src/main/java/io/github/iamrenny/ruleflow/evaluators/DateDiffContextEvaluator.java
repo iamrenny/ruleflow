@@ -8,15 +8,18 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DateDiffContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.DateDiffContext> {
-
+    private static final Logger logger = LoggerFactory.getLogger(DateDiffContextEvaluator.class);
     @Override
     public Object evaluate(DateDiffContext ctx, Visitor visitor) {
         ZonedDateTime left = (ZonedDateTime) visitor.visit(ctx.left);
         ZonedDateTime right = (ZonedDateTime) visitor.visit(ctx.right);
 
         if (left == null || right == null) {
+            logger.debug("DateDiff: left={}, right={}", left, right);
             return null;
         }
 
@@ -32,6 +35,9 @@ public class DateDiffContextEvaluator implements ContextEvaluator<RuleFlowLangua
             throw new RuntimeException("Interval not supported in " + ctx.getText());
         }
 
-        return Math.abs(result);
+        long abs = Math.abs(result);
+
+        logger.debug("DateDiff: left={}, right={}, result={}", left, right, abs);
+        return abs;
     }
 }

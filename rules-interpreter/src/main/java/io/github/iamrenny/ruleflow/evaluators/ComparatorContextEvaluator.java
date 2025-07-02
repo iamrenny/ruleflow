@@ -4,43 +4,36 @@ import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
 import org.antlr.v4.runtime.Token;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.BiFunction;
 
 public class ComparatorContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.ComparatorContext> {
+    private static final Logger logger = LoggerFactory.getLogger(ComparatorContextEvaluator.class);
 
     public Boolean evaluate(RuleFlowLanguageParser.ComparatorContext ctx, Visitor visitor) throws PropertyNotFoundException {
         Object left = visitor.visit(ctx.left);
         Object right = visitor.visit(ctx.right);
-
+        Boolean result = false;
         if (left == null || right == null) {
-            return compareNull(ctx.op, left, right);
+            result = compareNull(ctx.op, left, right);
+        } else if (left instanceof Number && right instanceof Number) {
+            result = compareNumbers(ctx.op, left, right);
+        } else if (left instanceof String && right instanceof String) {
+            result = compareStrings(ctx.op, (String) left, (String) right);
+        } else if (left instanceof Boolean && right instanceof Boolean) {
+            result = compareBooleans(ctx.op, (Boolean) left, (Boolean) right);
+        } else if (left instanceof java.time.ZonedDateTime && right instanceof java.time.ZonedDateTime) {
+            result = compareZonedDateTimes(ctx.op, (java.time.ZonedDateTime) left, (java.time.ZonedDateTime) right);
+        } else if (left instanceof Comparable<?> && right instanceof Comparable<?>) {
+            result = compareComparables(ctx.op, (Comparable<?>) left, (Comparable<?>) right);
+        } else {
+            throw new IllegalArgumentException("Comparisons between " + left.getClass() + " and " + right.getClass() + " not supported");
         }
 
-        // Explicit order of comparator checks
-        if (left instanceof Number && right instanceof Number) {
-            return compareNumbers(ctx.op, left, right);
-        }
-
-        if (left instanceof String && right instanceof String) {
-            return compareStrings(ctx.op, (String) left, (String) right);
-        }
-
-        if (left instanceof Boolean && right instanceof Boolean) {
-            return compareBooleans(ctx.op, (Boolean) left, (Boolean) right);
-        }
-
-        if (left instanceof java.time.ZonedDateTime && right instanceof java.time.ZonedDateTime) {
-            return compareZonedDateTimes(ctx.op, (java.time.ZonedDateTime) left, (java.time.ZonedDateTime) right);
-        }
-
-        if (left instanceof Comparable<?> && right instanceof Comparable<?>) {
-            return compareComparables(ctx.op, (Comparable<?>) left, (Comparable<?>) right);
-        }
-
-
-        // If no comparator applies
-        return false;
+        logger.debug("Comparator: left={}, right={}, op={}, result={}", left, right, ctx.op.getText(), result);
+        return result;
     }
 
     private Boolean compareNull(Token operator, Object left, Object right) {

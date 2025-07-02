@@ -3,11 +3,14 @@ package io.github.iamrenny.ruleflow.evaluators;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 public class DayOfWeekContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.DayOfWeekContext> {
+    private static final Logger logger = LoggerFactory.getLogger(DayOfWeekContextEvaluator.class);
 
     @Override
     public Object evaluate(RuleFlowLanguageParser.DayOfWeekContext ctx, Visitor visitor) {
@@ -17,11 +20,15 @@ public class DayOfWeekContextEvaluator implements ContextEvaluator<RuleFlowLangu
             throw new IllegalArgumentException("Parameter value not supported: " + ctx.dateValue().getText());
         }
 
+        Object result;
         switch (ctx.op.getType()) {
             case RuleFlowLanguageLexer.DAY_OF_WEEK:
-                return valLeft.getDayOfWeek().toString();
+                result = valLeft.getDayOfWeek().toString();
+                break;
             default:
                 throw new IllegalArgumentException("Operation not supported: " + ctx.op.getText());
         }
+        logger.debug("DayOfWeek: dateValue={}, result={}", ctx.dateValue().getText(), result);
+        return result;
     }
 }

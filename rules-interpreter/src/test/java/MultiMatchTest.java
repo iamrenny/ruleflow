@@ -17,8 +17,7 @@ public class MultiMatchTest {
             RULESET 'Main'
                 'Rule1' amount > 100 return notify
                 'Rule2' user_id = 50 return call_2fa
-            DEFAULT
-            RETURN 'fallback' WITH action('log')
+            DEFAULT RETURN 'fallback' WITH action('log')
             END
             """;
 

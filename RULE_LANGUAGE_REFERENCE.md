@@ -229,3 +229,41 @@ end
 ---
 
 *This document is auto-generated from the language grammar and test cases. For feedback or updates, contact the RuleFlow maintainers.*
+
+# Geohash and Location Functions
+
+## geohash_encode(lat, lon, precision)
+- **Description:** Encodes latitude and longitude into a geohash string. Precision is optional (default 12).
+- **Example:**
+  ```
+  geohash = geohash_encode(37.7749, -122.4194, 8)
+  ```
+
+## geohash_decode(geohash)
+- **Description:** Decodes a geohash string into latitude and longitude.
+- **Example:**
+  ```
+  coords = geohash_decode('9q8yywe6')
+  // coords[0] = latitude, coords[1] = longitude
+  ```
+
+## distance(lat1, lon1, lat2, lon2)
+- **Description:** Calculates the distance in kilometers between two points.
+- **Example:**
+  ```
+  dist = distance(37.7749, -122.4194, 34.0522, -118.2437)
+  ```
+
+## distance(geohash1, geohash2)
+- **Description:** Calculates the distance in kilometers between two geohash locations.
+- **Example:**
+  ```
+  dist = distance('9q8yywe6', '9q5ctrmp')
+  ```
+
+## within_radius(lat1, lon1, lat2, lon2, radius_km)
+- **Description:** Returns true if the two points are within the given radius (in kilometers).
+- **Example:**
+  ```
+  is_near = within_radius(37.7749, -122.4194, 34.0522, -118.2437, 600)
+  ```

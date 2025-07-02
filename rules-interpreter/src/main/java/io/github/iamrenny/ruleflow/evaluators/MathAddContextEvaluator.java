@@ -3,8 +3,11 @@ package io.github.iamrenny.ruleflow.evaluators;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.MathAddContext;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MathAddContextEvaluator implements ContextEvaluator<MathAddContext> {
+    private static final Logger logger = LoggerFactory.getLogger(MathAddContextEvaluator.class);
 
     @Override
     public Object evaluate(MathAddContext ctx, Visitor visitor) {
@@ -13,14 +16,18 @@ public class MathAddContextEvaluator implements ContextEvaluator<MathAddContext>
 
         Double left = Double.valueOf(leftVal.toString());
         Double right = Double.valueOf(rightVal.toString());
-
+        Object result;
         switch (ctx.op.getType()) {
             case RuleFlowLanguageLexer.ADD:
-                return left + right;
+                result = left + right;
+                break;
             case RuleFlowLanguageLexer.MINUS:
-                return left - right;
+                result = left - right;
+                break;
             default:
                 throw new IllegalArgumentException("Operation not supported: " + ctx.op.getText());
         }
+        logger.debug("MathAdd: left={}, right={}, op={}, result={}", left, right, ctx.op.getText(), result);
+        return result;
     }
 }

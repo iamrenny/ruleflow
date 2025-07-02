@@ -70,6 +70,14 @@ expr: L_PAREN expr R_PAREN                                                      
     | op=TOKEN_SORT_RATIO L_PAREN left=expr COMMA right=expr R_PAREN #tokenSortRatio
     | op=TOKEN_SET_RATIO L_PAREN left=expr COMMA right=expr R_PAREN #tokenSetRatio
     | op=STRING_SIMILARITY_SCORE L_PAREN left=expr COMMA right=expr R_PAREN #stringSimilarityScore
+    | geoExpr                                                                  #geoOperation
+    ;
+
+geoExpr: GEOHASH_ENCODE L_PAREN lat=expr COMMA lon=expr (COMMA precision=expr)? R_PAREN #geohashEncode
+    | GEOHASH_DECODE L_PAREN geohash=expr R_PAREN #geohashDecode
+    | DISTANCE L_PAREN lat1=expr COMMA lon1=expr COMMA lat2=expr COMMA lon2=expr R_PAREN #distance
+    | DISTANCE L_PAREN geohash1=expr COMMA geohash2=expr R_PAREN #distanceGeohash
+    | WITHIN_RADIUS L_PAREN lat1=expr COMMA lon1=expr COMMA lat2=expr COMMA lon2=expr COMMA radius=expr R_PAREN #withinRadius
     ;
 
 dateExpr: DATE_DIFF L_PAREN left=dateValue COMMA right=dateValue COMMA (HOUR | DAY | MINUTE) R_PAREN #dateDiff
@@ -170,6 +178,11 @@ PARTIAL_RATIO: 'partial_ratio' | 'partialRatio';
 TOKEN_SORT_RATIO: 'token_sort_ratio' | 'tokenSortRatio';
 TOKEN_SET_RATIO: 'token_set_ratio' | 'tokenSetRatio';
 STRING_SIMILARITY_SCORE: 'string_similarity_score' | 'stringSimilarityScore';
+
+GEOHASH_ENCODE: 'geohash_encode' | 'geohashEncode';
+GEOHASH_DECODE: 'geohash_decode' | 'geohashDecode';
+DISTANCE: 'distance';
+WITHIN_RADIUS: 'within_radius' | 'withinRadius';
 
 NUMERIC_LITERAL
   : MINUS? DIGIT+ ( '.' DIGIT* )? ( E [-+]? DIGIT+ )?

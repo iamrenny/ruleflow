@@ -3,26 +3,32 @@ package io.github.iamrenny.ruleflow.evaluators;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.ValueContext;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
 import io.github.iamrenny.ruleflow.utils.DateTimeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 
 
 public class ValueContextEvaluator implements ContextEvaluator<ValueContext> {
+    private static final Logger logger = LoggerFactory.getLogger(ValueContextEvaluator.class);
 
     @Override
     public Object evaluate(ValueContext ctx, Visitor visitor) {
+        Object result;
         if (ctx.validValue().string != null) {
-            return (ctx.validValue().string.getText()).replace("'", "");
+            result = (ctx.validValue().string.getText()).replace("'", "");
         } else if (ctx.validValue().number != null) {
-            return Double.valueOf(ctx.validValue().number.getText());
+            result = Double.valueOf(ctx.validValue().number.getText());
         } else if (ctx.validValue().nullValue != null) {
-            return ctx.validValue().nullValue;
+            result = ctx.validValue().nullValue;
         } else if (ctx.validValue().currentDate != null) {
-            return LocalDateTime.now();
+            result = LocalDateTime.now();
         } else if (ctx.validValue().booleanLiteral != null) {
-            return Boolean.parseBoolean(ctx.validValue().booleanLiteral.getText());
+            result = Boolean.parseBoolean(ctx.validValue().booleanLiteral.getText());
         } else {
             throw new IllegalArgumentException("Value not supported: " + ctx.getText());
         }
+        logger.debug("Value: ctx={}, result={}", ctx.getText(), result);
+        return result;
     }
 }

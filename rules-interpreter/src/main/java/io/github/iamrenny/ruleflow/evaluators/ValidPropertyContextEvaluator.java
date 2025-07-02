@@ -3,19 +3,24 @@ package io.github.iamrenny.ruleflow.evaluators;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.ValidPropertyContext;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class ValidPropertyContextEvaluator implements ContextEvaluator<ValidPropertyContext> {
+    private static final Logger logger = LoggerFactory.getLogger(ValidPropertyContextEvaluator.class);
 
     @Override
     public Object evaluate(ValidPropertyContext ctx, Visitor visitor) throws PropertyNotFoundException {
+        String property = ctx.getText();
+        Object result = visitor.getData().get(property);
+        logger.debug("ValidProperty: property={}, result={}", property, result);
         if (ctx.property != null) {
-            Object value = visitor.getData().get(ctx.ID(0).getText());
-            if (value == null) {
+            if (result == null) {
                 throw new PropertyNotFoundException(ctx.ID(0).getText() + " field cannot be found");
             }
-            return value;
+            return result;
         } else if (ctx.nestedProperty != null) {
             Map<String, ?> data = (ctx.root != null) ? visitor.getRoot() : visitor.getData();
             return getNestedValue(ctx, data);

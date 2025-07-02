@@ -3,8 +3,11 @@ package io.github.iamrenny.ruleflow.evaluators;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MathMulContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.MathMulContext> {
+    private static final Logger logger = LoggerFactory.getLogger(MathMulContextEvaluator.class);
 
     @Override
     public Object evaluate(RuleFlowLanguageParser.MathMulContext ctx, Visitor visitor) {
@@ -13,19 +16,21 @@ public class MathMulContextEvaluator implements ContextEvaluator<RuleFlowLanguag
 
         Double left = Double.valueOf(leftVal.toString());
         Double right = Double.valueOf(rightVal.toString());
-
+        Object result;
         switch (ctx.op.getType()) {
             case RuleFlowLanguageLexer.MULTIPLY:
-                return left * right;
+                result = left * right;
+                break;
             case RuleFlowLanguageLexer.DIVIDE:
-                if (right  == 0) {
-                    return 0.00d;
-                }
-                return left / right;
+                result = right == 0 ? 0.00d : left / right;
+                break;
             case RuleFlowLanguageLexer.MODULO:
-                return left % right;
+                result = left % right;
+                break;
             default:
                 throw new IllegalArgumentException("Operation not supported: " + ctx.op.getText());
         }
+        logger.debug("MathMul: left={}, right={}, op={}, result={}", left, right, ctx.op.getText(), result);
+        return result;
     }
 }
