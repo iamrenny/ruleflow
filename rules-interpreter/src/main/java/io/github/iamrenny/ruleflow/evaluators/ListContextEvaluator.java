@@ -7,27 +7,33 @@ import io.github.iamrenny.ruleflow.errors.UnexpectedSymbolException;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ListContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.ListContext> {
+    private static final Logger logger = LoggerFactory.getLogger(ListContextEvaluator.class);
 
     @Override
     public Object evaluate(RuleFlowLanguageParser.ListContext ctx, Visitor visitor)
         throws PropertyNotFoundException, UnexpectedSymbolException {
+        Object result;
         if (ctx.not == null && ctx.op.getType() == RuleFlowLanguageLexer.K_CONTAINS) {
-            return evalContains(ctx, visitor);
+            result = evalContains(ctx, visitor);
         } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_CONTAINS) {
-            return !(Boolean) evalContains(ctx, visitor);
+            result = !(Boolean) evalContains(ctx, visitor);
         } else if (ctx.not == null && ctx.op.getType() == RuleFlowLanguageLexer.K_IN) {
-            return evalIn(ctx, visitor);
+            result = evalIn(ctx, visitor);
         } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_IN) {
-            return !(Boolean) evalIn(ctx, visitor);
+            result = !(Boolean) evalIn(ctx, visitor);
         } else if (ctx.not == null && ctx.op.getType() == RuleFlowLanguageLexer.K_STARTS_WITH) {
-            return evalStartsWith(ctx, visitor);
+            result = evalStartsWith(ctx, visitor);
         } else if (ctx.not != null && ctx.op.getType() == RuleFlowLanguageLexer.K_STARTS_WITH) {
-            return !(Boolean) evalStartsWith(ctx, visitor);
+            result = !(Boolean) evalStartsWith(ctx, visitor);
         } else {
             throw new UnexpectedSymbolException("Unexpected token near " + ctx.value.getText());
         }
+        logger.debug("List: value={}, op={}, not={}, result={}", ctx.value.getText(), ctx.op.getText(), ctx.not != null, result);
+        return result;
     }
 
     private Object evalIn(RuleFlowLanguageParser.ListContext ctx, Visitor visitor) throws PropertyNotFoundException {

@@ -3,8 +3,11 @@ package io.github.iamrenny.ruleflow.evaluators;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.UnaryContext;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UnaryContextEvaluator implements ContextEvaluator<UnaryContext> {
+    private static final Logger logger = LoggerFactory.getLogger(UnaryContextEvaluator.class);
 
     @Override
     public Object evaluate(UnaryContext ctx, Visitor visitor) {
@@ -15,12 +18,16 @@ public class UnaryContextEvaluator implements ContextEvaluator<UnaryContext> {
             throw new IllegalArgumentException("Parameter value not supported: " + valLeft);
         }
 
+        Object result;
         switch (ctx.op.getType()) {
             case RuleFlowLanguageLexer.ABS:
-                return Math.abs(left);
+                result = Math.abs(left);
+                break;
             default:
                 throw new IllegalArgumentException("Operation not supported: " + ctx.op.getText());
         }
+        logger.debug("Unary: op={}, left={}, result={}", ctx.op.getText(), left, result);
+        return result;
     }
 
     private Double toDoubleOrNull(String value) {

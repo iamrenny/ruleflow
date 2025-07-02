@@ -3,6 +3,8 @@ package io.github.iamrenny.ruleflow.evaluators;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageLexer;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -12,26 +14,52 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AggregationContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.AggregationContext> {
+    private static final Logger logger = LoggerFactory.getLogger(AggregationContextEvaluator.class);
 
     @Override
     public Object evaluate(RuleFlowLanguageParser.AggregationContext ctx, Visitor visitor) {
         Object value = visitor.visit(ctx.value);
+
         if (value instanceof List<?>) {
             List<?> list = (List<?>) value;
+            boolean res = false;
             switch (ctx.op.getType()) {
                 case RuleFlowLanguageLexer.K_ALL:
-                return list.stream().allMatch(data -> (Boolean) evalPredicate(data, visitor.getRoot(), visitor.getLists(), ctx.predicate));
+                    res = list.stream().allMatch(
+                        data -> (Boolean) evalPredicate(data, visitor.getRoot(), visitor.getLists(),
+                            ctx.predicate));
+                    logger.debug("Aggregation: ALL expr={}, result={}", value, res);
+
+                    return res;
                 case RuleFlowLanguageLexer.K_ANY:
-                return list.stream().anyMatch(data -> (Boolean) evalPredicate(data, visitor.getRoot(), visitor.getLists(), ctx.predicate));
+                    res = list.stream().anyMatch(
+                        data -> (Boolean) evalPredicate(data, visitor.getRoot(), visitor.getLists(),
+                            ctx.predicate));
+                    logger.debug("Aggregation: ANY expr={}, result={}", value, res);
+                    return res;
                 case RuleFlowLanguageLexer.K_NONE:
-                return list.stream().noneMatch(data -> (Boolean) evalPredicate(data, visitor.getRoot(), visitor.getLists(), ctx.predicate));
+                    res = list.stream().noneMatch(
+                        data -> (Boolean) evalPredicate(data, visitor.getRoot(), visitor.getLists(),
+                            ctx.predicate));
+                    logger.debug("Aggregation: NONE expr={}, result={}", value, res);
+                    return res;
                 case RuleFlowLanguageLexer.K_AVERAGE:
-                return average(list, ctx.predicate, visitor.getLists(), visitor.getRoot());
+                    Object average = average(list, ctx.predicate, visitor.getLists(),
+                        visitor.getRoot());
+                    logger.debug("Aggregation: AVERAGE expr={}, result={}", value, average);
+                    return average;
                 case RuleFlowLanguageLexer.K_COUNT:
-                return count(list, ctx.predicate, visitor.getLists(), visitor.getRoot());
+                    Object count = count(list, ctx.predicate, visitor.getLists(),
+                        visitor.getRoot());
+                    logger.debug("Aggregation: COUNT expr={}, result={}", value, count);
+                    return count;
                 case RuleFlowLanguageLexer.K_DISTINCT:
-                return distinctBy(list, ctx.predicate, visitor.getLists(), visitor.getRoot());
+                    Object distinctBy = distinctBy(list, ctx.predicate, visitor.getLists(),
+                        visitor.getRoot());
+                    logger.debug("Aggregation: DISTINCT expr={}, result={}", value, distinctBy);
+                    return res;
                 default:
+                    logger.debug("Aggregation: unknown expr={}", value);
                 throw new RuntimeException("Operation not supported: " + ctx.op.getText());
             }
         } else {

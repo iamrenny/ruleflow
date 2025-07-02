@@ -14,6 +14,7 @@ import io.github.iamrenny.ruleflow.evaluators.DateOperationContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.DateParseExprContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.DateValueContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.DayOfWeekContextEvaluator;
+import io.github.iamrenny.ruleflow.evaluators.GeoOperationContext;
 import io.github.iamrenny.ruleflow.evaluators.ListContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.MathAddContextEvaluator;
 import io.github.iamrenny.ruleflow.evaluators.MathMulContextEvaluator;
@@ -103,6 +104,8 @@ public class Visitor extends RuleFlowLanguageBaseVisitor<Object> {
                 return new StringDistanceContextEvaluator().evaluateTokenSetRatio((RuleFlowLanguageParser.TokenSetRatioContext) ctx, this);
             } else if (ctx instanceof RuleFlowLanguageParser.StringSimilarityScoreContext) {
                 return new StringDistanceContextEvaluator().evaluateStringSimilarityScore((RuleFlowLanguageParser.StringSimilarityScoreContext) ctx, this);
+            } else if (ctx instanceof RuleFlowLanguageParser.GeoOperationContext) {
+                return new GeoOperationContext().evaluate((RuleFlowLanguageParser.GeoOperationContext) ctx, this);
             } else {
                 throw new IllegalArgumentException("Operation not supported: " + ctx.getClass());
             }

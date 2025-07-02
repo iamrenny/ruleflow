@@ -5,26 +5,31 @@ import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.ValidPropertyContext;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TupleListContextEvaluator implements ContextEvaluator<RuleFlowLanguageParser.TupleListContext> {
+    private static final Logger logger = LoggerFactory.getLogger(TupleListContextEvaluator.class);
 
     @Override
     public Object evaluate(RuleFlowLanguageParser.TupleListContext ctx, Visitor visitor) throws PropertyNotFoundException {
         int type = ctx.op.getType();
         boolean isNegated = ctx.not != null;
 
-        boolean result = switch (type) {
+        Object result = switch (type) {
             case RuleFlowLanguageLexer.K_CONTAINS -> (Boolean) evalContains(ctx, visitor);
             case RuleFlowLanguageLexer.K_IN -> (Boolean) evalIn(ctx, visitor);
             case RuleFlowLanguageLexer.K_STARTS_WITH -> (Boolean) evalStartsWith(ctx, visitor);
             default -> throw new RuntimeException("Unknown operation: " + ctx.op.getText());
         };
 
-        return isNegated ? !result : result;
+        Object finalResult = isNegated ? !((Boolean) result) : result;
+        logger.debug("TupleList: op={}, not={}, result={}", ctx.op.getText(), isNegated, finalResult);
+        return finalResult;
     }
 
     private Object evalIn(RuleFlowLanguageParser.TupleListContext ctx, Visitor visitor) {

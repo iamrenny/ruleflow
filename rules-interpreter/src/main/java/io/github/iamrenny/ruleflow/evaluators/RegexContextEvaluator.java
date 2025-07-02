@@ -2,10 +2,13 @@ package io.github.iamrenny.ruleflow.evaluators;
 
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser.RegexlikeContext;
 import io.github.iamrenny.ruleflow.visitors.Visitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
 public class RegexContextEvaluator implements ContextEvaluator<RegexlikeContext> {
+    private static final Logger logger = LoggerFactory.getLogger(RegexContextEvaluator.class);
 
     @Override
     public Object evaluate(RegexlikeContext ctx, Visitor visitor) {
@@ -15,6 +18,8 @@ public class RegexContextEvaluator implements ContextEvaluator<RegexlikeContext>
         String input = value.toString();
 
         Pattern pattern = Pattern.compile(regexPattern);
-        return pattern.matcher(input).replaceAll("");
+        String s = pattern.matcher(input).replaceAll("");
+        logger.debug("Value: '{}' -> '{}'", value, s);
+        return s;
     }
 }
