@@ -2,268 +2,500 @@
 
 ## Introduction
 
-The RuleFlow Language is a domain-specific language (DSL) designed to define and evaluate business rules and workflows in a readable, maintainable format. This reference is intended for analysts and technical users who need to author, review, or debug rules in the RuleFlow system.
+The RuleFlow Language is a domain-specific language (DSL) designed to define and evaluate business rules and workflows in a readable, maintainable format. This reference documents the complete language syntax and functionality as implemented in the RuleFlow system.
 
 ---
 
 ## Workflow Structure
 
-A RuleFlow file is organized into **workflows**, each containing one or more **rulesets**. Each ruleset contains one or more **rules**. Rules are evaluated in order, and actions or return values are triggered when a rule matches.
+A RuleFlow file is organized into **workflows**, each containing one or more **rulesets**. Each ruleset can have an optional condition and contains one or more **rules**. Rules are evaluated in order, and actions or return values are triggered when a rule matches.
 
 ### Basic Structure
 
 ```text
 workflow 'workflow_name'
-    ruleset 'ruleset_name'
-        'rule_name' <expression> return <result> [with <action>(<params>)]
-    default <result>
+    [configuration]
+    ruleset 'ruleset_name' [condition] [then]
+        'rule_name' (expression [then action(...)] | expression return result [with actions])
+        'rule_name2' expression return result
+    ruleset 'another_ruleset'
+        'rule_name3' expression return result
+    default [return] result [with actions]
 end
 ```
 
-- **workflow**: Starts a workflow block.
-- **ruleset**: Groups related rules.
-- **'rule_name'**: Each rule has a unique name within a ruleset.
-- **default**: Specifies the default outcome if no rule matches.
-- **end**: Marks the end of the workflow.
+### Complete Example
+
+```text
+workflow 'fraud_detection'
+    evaluation_mode multi_match
+    ruleset 'high_risk_checks' user.risk_score > 80 then
+        'excessive_velocity' user.transactions_today > 10 return block with manual_review({'priority': 'high'})
+        'suspicious_location' distance(user.lat, user.lon, last_login.lat, last_login.lon) > 1000 return block
+    ruleset 'standard_checks'
+        'basic_validation' user.email_verified = true and user.phone_verified = true return allow
+    default return block with action('default_review')
+end
+```
+
+---
+
+## Configuration Options
+
+### Evaluation Modes
+
+Control how rules are evaluated within a workflow:
+
+- `evaluation_mode single_match` - Stop after first matching rule (default)
+- `evaluation_mode multi_match` - Continue evaluating all rules
+
+```text
+workflow 'test'
+    evaluation_mode multi_match
+    ruleset 'checks'
+        'rule1' condition1 return result1
+        'rule2' condition2 return result2
+    default allow
+end
+```
+
+---
+
+## Ruleset Conditions
+
+Rulesets can have optional conditions that determine whether the ruleset should be evaluated:
+
+```text
+ruleset 'premium_user_rules' user.is_premium = true then
+    'rule1' amount > 1000 return block
+    'rule2' velocity > 5 return review
+
+ruleset 'standard_rules' user.is_premium <> true then
+    'rule1' amount > 100 return review
+
+ruleset 'always_evaluated'
+    'rule1' suspicious_activity = true return block
+```
+
+---
+
+## Rule Syntax
+
+Rules support two main syntaxes:
+
+### 1. Return Syntax (Most Common)
+```text
+'rule_name' expression return result [with actions]
+```
+
+### 2. Then Syntax (Action-First)
+```text
+'rule_name' (expression then action(...))
+```
+
+### Parentheses
+Parentheses around the entire rule body are optional:
+```text
+'rule1' (expression return result)
+'rule2' expression return result
+```
 
 ---
 
 ## Expressions
 
-Expressions are used to define the logic for each rule. They support:
-- Boolean logic (`AND`, `OR`, `NOT`)
-- Comparisons (`=`, `==`, `<`, `<=`, `>`, `>=`, `<>`)
-- Mathematical operations (`+`, `-`, `*`, `/`, `%`)
-- List and tuple operations (`IN`, `CONTAINS`, `ANY`, `ALL`, `NONE`)
-- Functions (e.g., `dateDiff`, `abs`, `regex_strip`)
-
-### Example
+### Boolean Logic
 ```text
-'user_is_prime' order.custom.user_is_prime = true and features.is_card_bin_in_anomaly_detector <> true return block
+'logic_example' x and y or z return block
+'precedence' (x or y) and z return block
+'negation' not suspicious return allow
 ```
 
-### Operator Reference
-| Operator         | Description                |
-|------------------|---------------------------|
-| `AND`, `OR`      | Boolean logic             |
-| `NOT`            | Negation                  |
-| `=` or `==`      | Equality                  |
-| `<>`             | Not equal                 |
-| `<`, `<=`, `>`, `>=` | Comparisons           |
-| `IN`             | Membership in list/tuple  |
-| `CONTAINS`       | List contains value       |
-| `ANY`, `ALL`, `NONE` | List quantifiers      |
-| `+`, `-`, `*`, `/`, `%` | Math operations    |
+**Operator Precedence:** `NOT` → `AND` → `OR`
+
+### Comparisons
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `=` or `==` | Equality | `amount = 100` |
+| `<>` | Not equal | `status <> 'pending'` |
+| `<`, `<=`, `>`, `>=` | Numeric/string comparison | `age >= 18` |
+
+### Mathematical Operations
+```text
+'math_example' (amount + fee) * tax_rate > 1000 return block
+'modulo' order_id % 10 = 0 return sample
+'precedence' x + y * z = 15 return block  # multiplication first
+'parentheses' (x + y) * z = 80 return block
+```
+
+**Operator Precedence:** `*`, `/`, `%` → `+`, `-`
+
+### List Operations
+
+#### Basic List Membership
+```text
+'in_list' user_type in 'premium', 'gold', 'platinum' return priority
+'contains' allowed_countries contains country_code return allow
+'starts_with' email starts_with 'admin', 'support' return escalate
+```
+
+#### List Quantifiers on Collections
+```text
+'any_match' order.items.any { type = 'restricted' } return block
+'all_match' order.items.all { verified = true } return allow
+'none_match' user.devices.none { flagged = true } return allow
+```
+
+#### Aggregation Functions
+```text
+'count' order.items.count() > 5 return review
+'average' order.items.average { price } > 100 return premium
+'distinct' order.items.distinct { vendor_id }.count() > 3 return multi_vendor
+```
+
+#### Stored Lists
+```text
+'stored_list' user_id in list('blocked_users') return block
+```
+
+#### Property Tuples
+```text
+'tuple_check' (user.country, user.state) in ('US', 'CA'), ('US', 'NY') return domestic
+```
+
+---
+
+## Data Types and Literals
+
+### String Literals
+```text
+'single_quotes' name = 'John Doe' return match
+'special_chars' code = 'ABC-123_XYZ' return valid
+```
+
+### Numeric Literals
+```text
+'integer' count = 42 return valid
+'decimal' rate = 3.14159 return calculated
+'negative' balance = -100.50 return overdraft
+'scientific' threshold = 1.5e10 return high
+```
+
+### Boolean Literals
+```text
+'boolean_true' active = true return enabled
+'boolean_false' deleted = false return available
+```
+
+### Null Values
+```text
+'null_check' middle_name = null return no_middle_name
+```
+
+---
 
 ## Date and DateTime Functions
 
-The following functions are available for date and datetime operations:
-
-* `date('YYYY-MM-DD')` — Casts a string or property to a date value.
-* `datetime('YYYY-MM-DDTHH:MM[:SS][Z|±hh:mm]')` — Casts a string or property to a datetime value.
-* `now()` — Returns the current system date and time as a datetime value.
-* `date_add(date, amount, unit)` — Adds the specified amount of the given unit (`day`, `hour`, `minute`) to the date or datetime value.
-* `date_subtract(date, amount, unit)` — Subtracts the specified amount of the given unit from the date or datetime value.
-* `date_diff(unit, date1, date2)` — Returns the difference between two dates or datetimes in the specified unit (`day`, `hour`, `minute`).
-
-**Examples:**
+### Date/DateTime Parsing
 ```text
-'future_date' date_add(date('2024-06-01'), 5, day) = date('2024-06-06') return block
-'past_date' date_subtract(datetime('2024-06-01T12:00Z'), 2, hour) = datetime('2024-06-01T10:00Z') return block
-'now_check' now() > date('2024-06-01') return block
-'diff_check' date_diff(day, date('2024-06-01'), date('2024-06-10')) = 9 return block
+'date_literal' order_date = date('2024-06-01') return valid
+'datetime_literal' timestamp = datetime('2024-06-01T12:30Z') return valid
+'datetime_offset' created = datetime('2024-06-01T12:30+02:00') return valid
+'date_property' date(order_date) = date('2024-06-01') return match
+```
+
+### Current Time
+```text
+'now_check' now() > date('2024-01-01') return current_year
+'date_now' date(now()) = date('2024-06-15') return today
+```
+
+### Date Arithmetic
+```text
+'add_days' date_add(order_date, 5, day) = date('2024-06-06') return future
+'add_hours' date_add(timestamp, 2, hour) = datetime('2024-06-01T14:30Z') return later
+'add_minutes' date_add(time, 30, minute) = datetime('2024-06-01T13:00Z') return soon
+
+'subtract_days' date_subtract(expiry_date, 7, day) = date('2024-06-01') return week_before
+'subtract_hours' date_subtract(deadline, 1, hour) = datetime('2024-06-01T11:30Z') return hour_before
+```
+
+**Supported Time Units:** `day`, `hour`, `minute`
+
+### Date Calculations
+```text
+'date_diff' date_diff(start_date, end_date, day) = 30 return month_duration
+'date_diff_hours' date_diff(login_time, logout_time, hour) > 8 return long_session
+'zero_diff' dateDiff(date1, date1, day) = 0 return same_day
+```
+
+### Day of Week
+```text
+'weekend' day_of_week(order_date) in 'SATURDAY', 'SUNDAY' return weekend_order
+'monday' day_of_week('2024-06-01') = 'SATURDAY' return specific_day
+```
+
+**Day Values:** `MONDAY`, `TUESDAY`, `WEDNESDAY`, `THURSDAY`, `FRIDAY`, `SATURDAY`, `SUNDAY`
+
+---
+
+## String Functions
+
+### Regular Expressions
+```text
+'strip_prefix' regex_strip(phone, '^\\+1') = '5551234567' return us_number
+'extract_user' regex_strip(email, '@.*') = 'username' return user_part
+'clean_number' regex_strip(card_number, '^(0|1+0+)+') = '4111111111111111' return cleaned
+```
+
+### String Similarity Functions
+
+#### Basic String Distance (Levenshtein-based)
+```text
+'similar_names' string_distance(input_name, 'John Smith') > 70 return likely_match
+'exact_match' string_distance(code1, code2) = 100 return identical
+```
+
+#### Fuzzy String Matching
+```text
+'partial_match' partial_ratio(address1, address2) > 80 return similar_address
+'token_sort' token_sort_ratio(name1, name2) > 85 return name_match
+'token_set' token_set_ratio(description1, description2) > 75 return similar_desc
+'similarity_score' string_similarity_score(text1, text2) > 90 return high_similarity
+```
+
+**Note:** All similarity functions return values from 0-100, where 100 is identical.
+
+---
+
+## Geospatial Functions
+
+### Geohash Operations
+```text
+'encode_location' geohash_encode(lat, lon, 8) = '9q8yyk8y' return sf_area
+'encode_default' geohash_encode(37.7749, -122.4194) = 'encoded_location' return valid
+'decode_hash' geohash_decode('9q8yyk8y') = coordinates return decoded
+```
+
+### Distance Calculations
+```text
+'coord_distance' distance(lat1, lon1, lat2, lon2) < 100 return nearby
+'geohash_distance' distance(geohash1, geohash2) > 1000 return far_apart
+'sf_to_la' distance(37.7749, -122.4194, 34.0522, -118.2437) < 600 return california
+```
+
+### Proximity Checks
+```text
+'within_radius' within_radius(user_lat, user_lon, store_lat, store_lon, 50) return local_delivery
+'nearby_check' within_radius(37.7749, -122.4194, 34.0522, -118.2437, 600) return west_coast
+```
+
+**Note:** All distance values are in kilometers.
+
+---
+
+## Advanced Functions
+
+### Mathematical Functions
+```text
+'absolute_value' abs(balance) > 1000 return high_magnitude
+'absolute_diff' abs(actual - expected) < 0.01 return within_tolerance
 ```
 
 ---
 
-## Actions and Results
+## Actions
 
-- **return <result>**: Specifies the result when the rule matches (e.g., `block`, `allow`).
-- **with <action>(<params>)**: Triggers an action, optionally with parameters.
-    - Actions can be chained using `and`.
-    - Actions can be specified as `action('name', {'param': 'value'})` or directly as `action_name({'param': 'value'})`.
+Actions are triggered when rules match and can be chained together.
 
-### Example
+### Action Syntax Variations
+
+#### Explicit Action Function
 ```text
-'rule_a' user_id = 15 return block with action('manual_review', {'test': 'me', 'foo': 'bar'}) and action('logout_user')
+'rule1' condition return result with action('manual_review')
+'rule2' condition return result with action('escalate', {'priority': 'high', 'reason': 'fraud'})
+```
+
+#### Shorthand Action Syntax
+```text
+'rule3' condition return result with manual_review
+'rule4' condition return result with escalate({'priority': 'high'})
+```
+
+#### Multiple Actions
+```text
+'multi_action' condition return block with manual_review({'priority': 'high'}) and logout_user
+'chain_actions' condition return block with action('review') and action('notify', {'email': 'admin@company.com'})
+```
+
+### Action Parameters
+```text
+'with_params' suspicious = true return block with manual_review({
+    'priority': 'high',
+    'reason': 'suspicious_activity',
+    'reviewer': 'fraud_team'
+}) and send_alert({'channel': 'slack'})
+```
+
+### Actions in Default Clause
+```text
+default return allow with action('log_decision', {'rule': 'default'})
 ```
 
 ---
 
-## Value Types
+## Property Access
 
-- **String**: `'value'` or quoted
-- **Number**: `15`, `3.14`
-- **Boolean**: `true`, `false`
-- **Null**: `null`
-- **Lists**: `list('a', 'b', 'c')` or tuples
-- **Date/Time**: `currentDate()`
-
----
-
-## Examples from Test Suite
-
-### 1. Simple Rule with Action
+### Simple Properties
 ```text
-workflow 'test'
-    ruleset 'dummy'
-        'rule_a' user_id = 15 return block with action('manual_review')
-    default allow
-end
+'simple' user_id = 123 return match
+'dot_notation' .global_config = 'enabled' return configured
 ```
 
-### 2. Boolean Logic
+### Nested Properties
 ```text
-workflow 'test'
-    ruleset 'dummy'
-        'item_a' x AND y OR z return block
-    default allow
-end
-```
-
-### 3. Parenthesis and Precedence
-```text
-workflow 'test'
-    ruleset 'dummy'
-        'item_a' (x OR y) AND z return block
-    default allow
-end
-```
-
-### 4. List Operations
-```text
-workflow 'test'
-    ruleset 'dummy'
-        'item_a' order.items.any { type = 'a' } return block
-    default allow
-end
-```
-
-### 5. Math Operations
-```text
-workflow 'test'
-    ruleset 'dummy'
-        'item_a' x + y * z = 15 return block
-    default allow
-end
-```
-
-### 6. String Comparison
-```text
-workflow 'test'
-    ruleset 'dummy'
-        'x_is_lesser' x < '7.53' return block
-    default allow
-end
-```
-
-### 7. Multiple Actions
-```text
-workflow 'test'
-    ruleset 'dummy'
-        'rule_a' user_id = 15 return block with action('manual_review', {'test': 'me', 'foo': 'bar'}) and action('logout_user')
-    default allow
-end
+'nested' user.profile.email = 'admin@company.com' return admin
+'deep_nested' order.payment.card.type = 'visa' return visa_card
+'array_access' user.addresses.primary.country = 'US' return domestic
 ```
 
 ---
 
-## Keywords and Special Functions
+## Error Handling and Warnings
 
-| Keyword/Function   | Description                                 |
-|--------------------|---------------------------------------------|
-| `workflow`         | Start a workflow block                      |
-| `ruleset`          | Group of rules                              |
-| `default`          | Default result if no rule matches           |
-| `end`              | End of workflow                             |
-| `return`           | Specifies return value                      |
-| `with`, `and`      | Combine actions                             |
-| `action`           | Triggers an action                          |
-| `list`             | List literal                                |
-| `dateDiff`, `abs`, `regex_strip` | Built-in functions             |
-| `currentDate()`    | Current date/time                           |
-| `any`, `all`, `none` | List quantifiers                          |
+The RuleFlow engine provides robust error handling:
 
----
+### Missing Fields
+If a referenced field doesn't exist in the input data:
+- A warning is generated: `"field_name field cannot be found"`
+- The rule evaluation stops and the default result is returned
 
-## Best Practices & Gotchas
+### Division by Zero
+```text
+'safe_division' amount / quantity > 100 return expensive
+# If quantity = 0, generates warning and returns default
+```
 
-- **Parentheses**: Use parentheses to clarify precedence in complex boolean or math expressions.
-- **Field Existence**: If a referenced field does not exist in the input, a warning is generated and the default result is returned.
-- **Division/Modulo by Zero**: Results in a warning and default result.
-- **Action Parameters**: Use curly braces `{}` for key-value pairs in action parameters.
-- **Chaining Actions**: Use `and` or `with` to chain multiple actions after a rule.
-- **String Literals**: Use single quotes for string values.
+### Invalid Date Formats
+```text
+'date_validation' date(invalid_date) = date('2024-01-01') return match
+# Invalid date strings generate warnings and return default
+```
+
+### Type Mismatches
+The engine handles type coercion gracefully but may generate warnings for unexpected type operations.
 
 ---
 
-## Example: Realistic Rule
+## Complete Examples
 
+### Fraud Detection Workflow
 ```text
 workflow 'fraud_detection'
-    ruleset 'risk_checks'
-        'prime_user' order.custom.user_is_prime = true
-            and features.is_card_bin_in_anomaly_detector <> true
-            and features.fake_users_user_email_score <= 1
-            and user.email_verification_status in 'VERIFIED'
-            and (features.mk_payer_distinct_cc_fingerprint_90d + features.mk_payer_distinct_device_id_90d) <= 8
-            and features.crosses_login_device_qty_users_7d <= 3
-            and features.crosses_registration_device_qty_users_7d < 1
-            and (features.user_compensations_amount_90d/features.mk_payer_approved_amount_90d) < 0.05
-            and features.mk_payer_approved_qty_7d >= 1
-            and features.mk_payer_approved_qty_30d >= 6
-            and (features.mk_payer_approved_qty_60d >= features.mk_payer_approved_qty_30d + 6)
-            and (features.mk_payer_approved_qty_90d >= features.mk_payer_approved_qty_60d + 6)
-            and features.mk_payer_approved_amount_30d >= 50
-            and (features.mk_payer_approved_amount_90d >= features.mk_payer_approved_amount_30d + 100) return block
-    default allow
+    evaluation_mode multi_match
+    
+    ruleset 'premium_user_checks' order.custom.user_is_premium = true then
+        'premium_velocity' features.mk_payer_approved_qty_90d >= features.mk_payer_approved_qty_60d + 6
+            and features.mk_payer_approved_amount_90d >= features.mk_payer_approved_amount_30d + 100
+            and features.user_compensations_amount_90d / features.mk_payer_approved_amount_90d < 0.05
+            return allow
+            
+        'premium_anomaly' features.is_card_bin_in_anomaly_detector = true 
+            or features.fake_users_user_email_score > 1 
+            return block with manual_review({'type': 'premium_user_anomaly'})
+    
+    ruleset 'geo_checks'
+        'location_velocity' distance(user.current_lat, user.current_lon, user.last_lat, user.last_lon) > 1000
+            and date_diff(user.last_login, now(), hour) < 2
+            return block with action('geo_impossible', {'distance': 'distance_value'})
+            
+        'restricted_location' within_radius(user.lat, user.lon, restricted_zone.lat, restricted_zone.lon, 10)
+            return block with escalate({'reason': 'restricted_area'})
+    
+    ruleset 'pattern_matching'
+        'similar_merchant' string_distance(merchant.name, known_fraudster.name) > 85
+            return review with flag_similarity({'match_score': 'similarity_value'})
+            
+        'suspicious_email' regex_strip(user.email, '@.*') in list('known_fraud_patterns')
+            return block with immediate_review
+    
+    default return allow with log_decision({'workflow': 'fraud_detection'})
+end
+```
+
+### E-commerce Risk Assessment
+```text
+workflow 'ecommerce_risk'
+    ruleset 'order_validation'
+        'high_value' order.total > 5000 and user.account_age_days < 30
+            return manual_review with escalate({'amount': order.total})
+            
+        'bulk_order' order.items.count() > 20 
+            or order.items.any { quantity > 100 }
+            return review with bulk_order_check
+            
+        'international' user.country <> order.shipping.country
+            and distance(user.country_lat, user.country_lon, order.shipping.lat, order.shipping.lon) > 2000
+            return verify_shipping with international_alert
+    
+    ruleset 'user_behavior'
+        'velocity_check' user.orders_today > 5 
+            and user.orders.all { status = 'completed' }
+            return velocity_limit with rate_limit_user
+            
+        'device_fingerprint' user.devices.distinct { fingerprint }.count() > 10
+            and date_diff(user.first_login, now(), day) < 7
+            return suspicious_device with device_review
+    
+    default return approve
 end
 ```
 
 ---
 
-## Further Reading
-- See the test suite for more usage patterns and edge cases.
-- Refer to the grammar file (`RuleFlowLanguage.g4`) for advanced syntax details.
+## Best Practices
+
+### Expression Clarity
+- Use parentheses to clarify precedence in complex expressions
+- Break long conditions across multiple lines for readability
+- Use meaningful rule names that describe the business logic
+
+### Error Handling
+- Always provide a default clause
+- Consider field existence when referencing nested properties
+- Test edge cases like division by zero and invalid dates
+
+### Performance Considerations
+- Place most selective conditions first in AND expressions
+- Use `single_match` evaluation mode when appropriate
+- Consider using stored lists for frequently referenced data
+
+### Action Design
+- Use descriptive action names and parameter keys
+- Include relevant context in action parameters
+- Chain related actions together logically
 
 ---
 
-*This document is auto-generated from the language grammar and test cases. For feedback or updates, contact the RuleFlow maintainers.*
+## Language Keywords
 
-# Geohash and Location Functions
+### Reserved Keywords
+`workflow`, `ruleset`, `default`, `end`, `return`, `with`, `and`, `or`, `not`, `then`, `in`, `contains`, `starts_with`, `any`, `all`, `none`, `count`, `average`, `distinct`, `list`, `action`, `true`, `false`, `null`
 
-## geohash_encode(lat, lon, precision)
-- **Description:** Encodes latitude and longitude into a geohash string. Precision is optional (default 12).
-- **Example:**
-  ```
-  geohash = geohash_encode(37.7749, -122.4194, 8)
-  ```
+### Case Sensitivity
+- Keywords are case-insensitive: `WORKFLOW`, `workflow`, `Workflow` all work
+- Property names and string literals are case-sensitive
+- Function names are case-insensitive with multiple variations supported
 
-## geohash_decode(geohash)
-- **Description:** Decodes a geohash string into latitude and longitude.
-- **Example:**
-  ```
-  coords = geohash_decode('9q8yywe6')
-  // coords[0] = latitude, coords[1] = longitude
-  ```
+---
 
-## distance(lat1, lon1, lat2, lon2)
-- **Description:** Calculates the distance in kilometers between two points.
-- **Example:**
-  ```
-  dist = distance(37.7749, -122.4194, 34.0522, -118.2437)
-  ```
+## Grammar Notes
 
-## distance(geohash1, geohash2)
-- **Description:** Calculates the distance in kilometers between two geohash locations.
-- **Example:**
-  ```
-  dist = distance('9q8yywe6', '9q5ctrmp')
-  ```
+- Comments: Single-line `--` and multi-line `/* */`
+- String literals: Single quotes `'text'` (double quotes in grammar but single quotes in practice)
+- Identifiers: Letters, numbers, underscores; must start with letter or underscore
+- Whitespace: Spaces, tabs, newlines are ignored outside of string literals
 
-## within_radius(lat1, lon1, lat2, lon2, radius_km)
-- **Description:** Returns true if the two points are within the given radius (in kilometers).
-- **Example:**
-  ```
-  is_near = within_radius(37.7749, -122.4194, 34.0522, -118.2437, 600)
-  ```
+---
+
+*This documentation reflects the complete implemented functionality as of the current version. For additional examples and edge cases, refer to the test suite.*
