@@ -31,7 +31,7 @@ public class MultipleValuesListTest {
   public void testWithMultipleValuesList() {
     String workflow = """
            workflow 'test'
-               ruleset 'dummy'
+               ruleset 'dummy' 1=1 then 
                    'device_and_merchant' (device.fingerprint, order.merchant.merchantId) in list('fingerprint_merchant_blacklist') return block
                default allow
                end

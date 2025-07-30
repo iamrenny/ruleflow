@@ -47,7 +47,7 @@ action_params: '{' param_pairs '}';
 
 param_pairs: param_pair (COMMA param_pair)*;
 
-param_pair: field_name = string_literal ':' field_value = validValue;
+param_pair: field_name = string_literal ':' field_value = actionParamValue;
 
 expr: L_PAREN expr R_PAREN                                                      #parenthesis
     | left=expr op=(MULTIPLY | DIVIDE | MODULO) right=expr                      #mathMul
@@ -99,6 +99,8 @@ validValue: string = string_literal
           | booleanLiteral=BOOLEAN_LITERAL
           | nullValue=K_NULL
           | currentDate=CURRENT_DATE;
+
+actionParamValue: validValue | validProperty;
 
 dateParse: K_DATE L_PAREN dateValue R_PAREN
           | K_DATETIME L_PAREN dateValue R_PAREN;

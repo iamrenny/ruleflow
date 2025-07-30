@@ -168,7 +168,8 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
     }
 
     private Pair<List<Action>, Map<String, Map<String, String>>> resolveActions(RuleFlowLanguageParser.ActionsContext rule) {
-        List<io.github.iamrenny.ruleflow.utils.Pair<String, Map<String, String>>> actions = new ActionsVisitor().visit(rule);
+        Visitor visitor = new Visitor(data, lists, data);
+        List<io.github.iamrenny.ruleflow.utils.Pair<String, Map<String, String>>> actions = new ActionsVisitor(visitor).visit(rule);
         List<Action> actionsList = actions.stream().map(action -> new Action(action.getKey(), action.getValue())).collect(Collectors.toList());
         Map<String, Map<String, String>> actionsMap = actions.stream()
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,

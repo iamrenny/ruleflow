@@ -118,6 +118,26 @@ class ActionsTest {
     }
 
     @Test
+    public void given_action_with_params_using_request_values_must_return_valid_response() {
+        String workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' user_id = 15 return block with action('manual_review', {'test': 'me', 'userId': user_id})
+                default allow
+            end
+        """;
+        Map<String, Object> request = Map.of("user_id", 15);
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        WorkflowResult expectedResult = new WorkflowResult(
+                "test", "dummy", "rule_a", "block",
+                Map.of("manual_review", Map.of("test", "me", "userId", "15"))
+        );
+        assertWorkflowResult(expectedResult, result);
+    }
+
+
+
+    @Test
     public void given_action_with_wildcard_name_and_params_must_return_valid_response() {
         String workflow = """
             workflow 'test'
