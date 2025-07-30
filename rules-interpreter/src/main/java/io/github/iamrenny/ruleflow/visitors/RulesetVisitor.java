@@ -4,6 +4,7 @@ import io.github.iamrenny.ruleflow.RuleFlowLanguageBaseVisitor;
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.errors.PropertyNotFoundException;
 import io.github.iamrenny.ruleflow.errors.UnexpectedSymbolException;
+import io.github.iamrenny.ruleflow.errors.ActionParameterResolutionException;
 import io.github.iamrenny.ruleflow.utils.Pair;
 import io.github.iamrenny.ruleflow.vo.Action;
 import io.github.iamrenny.ruleflow.vo.WorkflowResult;
@@ -72,6 +73,9 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                         warnings.add(ex.getCause().getMessage());
                     } else if (ex.getCause() != null && ex.getCause() instanceof UnexpectedSymbolException) {
                         logger.warn("Unexpected symbol: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
+                        warnings.add(ex.getCause().getMessage());
+                    } else if (ex.getCause() != null && ex.getCause() instanceof ActionParameterResolutionException) {
+                        logger.warn("Action parameter resolution failed: {} {}", ctx.workflow_name().getText(), rule.name().getText(), ex);
                         warnings.add(ex.getCause().getMessage());
                     } else {
                         logger.error("Error while evaluating rule {} {}",

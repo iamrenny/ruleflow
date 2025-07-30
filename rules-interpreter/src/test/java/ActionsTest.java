@@ -194,6 +194,33 @@ class ActionsTest {
         assertWorkflowResult(expectedResult, result);
     }
 
+    @Test
+    public void given_action_with_nonexistent_property_in_params_should_fallback_to_default() {
+        String workflow = """
+            workflow 'test'
+                ruleset 'dummy'
+                    'rule_a' user_id = 15 return block with action('manual_review', {'test': 'me', 'nonexistent': nonexistent_property})
+                default allow
+            end
+        """;
+        Map<String, Object> request = Map.of("user_id", 15);
+        
+        // The exception should be caught and the workflow should fall back to default
+        WorkflowResult result = new io.github.iamrenny.ruleflow.Workflow(workflow).evaluate(request);
+        
+        // Verify that the workflow fell back to default due to the exception
+        Assertions.assertEquals("test", result.getWorkflow());
+        Assertions.assertEquals("default", result.getRuleSet());
+        Assertions.assertEquals("default", result.getRule());
+        Assertions.assertEquals("allow", result.getResult());
+        
+        // Check that there are warnings about the failed property resolution
+        Assertions.assertTrue(result.getWarnings().size() > 0, "Should have warnings about failed property resolution");
+        boolean hasActionParamWarning = result.getWarnings().stream()
+            .anyMatch(warning -> warning.contains("Failed to resolve property") || warning.contains("Action parameter resolution failed"));
+        Assertions.assertTrue(hasActionParamWarning, "Should have warning about action parameter resolution failure");
+    }
+
     private void assertWorkflowResult(WorkflowResult expected, WorkflowResult actual) {
         Assertions.assertEquals(expected.getWorkflow(), actual.getWorkflow());
         Assertions.assertEquals(expected.getRuleSet(), actual.getRuleSet());

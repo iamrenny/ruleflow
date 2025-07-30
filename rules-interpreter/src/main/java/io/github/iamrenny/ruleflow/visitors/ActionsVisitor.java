@@ -2,6 +2,7 @@ package io.github.iamrenny.ruleflow.visitors;
 
 import io.github.iamrenny.ruleflow.RuleFlowLanguageParser;
 import io.github.iamrenny.ruleflow.utils.Pair;
+import io.github.iamrenny.ruleflow.errors.ActionParameterResolutionException;
 
 import java.util.List;
 import java.util.Map;
@@ -66,8 +67,10 @@ class ActionVisitor {
                 Object resolvedValue = visitor.visit(fieldValue.validProperty());
                 return resolvedValue != null ? resolvedValue.toString() : "null";
             } catch (Exception e) {
-                // If property resolution fails, return the property name as fallback
-                return fieldValue.validProperty().getText();
+                // If property resolution fails, throw a specific exception
+                throw new ActionParameterResolutionException(
+                    "Failed to resolve property '" + fieldValue.validProperty().getText() + "' in action parameter: " + e.getMessage()
+                );
             }
         } else {
             throw new IllegalArgumentException("Unsupported action parameter value type: " + fieldValue.getText());
