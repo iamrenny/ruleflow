@@ -78,7 +78,7 @@ public class WorkflowResult {
         this.warnings = warnings;
         this.actions = Set.of();
         this.actionsWithParams = actionsWithParams;
-        this.actionCalls = convertActionsWithParamsToActionCalls(actionsWithParams);
+        this.actionCalls = new ArrayList<>(); // Will be set later by RulesetVisitor
         this.error = error;
     }
 
@@ -89,7 +89,7 @@ public class WorkflowResult {
         this.result = result;
         this.warnings = warnings;
         this.actionsWithParams = actionsWithParams;
-        this.actionCalls = convertActionsWithParamsToActionCalls(actionsWithParams);
+        this.actionCalls = new ArrayList<>(); // Will be set later by RulesetVisitor
         this.error = error;
         this.matchedRules = items;
     }
@@ -209,7 +209,7 @@ public class WorkflowResult {
         this.matchedRules = matchedRules;
     }
 
-    private List<Action> convertActionsWithParamsToActionCalls(Map<String, Map<String, String>> actionsWithParams) {
+    private static List<Action> convertActionsWithParamsToActionCalls(Map<String, Map<String, String>> actionsWithParams) {
         if (actionsWithParams == null) {
             return new ArrayList<>();
         }
@@ -220,7 +220,7 @@ public class WorkflowResult {
         return actionCalls;
     }
 
-    private Map<String, Map<String, String>> convertActionCallsToActionsWithParams(List<Action> actionCalls) {
+    private static Map<String, Map<String, String>> convertActionCallsToActionsWithParams(List<Action> actionCalls) {
         if (actionCalls == null) {
             return new HashMap<>();
         }
@@ -333,7 +333,7 @@ public class WorkflowResult {
         public void setActionsWithParams(
             Map<String, Map<String, String>> actionsWithParams) {
             this.actionsWithParams = actionsWithParams;
-            this.actionCalls = convertActionsWithParamsToActionCalls(actionsWithParams);
+            this.actionCalls = WorkflowResult.convertActionsWithParamsToActionCalls(actionsWithParams);
         }
 
         public List<Action> getActionCalls() {
@@ -342,32 +342,7 @@ public class WorkflowResult {
 
         public void setActionCalls(List<Action> actionCalls) {
             this.actionCalls = actionCalls;
-            this.actionsWithParams = convertActionCallsToActionsWithParams(actionCalls);
-        }
-
-        private List<Action> convertActionsWithParamsToActionCalls(Map<String, Map<String, String>> actionsWithParams) {
-            if (actionsWithParams == null) {
-                return new ArrayList<>();
-            }
-            List<Action> actionCalls = new ArrayList<>();
-            for (Map.Entry<String, Map<String, String>> entry : actionsWithParams.entrySet()) {
-                actionCalls.add(new Action(entry.getKey(), entry.getValue()));
-            }
-            return actionCalls;
-        }
-
-        private Map<String, Map<String, String>> convertActionCallsToActionsWithParams(List<Action> actionCalls) {
-            if (actionCalls == null) {
-                return new HashMap<>();
-            }
-            Map<String, Map<String, String>> actionsWithParams = new HashMap<>();
-            for (Action action : actionCalls) {
-                actionsWithParams.merge(action.getName(), action.getParams(), (existing, replacement) -> {
-                    existing.putAll(replacement);
-                    return existing;
-                });
-            }
-            return actionsWithParams;
+            this.actionsWithParams = WorkflowResult.convertActionCallsToActionsWithParams(actionCalls);
         }
     }
 }
