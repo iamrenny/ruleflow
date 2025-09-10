@@ -117,14 +117,14 @@ public class RulesetVisitor extends RuleFlowLanguageBaseVisitor<WorkflowResult> 
                 matchedRules.get(0).getRule(),
                 matchedRules.get(0).getResult(),
                 matchedRules.get(0).getActionsWithParams(),
+                matchedRules.get(0).getActionCalls(),
                 matchedRules.stream().map(it ->
                         new MatchedRuleListItem(it.getRuleSet(), it.getRule(),
-                            it.getResult(), it.getActions(), it.getActionsWithParams()))
+                            it.getResult(), it.getActions(), it.getActionsWithParams(), it.getActionCalls()))
                     .toList(),
                 warnings,
                 error
             );
-            result.setActionCalls(matchedRules.get(0).getActionCalls());
             return result;
         }
 

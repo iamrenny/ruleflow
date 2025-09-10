@@ -78,7 +78,7 @@ public class WorkflowResult {
         this.warnings = warnings;
         this.actions = Set.of();
         this.actionsWithParams = actionsWithParams;
-        this.actionCalls = new ArrayList<>(); // Will be set later by RulesetVisitor
+        this.actionCalls = new ArrayList<>();
         this.error = error;
     }
 
@@ -89,7 +89,19 @@ public class WorkflowResult {
         this.result = result;
         this.warnings = warnings;
         this.actionsWithParams = actionsWithParams;
-        this.actionCalls = new ArrayList<>(); // Will be set later by RulesetVisitor
+        this.actionCalls = new ArrayList<>();
+        this.error = error;
+        this.matchedRules = items;
+    }
+
+    public WorkflowResult(String workflow, String ruleset, String rule, String result, Map<String, Map<String,String>> actionsWithParams, List<Action> actionCalls, List<MatchedRuleListItem> items, Set<String> warnings, boolean error) {
+        this.workflow = workflow;
+        this.ruleSet = ruleset;
+        this.rule = rule;
+        this.result = result;
+        this.warnings = warnings;
+        this.actionsWithParams = actionsWithParams;
+        this.actionCalls = actionCalls != null ? new ArrayList<>(actionCalls) : new ArrayList<>();
         this.error = error;
         this.matchedRules = items;
     }
@@ -292,6 +304,16 @@ public class WorkflowResult {
             this.actionCalls = convertActionsWithParamsToActionCalls(actionsWithParams);
         }
 
+        public MatchedRuleListItem(String ruleSet, String rule, String result,
+            Set<String> actions, Map<String, Map<String, String>> actionsWithParams, List<Action> actionCalls) {
+            this.ruleSet = ruleSet;
+            this.rule = rule;
+            this.result = result;
+            this.actions = actions;
+            this.actionsWithParams = actionsWithParams;
+            this.actionCalls = actionCalls != null ? new ArrayList<>(actionCalls) : new ArrayList<>();
+        }
+
         public String getRuleSet() {
             return ruleSet;
         }
@@ -336,13 +358,5 @@ public class WorkflowResult {
             this.actionCalls = WorkflowResult.convertActionsWithParamsToActionCalls(actionsWithParams);
         }
 
-        public List<Action> getActionCalls() {
-            return actionCalls;
-        }
-
-        public void setActionCalls(List<Action> actionCalls) {
-            this.actionCalls = actionCalls;
-            this.actionsWithParams = WorkflowResult.convertActionCallsToActionsWithParams(actionCalls);
-        }
     }
 }
