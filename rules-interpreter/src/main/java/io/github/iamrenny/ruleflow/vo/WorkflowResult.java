@@ -359,15 +359,6 @@ public class WorkflowResult {
             this.actions = actionsWithParams.keySet();
         }
 
-        @Deprecated
-        public void setActionsWithParams(
-            Map<String, Map<String, String>> actionsWithParams, boolean updateActionCalls) {
-            this.actionsWithParams = actionsWithParams;
-            if (updateActionCalls) {
-                this.actionCalls = WorkflowResult.convertActionsWithParamsToActionCalls(actionsWithParams);
-            }
-            this.actions = actionsWithParams.keySet();
-        }
 
         public List<Action> getActionCalls() {
             return actionCalls;
