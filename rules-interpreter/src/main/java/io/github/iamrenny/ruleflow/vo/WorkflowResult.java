@@ -356,6 +356,35 @@ public class WorkflowResult {
             Map<String, Map<String, String>> actionsWithParams) {
             this.actionsWithParams = actionsWithParams;
             this.actionCalls = WorkflowResult.convertActionsWithParamsToActionCalls(actionsWithParams);
+            this.actions = actionsWithParams.keySet();
+        }
+
+        @Deprecated
+        public void setActionsWithParams(
+            Map<String, Map<String, String>> actionsWithParams, boolean updateActionCalls) {
+            this.actionsWithParams = actionsWithParams;
+            if (updateActionCalls) {
+                this.actionCalls = WorkflowResult.convertActionsWithParamsToActionCalls(actionsWithParams);
+            }
+            this.actions = actionsWithParams.keySet();
+        }
+
+        public List<Action> getActionCalls() {
+            return actionCalls;
+        }
+
+        public void setActionCalls(List<Action> actionCalls) {
+            this.actionCalls = actionCalls != null ? new ArrayList<>(actionCalls) : new ArrayList<>();
+            this.actionsWithParams = convertActionCallsToActionsWithParams(this.actionCalls);
+            this.actions = this.actionCalls.stream().map(Action::getName).collect(Collectors.toSet());
+        }
+
+        public void setActionCalls(List<Action> actionCalls, boolean updateActionsWithParams) {
+            this.actionCalls = actionCalls != null ? new ArrayList<>(actionCalls) : new ArrayList<>();
+            if (updateActionsWithParams) {
+                this.actionsWithParams = convertActionCallsToActionsWithParams(this.actionCalls);
+            }
+            this.actions = this.actionCalls.stream().map(Action::getName).collect(Collectors.toSet());
         }
 
     }
